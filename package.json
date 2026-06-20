@@ -1,0 +1,16 @@
+{
+  "name": "ai-ribao",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI 日报自媒体自动化工作流",
+  "type": "module",
+  "scripts": {
+    "daily": "bash scripts/run-workflow.sh",
+    "daily:dry": "bash scripts/run-workflow.sh --dry-run",
+    "history": "bash scripts/run-workflow.sh --history",
+    "validate": "node scripts/validate-output.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
