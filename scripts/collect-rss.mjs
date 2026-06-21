@@ -151,10 +151,10 @@ async function fetchFeed(source) {
       .filter((item) => {
         // 过滤：必须有标题和链接
         if (!item.title || !item.url) return false
-        // 过滤：只保留 48 小时内的（宽松窗口，后续精筛更严格）
+        // 过滤：只保留 24 小时内的（严格窗口，保证日报时效性）
         if (item.publishedAt) {
           const age = Date.now() - new Date(item.publishedAt).getTime()
-          if (age > 48 * 60 * 60 * 1000) return false
+          if (age > 24 * 60 * 60 * 1000) return false
         }
         // 粗筛：Tier 1/2 不过滤关键词，Tier 3 需要 AI 相关
         if (source.tier >= 3 && !isAIRelated(item.title, item.description)) return false
