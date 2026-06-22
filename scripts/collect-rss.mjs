@@ -243,7 +243,7 @@ async function fetchFeed(source) {
       })
       .filter((item) => {
         if (!item.title || !item.url) return false
-        // 时间窗口（学术源 48h，其他 24h）
+        // 时间窗口（学术源 48h，其他 24h）— 仅用于排除过老条目
         if (item.publishedAt) {
           const age = Date.now() - new Date(item.publishedAt).getTime()
           if (age > timeWindowHours * 60 * 60 * 1000) return false
@@ -251,13 +251,25 @@ async function fetchFeed(source) {
         // 关键词过滤：Tier 3 必须过滤，requireKeywordFilter 源也必须过滤
         const needsFilter = source.tier >= 3 || source.requireKeywordFilter
         if (needsFilter && !isAIRelated(item.title, item.description)) return false
-        // 日期对齐：只保留目标日期当天的新闻（允许前后 12 小时的时区容差）
+        // 严格日期过滤：只保留目标日期当天的新闻
         if (item.publishedAt) {
           const pubDate = new Date(item.publishedAt)
-          const targetDate = new Date(DATE + 'T00:00:00Z')
-          const diffHours = (pubDate.getTime() - targetDate.getTime()) / (1000 * 60 * 60)
-          // 只保留目标日期前 12h 到后 36h 的条目（覆盖 UTC 时区差异）
-          if (diffHours < -12 || diffHours > 36) return false
+          const pubDateStr = pubDate.toISOString().slice(0, 10)
+          // 规则 1: UTC 日期 == 目标日期 → 通过
+          if (pubDateStr === DATE) return true
+          // 规则 2: UTC 日期是前一天且时间 >= 18:00 UTC（北京时间次日 02:00）→ 容差通过
+          const pubDateObj = new Date(item.publishedAt)
+          const nextDay = new Date(pubDateObj)
+          nextDay.setUTCDate(nextDay.getUTCDate() + 1)
+          if (nextDay.toISOString().slice(0, 10) === DATE && pubDateObj.getUTCHours() >= 18) return true
+          // 规则 3: URL 日期交叉校验 — 如果 URL 包含 /YYYY/MM/DD/ 且不是目标日期，拒绝
+          const urlDateMatch = item.url.match(/\/(\d{4})\/(\d{2})\/(\d{2})\//)
+          if (urlDateMatch) {
+            const urlDate = `${urlDateMatch[1]}-${urlDateMatch[2]}-${urlDateMatch[3]}`
+            if (urlDate !== DATE) return false
+          }
+          // 规则 4: 其他情况一律拒绝
+          if (pubDateStr !== DATE) return false
         }
         return true
       })
