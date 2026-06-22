@@ -232,6 +232,7 @@ async function fetchFeed(source) {
           tier: source.tier,
           language: source.language,
           category: source.category,
+          dateReliability: source.dateReliability || 'normal',
           title: item.title,
           url: item.link,
           description: item.description?.slice(0, 1000) || '',
@@ -276,6 +277,11 @@ async function fetchFeed(source) {
       .map((item) => ({
         ...item,
         impactScore: computeImpactScore(item.title, item.description),
+        // 对已知使用 updatedAt 的源，标记需要日期校验
+        ...(item.dateReliability === 'low' && item.publishedAt &&
+          new Date(item.publishedAt).toISOString().slice(0, 10) === DATE
+          ? { _needsDateVerification: true }
+          : {}),
       }))
 
     return { source: source.id, status: 'ok', count: items.length, items }

@@ -75,6 +75,7 @@ export const RSS_SOURCES = [
     tier: 2,
     language: 'en',
     category: 'media',
+    dateReliability: 'low', // RSS pubDate 可能是 updatedAt 而非 publishedAt
   },
   {
     id: 'venturebeat',

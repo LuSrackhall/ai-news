@@ -18,13 +18,18 @@ function scoreAuthority(tier) {
 /**
  * 计算时效性分数（Base）
  */
-function scoreTimeliness(publishedAt) {
+function scoreTimeliness(publishedAt, sourceConfig) {
   if (!publishedAt) return 2
   const ageHours = (Date.now() - new Date(publishedAt).getTime()) / (1000 * 60 * 60)
+  let score = 2
   for (const t of SCORING.base.timeliness.thresholds) {
-    if (ageHours <= t.maxHours) return t.score
+    if (ageHours <= t.maxHours) { score = t.score; break }
   }
-  return 2
+  // 对日期不可靠的源，时效性分数减半（因为 pubDate 可能是 updatedAt）
+  if (sourceConfig?.dateReliability === 'low') {
+    score = Math.floor(score / 2)
+  }
+  return score
 }
 
 /**
@@ -154,7 +159,7 @@ export function scoreItem(item, allItems) {
   const text = `${item.title} ${item.description || ''}`
 
   const authority = scoreAuthority(item.tier) + crossCategoryBonus(item, allItems)
-  const timeliness = scoreTimeliness(item.publishedAt)
+  const timeliness = scoreTimeliness(item.publishedAt, { dateReliability: item.dateReliability })
   const verifiability = scoreVerifiability(item, allItems)
   const contentQuality = scoreContentQuality(item)
 

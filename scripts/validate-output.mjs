@@ -221,6 +221,18 @@ function validateContent(articleMarkdown, scriptMarkdown, curatedItems, articleJ
     })
   }
 
+  // 8. 日期可靠性警告（已知 RSS pubDate 不可靠的源）
+  const KNOWN_UNRELIABLE_DATE_SOURCES = ['The Verge']
+  for (const item of curatedItems || []) {
+    if (KNOWN_UNRELIABLE_DATE_SOURCES.includes(item.source_name)) {
+      warnings.push({
+        check: 'date_reliability_warning',
+        detail: `${item.source_name} 的 RSS pubDate 可能是 updatedAt 而非 publishedAt，请人工核实`,
+        item: item.title?.slice(0, 50)
+      })
+    }
+  }
+
   const critical = warnings.filter((w) =>
     ['hallucinated_urls', 'empty_expressions', 'editorial_too_short', 'date_consistency'].includes(w.check)
   )
