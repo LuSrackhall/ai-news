@@ -25,27 +25,27 @@
 
 ## 3. URL 验证模块（verify-urls.mjs）
 
-- [ ] 3.1 新建 `scripts/verify-urls.mjs`：接收 raw.json，对每条 URL 发 HEAD 请求（max-time 10s），移除 404/timeout/5xx
-- [ ] 3.2 输出 `valid_raw.json` + `failures.json`，记录每条移除的原因和 HTTP 状态码
-- [ ] 3.3 并发控制：最多 5 个并发请求，避免被源站限流
+- [x] 3.1 新建 `scripts/verify-urls.mjs`：接收 raw.json，对每条 URL 发 HEAD 请求（max-time 10s），移除 404/timeout/5xx
+- [x] 3.2 输出 `valid_raw.json` + `failures.json`，记录每条移除的原因和 HTTP 状态码
+- [x] 3.3 并发控制：最多 5 个并发请求，避免被源站限流
 
 ## 4. 评分模块（score.mjs）
 
-- [ ] 4.1 新建 `scripts/score.mjs`：实现 Base Score 四维计算（权威性、时效性、可验证性、内容质量）
-- [ ] 4.2 实现 Bonus 计算：实体权重（匹配 ENTITY_WEIGHTS）、事件类型（匹配 EVENT_TYPE_WEIGHTS）、量化信号（正则匹配金额/性能/规模）、学术信号（标题含热门话题/模型名/SOTA）
-- [ ] 4.3 实现 Final Score = min(Base + Bonus, 100)
-- [ ] 4.4 实现分级阈值：auto>=70, review 55-69, skip<55
-- [ ] 4.5 实现同源上限：超出限制的条目降级为 skip
-- [ ] 4.6 学术源跨分类加分：同一篇论文同时出现在 cs.AI 和 cs.CL 时权威性+3
+- [x] 4.1 新建 `scripts/score.mjs`：实现 Base Score 四维计算（权威性、时效性、可验证性、内容质量）
+- [x] 4.2 实现 Bonus 计算：实体权重（匹配 ENTITY_WEIGHTS）、事件类型（匹配 EVENT_TYPE_WEIGHTS）、量化信号（正则匹配金额/性能/规模）、学术信号（标题含热门话题/模型名/SOTA）
+- [x] 4.3 实现 Final Score = min(Base + Bonus, 100)
+- [x] 4.4 实现分级阈值：auto>=70, review 55-69, skip<55
+- [x] 4.5 实现同源上限：超出限制的条目降级为 skip
+- [x] 4.6 学术源跨分类加分：同一篇论文同时出现在 cs.AI 和 cs.CL 时权威性+3
 
 ## 5. 去重模块（dedup.mjs）
 
-- [ ] 5.1 新建 `scripts/dedup.mjs`：实现 Level 1 URL 精确匹配去重
-- [ ] 5.2 实现 Level 2 事件指纹匹配（Entity+EventType+Top3Keywords+DateBucket）
-- [ ] 5.3 实现 Level 3 标题 bigram 重叠度计算（阈值 0.5）
-- [ ] 5.4 加载最近 14 天的 curated.json 作为历史数据
-- [ ] 5.5 去重策略：keep_highest_score
-- [ ] 5.6 输出去重报告（每条移除的原因和匹配的历史条目）
+- [x] 5.1 新建 `scripts/dedup.mjs`：实现 Level 1 URL 精确匹配去重
+- [x] 5.2 实现 Level 2 事件指纹匹配（Entity+EventType+Top3Keywords+DateBucket）
+- [x] 5.3 实现 Level 3 标题 bigram 重叠度计算（阈值 0.5）
+- [x] 5.4 加载最近 14 天的 curated.json 作为历史数据
+- [x] 5.5 去重策略：keep_highest_score
+- [x] 5.6 输出去重报告（每条移除的原因和匹配的历史条目）
 
 ## 6. Pipeline 引擎（ai-ribao-daily.js 重写）
 
