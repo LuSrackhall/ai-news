@@ -271,14 +271,21 @@ async function fetchFeed(source) {
 // 主流程
 // ============================================================
 async function main() {
+  const activeSources = RSS_SOURCES.filter(s => s.enabled !== false)
+  const disabledSources = RSS_SOURCES.filter(s => s.enabled === false)
+  const probationSources = activeSources.filter(s => s.status === 'probation')
+
   console.log(`\n📡 AI 日报 RSS 采集 | ${DATE}`)
-  console.log(`   源数量: ${RSS_SOURCES.length}`)
+  console.log(`   源数量: ${activeSources.length} (禁用: ${disabledSources.length})`)
+  if (probationSources.length > 0) {
+    console.log(`   观察期: ${probationSources.map(s => s.id).join(', ')}`)
+  }
   console.log(`   输出: ${OUTPUT_DIR}/all-raw.json\n`)
 
   mkdirSync(OUTPUT_DIR, { recursive: true })
 
   const results = await Promise.allSettled(
-    RSS_SOURCES.map((source, i) =>
+    activeSources.map((source, i) =>
       new Promise((resolve) => setTimeout(() => resolve(fetchFeed(source)), i * 200))
     )
   )
@@ -301,6 +308,44 @@ async function main() {
       console.log(`  ❌ ${data.source}: ${data.error}`)
     }
   }
+
+  // ---- 健康追踪 ----
+  const healthPath = join('data', 'source-health.json')
+  let health = {}
+  try { health = JSON.parse(readFileSync(healthPath, 'utf-8')) } catch {}
+
+  for (const result of results) {
+    const data = result.status === 'fulfilled' ? result.value : { source: 'unknown', status: 'error', error: result.reason?.message }
+    if (!health[data.source]) {
+      health[data.source] = { success30d: 0, fail30d: 0, failStreak: 0, lastSuccess: null, lastFailure: null, lastHttpStatus: null }
+    }
+    const h = health[data.source]
+    if (data.status === 'ok') {
+      h.success30d++
+      h.failStreak = 0
+      h.lastSuccess = new Date().toISOString()
+    } else {
+      h.fail30d++
+      h.failStreak++
+      h.lastFailure = new Date().toISOString()
+      h.lastHttpStatus = data.error
+    }
+    h.lastChecked = new Date().toISOString()
+  }
+
+  // 连续失败告警
+  for (const [sourceId, h] of Object.entries(health)) {
+    if (h.failStreak >= 3) {
+      console.log(`  ⚠️ [WARN] 源 ${sourceId} 连续失败 ${h.failStreak} 天，建议检查`)
+    }
+    if (h.failStreak >= 7) {
+      console.log(`  🔴 [ALERT] 源 ${sourceId} 连续失败 ${h.failStreak} 天，建议禁用`)
+    }
+  }
+
+  mkdirSync('data', { recursive: true })
+  writeFileSync(healthPath, JSON.stringify(health, null, 2))
+  // ---- 健康追踪结束 ----
 
   // URL 去重
   const seen = new Set()
@@ -332,17 +377,24 @@ async function main() {
     date: DATE,
     pipeline_version: PIPELINE_VERSION,
     collectedAt: new Date().toISOString(),
-    sources: { total: RSS_SOURCES.length, ok: totalOk, error: totalError },
+    sources: { total: activeSources.length, ok: totalOk, error: totalError, disabled: disabledSources.length },
     items: { raw: allItems.length, deduped: deduped.length },
     failures,
+    health,
   }
 
   console.log(`\n📊 汇总:`)
-  console.log(`   成功源: ${totalOk}/${RSS_SOURCES.length}`)
+  console.log(`   成功源: ${totalOk}/${activeSources.length} (禁用: ${disabledSources.length})`)
   console.log(`   原始条目: ${allItems.length} → 去重后: ${deduped.length}`)
   console.log(`   输出: ${allRawPath}`)
   if (failures.length > 0) {
     console.log(`   失败源: ${failures.map((f) => f.source).join(', ')}`)
+  }
+
+  // 健康状态摘要
+  const healthIssues = Object.entries(health).filter(([_, h]) => h.failStreak >= 3)
+  if (healthIssues.length > 0) {
+    console.log(`   ⚠️  需关注源: ${healthIssues.map(([id, h]) => `${id}(${h.failStreak}连败)`).join(', ')}`)
   }
 
   console.log(`\n__SUMMARY_JSON__${JSON.stringify(summary)}__END__`)

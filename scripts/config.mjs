@@ -83,6 +83,7 @@ export const RSS_SOURCES = [
     tier: 2,
     language: 'en',
     category: 'media',
+    status: 'probation',
   },
   {
     id: 'arstechnica',
@@ -91,6 +92,7 @@ export const RSS_SOURCES = [
     tier: 2,
     language: 'en',
     category: 'media',
+    status: 'probation',
   },
   {
     id: 'import-ai',
@@ -99,6 +101,7 @@ export const RSS_SOURCES = [
     tier: 2,
     language: 'en',
     category: 'newsletter',
+    enabled: false,
   },
   {
     id: 'the-batch',
@@ -107,6 +110,7 @@ export const RSS_SOURCES = [
     tier: 2,
     language: 'en',
     category: 'newsletter',
+    enabled: false,
   },
 
   // === Tier 2: 权威媒体（中文）===
@@ -129,6 +133,7 @@ export const RSS_SOURCES = [
     language: 'en',
     category: 'official',
     requireKeywordFilter: true,
+    status: 'probation',
   },
   {
     id: 'nvidia-blog',
@@ -138,6 +143,7 @@ export const RSS_SOURCES = [
     language: 'en',
     category: 'official',
     requireKeywordFilter: true,
+    status: 'probation',
   },
 
   // === Tier 3: 社区信号 ===
