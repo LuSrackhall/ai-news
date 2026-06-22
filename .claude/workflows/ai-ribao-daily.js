@@ -586,6 +586,7 @@ manifest.pipeline.validate = {
   article_passed: validation.articlePassed,
   script_passed: validation.scriptPassed,
   content_passed: validation.contentPassed,
+  consistency: validation.consistency,
   validation_passed: validation.validation_passed,
   duration_s: Math.round((Date.now() - t7) / 1000),
 }
@@ -640,6 +641,8 @@ writeFileSync(indexPath, JSON.stringify(index, null, 2))
 // 完成 manifest
 manifest.output_hashes.article = sha256(articleMarkdown)
 manifest.output_hashes.script = sha256(scriptMarkdown)
+manifest.output_hashes.article_json = sha256(JSON.stringify(articleJson, null, 2))
+manifest.output_hashes.script_json = sha256(JSON.stringify(scriptJson, null, 2))
 manifest.duration_total_s = Math.round((Date.now() - startedAt) / 1000)
 
 writeFileSync(join(OUTPUT_DIR, 'manifest.json'), JSON.stringify(manifest, null, 2))

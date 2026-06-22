@@ -153,6 +153,46 @@ function validateContent(articleMarkdown, scriptMarkdown, curatedItems, articleJ
     }
   }
 
+  // 6. 事实锚定检查
+  const knownNumbers = new Set()
+  for (const item of curatedItems || []) {
+    const text = `${item.summary_zh || ''} ${item.title || ''}`
+    const nums = text.match(/\d+[\d.,]*\s*[万亿bBmMtkg%]?/g) || []
+    nums.forEach(n => knownNumbers.add(n.replace(/\s/g, '')))
+  }
+
+  // 从文章 JSON 提取数字
+  const articleNumbers = []
+  function extractNumbers(obj) {
+    if (typeof obj === 'string') {
+      const nums = obj.match(/\d+[\d.,]*\s*[万亿bBmMtkg%]?/g) || []
+      articleNumbers.push(...nums.map(n => n.replace(/\s/g, '')))
+    } else if (Array.isArray(obj)) {
+      obj.forEach(extractNumbers)
+    } else if (typeof obj === 'object' && obj !== null) {
+      Object.values(obj).forEach(extractNumbers)
+    }
+  }
+  extractNumbers(articleJson)
+
+  // 检查是否有文章独有的数字（潜在编造）
+  const suspiciousNumbers = articleNumbers.filter(n => {
+    if (n.length < 2) return false // 忽略单个数字
+    // 检查是否在已知数字中（模糊匹配：数字部分相同）
+    const numPart = n.match(/\d+[\d.,]*/)
+    if (!numPart) return false
+    const knownNums = [...knownNumbers].map(k => k.match(/\d+[\d.,]*/)?.[0]).filter(Boolean)
+    return !knownNums.some(k => k === numPart[0])
+  })
+
+  if (suspiciousNumbers.length > 0) {
+    warnings.push({
+      check: 'fact_anchoring',
+      detail: `文章中出现 ${suspiciousNumbers.length} 个原始数据中不存在的数字`,
+      numbers: suspiciousNumbers.slice(0, 5)
+    })
+  }
+
   const critical = warnings.filter((w) =>
     ['hallucinated_urls', 'empty_expressions', 'editorial_too_short'].includes(w.check)
   )
@@ -165,6 +205,40 @@ function validateContent(articleMarkdown, scriptMarkdown, curatedItems, articleJ
       empty_expression_count: emptyCount,
     },
   }
+}
+
+// ============================================================
+// 文章-口播稿一致性校验
+// ============================================================
+
+export function validateConsistency(articleJson, scriptJson) {
+  const warnings = []
+
+  // 提取文章中的标题
+  const articleTitles = new Set()
+  for (const item of articleJson?.deep_items || []) articleTitles.add(item.title)
+  for (const item of articleJson?.important_items || []) articleTitles.add(item.title)
+
+  // 提取口播稿中的标题
+  const scriptTitles = new Set()
+  for (const item of scriptJson?.deep_items || []) scriptTitles.add(item.title)
+  for (const item of scriptJson?.quick_items || []) scriptTitles.add(item.title)
+
+  // 计算一致性
+  const intersection = [...articleTitles].filter(t => scriptTitles.has(t))
+  const union = new Set([...articleTitles, ...scriptTitles])
+  const consistency = union.size > 0 ? intersection.length / union.size : 1
+
+  if (consistency < 0.5) {
+    warnings.push({
+      check: 'article_script_consistency',
+      detail: `文章与口播稿新闻选取一致性 ${(consistency * 100).toFixed(0)}%（阈值 50%）`,
+      article_only: [...articleTitles].filter(t => !scriptTitles.has(t)),
+      script_only: [...scriptTitles].filter(t => !articleTitles.has(t)),
+    })
+  }
+
+  return { consistency, warnings }
 }
 
 // ============================================================
@@ -184,16 +258,19 @@ export function validate(articleMarkdown, scriptMarkdown, curatedItems, articleJ
   const articleSchema = validateSchema(articleJson, ARTICLE_SCHEMA)
   const scriptSchema = validateSchema(scriptJson, SCRIPT_SCHEMA)
   const content = validateContent(articleMarkdown, scriptMarkdown, curatedItems, articleJson, scriptJson)
+  const consistency = validateConsistency(articleJson, scriptJson)
 
   return {
     articlePassed: articleSchema.passed,
     scriptPassed: scriptSchema.passed,
     contentPassed: content.passed,
+    consistency: consistency.consistency,
     details: {
       article_schema: articleSchema,
       script_schema: scriptSchema,
       content: content,
+      consistency: consistency,
     },
-    validation_passed: articleSchema.passed && scriptSchema.passed && content.passed,
+    validation_passed: articleSchema.passed && scriptSchema.passed && content.passed && consistency.warnings.length === 0,
   }
 }
