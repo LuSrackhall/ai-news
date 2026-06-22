@@ -1,19 +1,19 @@
 ## 1. 配置重构（config.mjs）
 
-- [ ] 1.1 修复 OpenAI RSS URL：`/news/rss` → `/news/rss.xml`
-- [ ] 1.2 切换 TechCrunch 到 AI 专题 feed：`/category/artificial-intelligence/feed/`
-- [ ] 1.3 切换 MIT Tech Review 到 AI 专题 feed：`/topic/artificial-intelligence/feed`
-- [ ] 1.4 切换 The Verge 到 AI 专题 feed：`/rss/ai-artificial-intelligence/index.xml`
-- [ ] 1.5 新增 Tier 1 源：DeepMind Blog
-- [ ] 1.6 新增 Tier 2 源：VentureBeat AI, Ars Technica AI, Import AI, The Batch
-- [ ] 1.7 扩充 AI_KEYWORDS：新增中国 AI 公司关键词（百度、文心、通义、千问、豆包、Kimi、智谱等）
-- [ ] 1.8 新增 ENTITY_WEIGHTS 配置（顶级公司=10, 重要公司=6, 机构人物=5）
-- [ ] 1.9 新增 EVENT_TYPE_WEIGHTS 配置（模型发布=10, 融资=8, 政策=7, 人才变动=5, 学术论文=3）
-- [ ] 1.10 新增 WebSearch 补充查询配置（6 个查询覆盖无 RSS 的官方源）
-- [ ] 1.11 新增 SCORING 配置重构：Base Score 四维（权威性20/时效性15/可验证性15/内容质量15）+ Bonus 四类
-- [ ] 1.12 新增同源上限配置：arXiv=5, TechCrunch=3, 36kr=3, 其他=3
-- [ ] 1.13 新增 pipeline_version, prompt_version, renderer_version, schema_version 常量
-- [ ] 1.14 新增 36kr 源的 requireKeywordFilter: true 标记
+- [x] 1.1 修复 OpenAI RSS URL：`/news/rss` → `/news/rss.xml`
+- [x] 1.2 切换 TechCrunch 到 AI 专题 feed：`/category/artificial-intelligence/feed/`
+- [x] 1.3 切换 MIT Tech Review 到 AI 专题 feed：`/topic/artificial-intelligence/feed`
+- [x] 1.4 切换 The Verge 到 AI 专题 feed：`/rss/ai-artificial-intelligence/index.xml`
+- [x] 1.5 新增 Tier 1 源：DeepMind Blog
+- [x] 1.6 新增 Tier 2 源：VentureBeat AI, Ars Technica AI, Import AI, The Batch
+- [x] 1.7 扩充 AI_KEYWORDS：新增中国 AI 公司关键词（百度、文心、通义、千问、豆包、Kimi、智谱等）
+- [x] 1.8 新增 ENTITY_WEIGHTS 配置（顶级公司=10, 重要公司=6, 机构人物=5）
+- [x] 1.9 新增 EVENT_TYPE_WEIGHTS 配置（模型发布=10, 融资=8, 政策=7, 人才变动=5, 学术论文=3）
+- [x] 1.10 新增 WebSearch 补充查询配置（6 个查询覆盖无 RSS 的官方源）
+- [x] 1.11 新增 SCORING 配置重构：Base Score 四维（权威性20/时效性15/可验证性15/内容质量15）+ Bonus 四类
+- [x] 1.12 新增同源上限配置：arXiv=5, TechCrunch=3, 36kr=3, 其他=3
+- [x] 1.13 新增 pipeline_version, prompt_version, renderer_version, schema_version 常量
+- [x] 1.14 新增 36kr 源的 requireKeywordFilter: true 标记
 
 ## 2. 采集阶段增强（collect-rss.mjs）
 

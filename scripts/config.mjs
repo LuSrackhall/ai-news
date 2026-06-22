@@ -1,17 +1,33 @@
 /**
- * AI 日报 - 数据源配置
- * 基于橘鸦实践 + 官方 RSS 实测验证
+ * AI 日报 - 数据源与评分配置
+ * Pipeline v3
  */
 
 // ============================================================
-// RSS 数据源（已实测可用，2026-06-20 验证）
+// 版本管理
+// ============================================================
+export const PIPELINE_VERSION = 'v3'
+export const PROMPT_VERSION = 'v1'
+export const RENDERER_VERSION = 'v1'
+export const SCHEMA_VERSION = 'v1'
+
+// ============================================================
+// RSS 数据源
 // ============================================================
 export const RSS_SOURCES = [
-  // === Tier 1: 官方一手来源（英文）===
+  // === Tier 1: 官方一手来源 ===
   {
     id: 'openai',
     name: 'OpenAI Blog',
-    url: 'https://openai.com/news/rss',
+    url: 'https://openai.com/news/rss.xml',
+    tier: 1,
+    language: 'en',
+    category: 'official',
+  },
+  {
+    id: 'deepmind',
+    name: 'Google DeepMind',
+    url: 'https://deepmind.google/blog/rss.xml',
     tier: 1,
     language: 'en',
     category: 'official',
@@ -23,6 +39,7 @@ export const RSS_SOURCES = [
     tier: 1,
     language: 'en',
     category: 'academic',
+    timeWindowHours: 48,
   },
   {
     id: 'arxiv-cs-cl',
@@ -31,13 +48,14 @@ export const RSS_SOURCES = [
     tier: 1,
     language: 'en',
     category: 'academic',
+    timeWindowHours: 48,
   },
 
-  // === Tier 2: 权威媒体（英文）===
+  // === Tier 2: 权威媒体（英文，AI 专题 feed）===
   {
     id: 'mit-tech-review',
     name: 'MIT Technology Review',
-    url: 'https://www.technologyreview.com/feed/',
+    url: 'https://www.technologyreview.com/topic/artificial-intelligence/feed',
     tier: 2,
     language: 'en',
     category: 'media',
@@ -45,7 +63,7 @@ export const RSS_SOURCES = [
   {
     id: 'techcrunch',
     name: 'TechCrunch',
-    url: 'https://techcrunch.com/feed/',
+    url: 'https://techcrunch.com/category/artificial-intelligence/feed/',
     tier: 2,
     language: 'en',
     category: 'media',
@@ -53,10 +71,42 @@ export const RSS_SOURCES = [
   {
     id: 'the-verge',
     name: 'The Verge',
-    url: 'https://www.theverge.com/rss/index.xml',
+    url: 'https://www.theverge.com/rss/ai-artificial-intelligence/index.xml',
     tier: 2,
     language: 'en',
     category: 'media',
+  },
+  {
+    id: 'venturebeat',
+    name: 'VentureBeat AI',
+    url: 'https://venturebeat.com/category/ai/feed/',
+    tier: 2,
+    language: 'en',
+    category: 'media',
+  },
+  {
+    id: 'arstechnica',
+    name: 'Ars Technica AI',
+    url: 'https://arstechnica.com/tag/ai/feed/',
+    tier: 2,
+    language: 'en',
+    category: 'media',
+  },
+  {
+    id: 'import-ai',
+    name: 'Import AI',
+    url: 'https://importai.substack.com/feed',
+    tier: 2,
+    language: 'en',
+    category: 'newsletter',
+  },
+  {
+    id: 'the-batch',
+    name: 'The Batch',
+    url: 'https://deeplearning.ai/the-batch/feed/',
+    tier: 2,
+    language: 'en',
+    category: 'newsletter',
   },
 
   // === Tier 2: 权威媒体（中文）===
@@ -67,6 +117,27 @@ export const RSS_SOURCES = [
     tier: 2,
     language: 'zh',
     category: 'media',
+    requireKeywordFilter: true,
+  },
+
+  // === Tier 2: 需关键词过滤的官方源 ===
+  {
+    id: 'microsoft-research',
+    name: 'Microsoft Research',
+    url: 'https://www.microsoft.com/en-us/research/feed/',
+    tier: 2,
+    language: 'en',
+    category: 'official',
+    requireKeywordFilter: true,
+  },
+  {
+    id: 'nvidia-blog',
+    name: 'NVIDIA Blog',
+    url: 'https://blogs.nvidia.com/feed/',
+    tier: 2,
+    language: 'en',
+    category: 'official',
+    requireKeywordFilter: true,
   },
 
   // === Tier 3: 社区信号 ===
@@ -81,7 +152,7 @@ export const RSS_SOURCES = [
 ]
 
 // ============================================================
-// AI 关键词过滤（用于 RSS 粗筛）
+// AI 关键词过滤（用于 Tier 3 + requireKeywordFilter 源）
 // ============================================================
 export const AI_KEYWORDS = [
   // 英文关键词
@@ -92,50 +163,180 @@ export const AI_KEYWORDS = [
   'computer vision', 'NLP', 'reinforcement learning',
   'diffusion model', 'generative AI', 'foundation model',
   'fine-tuning', 'RAG', 'agent', 'multimodal',
+  'Llama', 'Mistral', 'Gemma', 'Copilot', 'ChatGPT',
   // 中文关键词
   '人工智能', '大模型', '深度学习', '机器学习',
   '大语言模型', 'AI', '智能体', '向量数据库',
+  // 中国 AI 公司
+  '百度', '文心', '通义', '千问', '豆包', 'Kimi', '智谱', '百川',
+  '月之暗面', 'MiniMax', '零一万物', '商汤', '科大讯飞', '寒武纪',
+  'Qwen',
 ]
 
 // ============================================================
-// 评分公式配置（五维百分制，基于审查意见校准）
+// 实体权重表（Bonus: entity weight，0-12 分）
 // ============================================================
-export const SCORING = {
-  dimensions: [
-    { name: '权威性', weight: 30 },
-    { name: '时效性', weight: 25 },
-    { name: '影响力', weight: 20 },
-    { name: '可验证性', weight: 15 },
-    { name: '内容质量', weight: 10 },
-  ],
-  thresholds: {
-    auto_publish: 75,    // 绿灯：自动入选
-    review: 60,          // 黄灯：标记待审
-    min_authority: 23,   // 权威性最低门槛
+export const ENTITY_WEIGHTS = {
+  top_tier: {
+    entities: [
+      'OpenAI', 'Google', 'DeepMind', 'Anthropic', 'Meta', 'Apple',
+      'Microsoft', 'DeepSeek', 'NVIDIA', 'xAI', 'Mistral',
+    ],
+    score: 10,
   },
-  tier_scores: {
-    1: 30,  // 一手来源
-    2: 23,  // 权威媒体
-    3: 10,  // 社区信号
+  second_tier: {
+    entities: [
+      'Hugging Face', 'Stability AI', 'Cohere', 'AI21', 'Inflection',
+      'Character.AI', 'Midjourney', 'Runway', 'Perplexity',
+      '百度', '阿里', '字节跳动', '腾讯', '华为', '小米',
+    ],
+    score: 6,
+  },
+  notable: {
+    entities: [
+      'Sam Altman', 'Demis Hassabis', 'Yann LeCun', 'Ilya Sutskever',
+      'Dario Amodei', '李彦宏', '马斯克', 'Elon Musk',
+      'John Jumper', 'Noam Shazeer',
+    ],
+    score: 5,
+  },
+  multi_entity_bonus: 2,
+}
+
+// ============================================================
+// 事件类型权重表（Bonus: event type weight，0-12 分）
+// ============================================================
+export const EVENT_TYPE_WEIGHTS = {
+  model_release: {
+    keywords: ['发布', 'release', 'launch', 'announce', 'unveil', '新模型', '新版本'],
+    regex: /\b(GPT-\d|Claude\s*\d|Gemini\s*\d|V\d|Llama\s*\d|Mistral)\b/i,
+    score: 10,
+  },
+  funding: {
+    keywords: ['融资', 'funding', 'raised', 'valuation', '估值'],
+    regex: /(\$[\d.]+[bBmM]|[\d.]+亿|[\d.]+亿美元|\bbillion\b|\bmillion\b)/,
+    score: 8,
+  },
+  policy: {
+    keywords: ['政策', 'regulation', 'ban', '监管', '立法', 'government', 'EU', '白宫'],
+    score: 7,
+  },
+  breakthrough: {
+    keywords: ['breakthrough', 'state-of-the-art', 'SOTA', '突破', '首次', 'first'],
+    score: 7,
+  },
+  open_source: {
+    keywords: ['开源', 'open source', 'open-source', 'GitHub', 'Apache'],
+    score: 5,
+  },
+  talent_movement: {
+    keywords: ['加入', '离开', 'joins', 'leaves', 'hires', 'appointed', '离职', '跳槽'],
+    score: 5,
+  },
+  partnership: {
+    keywords: ['合作', 'partnership', 'collaboration'],
+    score: 4,
+  },
+  acquisition: {
+    keywords: ['收购', 'acquire', 'acquisition', '合并'],
+    score: 6,
+  },
+  general: {
+    score: 2,
   },
 }
+
+// ============================================================
+// 学术信号关键词（Bonus: academic signal，0-5 分）
+// ============================================================
+export const ACADEMIC_SIGNALS = {
+  hot_topics: [
+    'agent', 'reasoning', 'alignment', 'multimodal', 'AGI',
+    'safety', 'scaling law', 'RLHF', 'DPO', 'diffusion',
+    'context', 'long context', 'token',
+  ],
+  model_names: [
+    'GPT', 'Claude', 'Gemini', 'Llama', 'DeepSeek',
+    'Mistral', 'Gemma', 'Qwen',
+  ],
+  sota_keywords: [
+    'SOTA', 'state-of-the-art', 'outperform', 'surpass', 'beat',
+  ],
+  hot_topic_score: 1,
+  model_name_score: 2,
+  sota_score: 2,
+}
+
+// ============================================================
+// 评分配置（Base + Bonus）
+// ============================================================
+export const SCORING = {
+  // Base Score 四维（满分 65）
+  base: {
+    authority: { max: 20, tier_scores: { 1: 20, 2: 15, 3: 7 } },
+    timeliness: {
+      max: 15,
+      thresholds: [
+        { maxHours: 1, score: 15 },
+        { maxHours: 3, score: 13 },
+        { maxHours: 6, score: 11 },
+        { maxHours: 12, score: 8 },
+        { maxHours: 24, score: 5 },
+        { maxHours: Infinity, score: 2 },
+      ],
+    },
+    verifiability: {
+      max: 15,
+      scores: { official: 15, multi_source: 12, single_with_summary: 8, single_no_summary: 4 },
+    },
+    content_quality: {
+      max: 15,
+      has_number: 4,
+      summary_long: 3,
+      title_density: 5,
+    },
+  },
+  // 学术源跨分类加分
+  cross_category_bonus: 3,
+  // 分级阈值
+  thresholds: {
+    auto: 70,
+    review_min: 55,
+    review_max: 69,
+  },
+  // 同源上限
+  source_caps: {
+    'arxiv-cs-ai': 5,
+    'arxiv-cs-cl': 5,
+    techcrunch: 3,
+    '36kr': 3,
+    _default: 3,
+  },
+}
+
+// ============================================================
+// WebSearch 补充查询（覆盖无 RSS 的官方源）
+// ============================================================
+export const WEBSEARCH_QUERIES = [
+  { query: '"Anthropic" OR "Claude" site:anthropic.com', covers: 'Anthropic 官方动态' },
+  { query: '"Meta AI" OR "FAIR" OR "Llama" site:ai.meta.com', covers: 'Meta AI 发布' },
+  { query: '"Google AI" OR "Gemini" OR "Gemma" site:blog.google', covers: 'Google AI 产品' },
+  { query: 'site:huggingface.co blog', covers: 'Hugging Face 社区' },
+  { query: 'site:mistral.ai news', covers: 'Mistral AI 更新' },
+  { query: '"AI" site:qbitai.com OR site:jiqizhixin.com', covers: '中文 AI 媒体' },
+]
 
 // ============================================================
 // Workflow 配置
 // ============================================================
 export const WORKFLOW_CONFIG = {
-  // 输出目录
   outputDir: 'output',
-
-  // 去重窗口（天）
-  dedupDays: 7,
-
-  // 每日精选新闻数量目标
+  dedupDays: 14,
   targetNewsCount: { min: 5, ideal: 10, max: 15 },
-
-  // RSS 采集超时（毫秒）
   fetchTimeout: 15000,
-
-  // RSS 请求间隔（毫秒）
   fetchInterval: 2000,
+  urlVerifyConcurrency: 5,
+  urlVerifyTimeout: 10000,
+  // 默认时间窗口（小时），学术源可在 source 配置中覆盖
+  defaultTimeWindowHours: 24,
 }
