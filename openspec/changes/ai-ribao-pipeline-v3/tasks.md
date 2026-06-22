@@ -85,11 +85,11 @@
 
 ## 10. 集成测试
 
-- [ ] 10.1 使用 2026-06-20 的 raw.json 数据运行完整 Pipeline，验证评分区分度
-- [ ] 10.2 验证跨日去重：用 06-20 的 curated.json 作为历史，运行 06-21 数据，确认重复条目被去重
-- [ ] 10.3 验证 Renderer 输出：article.md 包含所有必需板块，格式一致
-- [ ] 10.4 验证 manifest 字段完整性：四版本号、hashes、耗时、quality 指标
-- [ ] 10.5 验证错误分级：模拟 RSS 403（Recoverable）和 LLM 生成失败（Fatal）
+- [x] 10.1 使用 2026-06-20 的 raw.json 数据运行完整 Pipeline，验证评分区分度
+- [x] 10.2 验证跨日去重：用 06-20 的 curated.json 作为历史，运行 06-21 数据，确认重复条目被去重
+- [x] 10.3 验证 Renderer 输出：article.md 包含所有必需板块，格式一致
+- [x] 10.4 验证 manifest 字段完整性：四版本号、hashes、耗时、quality 指标
+- [x] 10.5 验证错误分级：模拟 RSS 403（Recoverable）和 LLM 生成失败（Fatal）
 
 ---
 
