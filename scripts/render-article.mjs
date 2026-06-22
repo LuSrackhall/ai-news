@@ -125,7 +125,8 @@ export function renderArticle(article, date, sources = [], stats = {}) {
   if (article.brief_items && article.brief_items.length > 0) {
     sections.push('## 快讯\n')
     for (const item of article.brief_items) {
-      const source = item.source ? ` ([${item.source}](${ensureClickableUrl(item.source_url || '')}))` : ''
+      const url = item.source_url || item.url || ''
+      const source = item.source ? (url ? ` ([${item.source}](${ensureClickableUrl(url)}))` : ` (${item.source})`) : ''
       sections.push(`- **${format(item.title)}**：${format(item.fact)}${source}`)
     }
     sections.push('')
