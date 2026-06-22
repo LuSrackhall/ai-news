@@ -65,18 +65,18 @@
 
 ## 7. Renderer 模块
 
-- [ ] 7.1 新建 `scripts/render-article.mjs`：接收 article.json，输出 Markdown 文章
-- [ ] 7.2 Formatter 功能：中文标点规范化、引号统一、空行规范化、URL 确保可点击
-- [ ] 7.3 模板结构：标题 → 钩子 → 今日速览 → 重磅深度（四段） → 重要动态 → 快讯 → 编辑观点
-- [ ] 7.4 新建 `scripts/render-script.mjs`：接收 script.json，输出带时间标注的口播稿 Markdown
-- [ ] 7.5 Renderer 内含 renderer_version 常量
+- [x] 7.1 新建 `scripts/render-article.mjs`：接收 article.json，输出 Markdown 文章
+- [x] 7.2 Formatter 功能：中文标点规范化、引号统一、空行规范化、URL 确保可点击
+- [x] 7.3 模板结构：标题 → 钩子 → 今日速览 → 重磅深度（四段） → 重要动态 → 快讯 → 编辑观点
+- [x] 7.4 新建 `scripts/render-script.mjs`：接收 script.json，输出带时间标注的口播稿 Markdown
+- [x] 7.5 Renderer 内含 renderer_version 常量
 
 ## 8. 校验模块（validate-output.mjs）
 
-- [ ] 8.1 新建 `scripts/validate-output.mjs`：实现 article.json Schema 校验（required: hook, summary_items, editorial）
-- [ ] 8.2 实现 script.json Schema 校验（required: hook, overview, closing）
-- [ ] 8.3 实现内容质量校验：URL 交叉比对、空洞表述检测（>3 处 FAIL）、口播时长 180-300s、editorial 字段长度 >30 字、deep_items 含数字
-- [ ] 8.4 输出校验结果 JSON（status, checks 数组, warnings 数组）
+- [x] 8.1 新建 `scripts/validate-output.mjs`：实现 article.json Schema 校验（required: hook, summary_items, editorial）
+- [x] 8.2 实现 script.json Schema 校验（required: hook, overview, closing）
+- [x] 8.3 实现内容质量校验：URL 交叉比对、空洞表述检测（>3 处 FAIL）、口播时长 180-300s、editorial 字段长度 >30 字、deep_items 含数字
+- [x] 8.4 输出校验结果 JSON（status, checks 数组, warnings 数组）
 
 ## 9. Shell 入口更新
 
