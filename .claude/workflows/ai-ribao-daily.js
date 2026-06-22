@@ -349,59 +349,18 @@ log('  生成 article.json...')
 let articleJson = null
 let articleRetryCount = 0
 
+const goodEditorials = loadExamples('good_editorials')
+const editorialExamples = goodEditorials.length > 0
+  ? '\n\n## 优秀 Editorial 示例\n' + goodEditorials.map(e =>
+    `- 观察：${e.observation}\n  证据：${e.evidence}\n  判断：${e.judgment}\n  预测：${e.prediction}`
+  ).join('\n')
+  : ''
+
 const articleResult = await agent(
-  `你是一位 AI 科技媒体的高级编辑，负责撰写每日 AI 日报。
-
-## 输出规则（最高优先级）
-1. 直接输出合法 JSON，禁止输出任何非 JSON 内容
-2. 输出的第一个字符必须是 {，最后一个字符必须是 }
-3. 禁止在 JSON 前后添加任何说明、分析、确认语句
-
-## 输入数据
-\`\`\`
-${curatedForGen}
-\`\`\`
-
-## 风格要求
-- 信息密度高，每段聚焦一个核心观点
-- 使用具体数字支撑结论
-- 技术与产业分析并重
-- 避免营销语言和空泛表述
-- 每条分析必须回答"为什么重要"和"这意味着什么"
-- 禁止使用"值得关注""意义深远""引发热议"等无信息量表述
-
-## 写作硬约束
-1. 禁止编造：输入数据中没有的数字、公司名、人名、事件不得出现
-2. 数据锚定：deep_items 和 important_items 必须包含至少 1 个具体数字
-3. 来源实名：sources 中的 name 必须是输入数据中实际存在的 source_name
-4. 字数约束：deep_items details 200-400 字, important_items analysis 80-150 字, brief_items fact 30-50 字
-
-## 输出 JSON 结构
-{
-  "hook": "一句话钩子，必须包含对比或冲突",
-  "summary_items": [{ "title": "...", "one_liner": "25字以内摘要" }],
-  "deep_items": [{
-    "title": "...",
-    "what_happened": "1-2句话事实陈述",
-    "details": "技术/商业细节，200-400字，必须含具体数字",
-    "why_matters": "对行业格局的影响，100-150字",
-    "implications": "趋势判断，100-150字",
-    "sources": [{ "name": "...", "url": "..." }]
-  }],
-  "important_items": [{
-    "title": "...",
-    "key_point": "一句话核心事实",
-    "analysis": "为什么值得关注，80-150字，必须含数字或对比",
-    "source": { "name": "...", "url": "..." }
-  }],
-  "brief_items": [{ "title": "...", "fact": "一句话纯事实，30-50字", "source": "..." }],
-  "editorial": {
-    "observation": "今天新闻中的模式或矛盾",
-    "evidence": "引用具体新闻事实",
-    "judgment": "一个明确的、可被反驳的立场",
-    "prediction": "未来 3-6 个月可能发生什么"
-  }
-}`,
+  loadPrompt('prompts/v1/article.md', {
+    input_data: curatedForGen,
+    editorial_examples: editorialExamples,
+  }),
   {
     label: '文章生成',
     phase: 'LLM 生成',
@@ -443,38 +402,10 @@ log('  生成 script.json...')
 const articleJsonStr = JSON.stringify(articleJson, null, 2)
 
 const scriptResult = await agent(
-  `你是一位 AI 科技媒体的视频口播编剧。
-
-## 输出规则（最高优先级）
-1. 直接输出合法 JSON，第一个字符 {，最后一个字符 }
-2. 禁止输出任何非 JSON 内容
-
-## 输入数据
-新闻数据：
-\`\`\`
-${curatedForGen.slice(0, 10000)}
-\`\`\`
-
-文章内容：
-\`\`\`
-${articleJsonStr.slice(0, 8000)}
-\`\`\`
-
-## 口播稿要求
-- 目标时长 180-300 秒
-- 口语化、短句（≤20 字）、数字口语化
-- 每段必须标注 duration_s（秒数）
-- 与文章中"重磅新闻"选取保持一致
-- 用类比帮助外行理解技术概念
-
-## 输出 JSON 结构
-{
-  "hook": { "text": "冲突/数据冲击开场", "duration_s": 18 },
-  "overview": { "text": "数字概括今日新闻", "duration_s": 16 },
-  "deep_items": [{ "title": "...", "text": "详细展开", "duration_s": 45 }],
-  "quick_items": [{ "title": "...", "text": "是什么+一句话为什么重要", "duration_s": 18 }],
-  "closing": { "text": "趋势提炼+前瞻判断", "duration_s": 17 }
-}`,
+  loadPrompt('prompts/v1/script.md', {
+    news_data: curatedForGen.slice(0, 10000),
+    article_data: articleJsonStr.slice(0, 8000),
+  }),
   {
     label: '口播稿生成',
     phase: 'LLM 生成',
