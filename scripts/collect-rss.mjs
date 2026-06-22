@@ -294,6 +294,102 @@ async function fetchFeed(source) {
 }
 
 // ============================================================
+// 页面级日期校验（对低可靠性源，获取 HTML 中的真实 datePublished）
+// ============================================================
+
+/**
+ * 从 HTML 中提取真实发布日期
+ * 优先级：JSON-LD datePublished > meta article:published_time > meta datePublished
+ */
+function extractRealPublishDate(html) {
+  // JSON-LD
+  const jsonLdMatch = html.match(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)
+  if (jsonLdMatch) {
+    for (const block of jsonLdMatch) {
+      const jsonStr = block.replace(/<\/?script[^>]*>/gi, '')
+      try {
+        const data = JSON.parse(jsonStr)
+        const date = data.datePublished || data.dateCreated
+        if (date) return new Date(date).toISOString()
+      } catch {}
+    }
+  }
+  // meta article:published_time
+  const metaMatch = html.match(/<meta[^>]+property=["']article:published_time["'][^>]+content=["']([^"']+)["']/i)
+  if (metaMatch) return new Date(metaMatch[1]).toISOString()
+  // meta datePublished
+  const dpMatch = html.match(/<meta[^>]+(?:name|property)=["']datePublished["'][^>]+content=["']([^"']+)["']/i)
+  if (dpMatch) return new Date(dpMatch[1]).toISOString()
+  // meta date
+  const dateMatch = html.match(/<meta[^>]+(?:name|property)=["']date["'][^>]+content=["']([^"']+)["']/i)
+  if (dateMatch) return new Date(dateMatch[1]).toISOString()
+  return null
+}
+
+/**
+ * 对标记为 _needsDateVerification 的条目，获取页面真实日期并校验
+ * 如果真实日期不在目标日期窗口内，标记为 _dateVerified: false
+ */
+async function verifyPageDates(items, targetDate) {
+  const needVerify = items.filter(i => i._needsDateVerification)
+  if (needVerify.length === 0) return items
+
+  console.log(`  🔍 页面日期校验: ${needVerify.length} 条待验证...`)
+
+  for (const item of needVerify) {
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 10000)
+      const res = await fetch(item.url, {
+        signal: controller.signal,
+        headers: { 'User-Agent': 'AiRibao/1.0 (date-check)' },
+      })
+      clearTimeout(timeout)
+
+      if (!res.ok) {
+        console.log(`    ⚠️ ${item.title?.slice(0, 40)}: HTTP ${res.status}，保留 RSS 日期`)
+        continue
+      }
+
+      const html = await res.text()
+      const realDate = extractRealPublishDate(html)
+
+      if (realDate) {
+        const realDateStr = realDate.slice(0, 10)
+        const rssDateStr = new Date(item.publishedAt).toISOString().slice(0, 10)
+
+        if (realDateStr !== rssDateStr) {
+          console.log(`    🔄 ${item.title?.slice(0, 40)}: RSS=${rssDateStr} → 实际=${realDateStr}`)
+          // 用真实日期替换 RSS 日期
+          item.publishedAt = realDate
+          item._dateCorrected = true
+          item._originalRssDate = rssDateStr
+
+          // 检查真实日期是否在目标日期窗口内
+          const targetDateObj = new Date(targetDate + 'T12:00:00Z')
+          const realDateObj = new Date(realDate)
+          const diffHours = Math.abs(targetDateObj.getTime() - realDateObj.getTime()) / (1000 * 60 * 60)
+          if (diffHours > 36) {
+            item._dateVerified = false
+            item._dateVerifyReason = `真实发布日期 ${realDateStr} 距目标日期 ${targetDate} 超过 36h`
+            console.log(`    ❌ ${item.title?.slice(0, 40)}: 日期超出窗口，标记为不可用`)
+          } else {
+            item._dateVerified = true
+          }
+        } else {
+          item._dateVerified = true
+          console.log(`    ✅ ${item.title?.slice(0, 40)}: 日期一致 (${realDateStr})`)
+        }
+      }
+    } catch (err) {
+      console.log(`    ⚠️ ${item.title?.slice(0, 40)}: 获取失败 (${err.message})，保留 RSS 日期`)
+    }
+  }
+
+  return items
+}
+
+// ============================================================
 // 主流程
 // ============================================================
 async function main() {
@@ -382,8 +478,17 @@ async function main() {
     return true
   })
 
+  // 页面级日期校验（对低可靠性源，获取 HTML 中的真实 datePublished）
+  await verifyPageDates(deduped, DATE)
+  // 移除日期校验失败的条目
+  const dateVerified = deduped.filter(item => item._dateVerified !== false)
+  const dateRemoved = deduped.length - dateVerified.length
+  if (dateRemoved > 0) {
+    console.log(`  📅 页面日期校验移除: ${dateRemoved} 条`)
+  }
+
   // 按发布时间降序排序
-  deduped.sort((a, b) => {
+  dateVerified.sort((a, b) => {
     if (!a.publishedAt && !b.publishedAt) return 0
     if (!a.publishedAt) return 1
     if (!b.publishedAt) return -1
@@ -392,7 +497,7 @@ async function main() {
 
   // 写入文件
   const allRawPath = join(OUTPUT_DIR, 'all-raw.json')
-  writeFileSync(allRawPath, JSON.stringify(deduped, null, 2), 'utf-8')
+  writeFileSync(allRawPath, JSON.stringify(dateVerified, null, 2), 'utf-8')
 
   if (failures.length > 0) {
     const failuresPath = join(OUTPUT_DIR, 'failures.json')
@@ -404,14 +509,14 @@ async function main() {
     pipeline_version: PIPELINE_VERSION,
     collectedAt: new Date().toISOString(),
     sources: { total: activeSources.length, ok: totalOk, error: totalError, disabled: disabledSources.length },
-    items: { raw: allItems.length, deduped: deduped.length },
+    items: { raw: allItems.length, deduped: dateVerified.length, dateRemoved },
     failures,
     health,
   }
 
   console.log(`\n📊 汇总:`)
   console.log(`   成功源: ${totalOk}/${activeSources.length} (禁用: ${disabledSources.length})`)
-  console.log(`   原始条目: ${allItems.length} → 去重后: ${deduped.length}`)
+  console.log(`   原始条目: ${allItems.length} → 去重后: ${dateVerified.length}`)
   console.log(`   输出: ${allRawPath}`)
   if (failures.length > 0) {
     console.log(`   失败源: ${failures.map((f) => f.source).join(', ')}`)
