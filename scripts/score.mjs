@@ -206,6 +206,18 @@ export function scoreAll(items) {
   // 按总分降序排序
   scored.sort((a, b) => b.scores.total - a.scores.total)
 
+  // 硬性年龄门禁：超过 48 小时的新闻直接 skip，无论总分多高
+  for (const item of scored) {
+    if (item.publishedAt) {
+      const ageHours = (Date.now() - new Date(item.publishedAt).getTime()) / (1000 * 60 * 60)
+      if (ageHours > 48) {
+        item.tier_label = 'skip'
+        item.scores._age_filtered = true
+        item.scores._age_reason = `超过 48 小时 (${ageHours.toFixed(1)}h)`
+      }
+    }
+  }
+
   // 应用同源上限
   const sourceCounts = {}
   const result = []

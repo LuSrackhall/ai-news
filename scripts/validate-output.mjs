@@ -193,8 +193,36 @@ function validateContent(articleMarkdown, scriptMarkdown, curatedItems, articleJ
     })
   }
 
+  // 7. 日期一致性检查
+  const dateViolations = []
+  for (const item of curatedItems || []) {
+    if (item.published_at || item.publishedAt) {
+      const pubDate = new Date(item.published_at || item.publishedAt)
+      // 检查是否在合理窗口内（从 article.md 的标题中提取日期作为目标日期）
+      const articleDate = (articleMarkdown || '').match(/\d{4}-\d{2}-\d{2}/)?.[0]
+      if (articleDate) {
+        const targetDate = new Date(articleDate + 'T12:00:00Z')
+        const diffHours = Math.abs(pubDate.getTime() - targetDate.getTime()) / (1000 * 60 * 60)
+        if (diffHours > 36) {
+          dateViolations.push({
+            title: item.title?.slice(0, 40),
+            published_at: item.published_at || item.publishedAt,
+            hours_diff: diffHours.toFixed(1)
+          })
+        }
+      }
+    }
+  }
+  if (dateViolations.length > 0) {
+    warnings.push({
+      check: 'date_consistency',
+      detail: `${dateViolations.length} 条新闻发布时间超出目标日期 ±36h 窗口`,
+      violations: dateViolations
+    })
+  }
+
   const critical = warnings.filter((w) =>
-    ['hallucinated_urls', 'empty_expressions', 'editorial_too_short'].includes(w.check)
+    ['hallucinated_urls', 'empty_expressions', 'editorial_too_short', 'date_consistency'].includes(w.check)
   )
 
   return {

@@ -251,6 +251,14 @@ async function fetchFeed(source) {
         // 关键词过滤：Tier 3 必须过滤，requireKeywordFilter 源也必须过滤
         const needsFilter = source.tier >= 3 || source.requireKeywordFilter
         if (needsFilter && !isAIRelated(item.title, item.description)) return false
+        // 日期对齐：只保留目标日期当天的新闻（允许前后 12 小时的时区容差）
+        if (item.publishedAt) {
+          const pubDate = new Date(item.publishedAt)
+          const targetDate = new Date(DATE + 'T00:00:00Z')
+          const diffHours = (pubDate.getTime() - targetDate.getTime()) / (1000 * 60 * 60)
+          // 只保留目标日期前 12h 到后 36h 的条目（覆盖 UTC 时区差异）
+          if (diffHours < -12 || diffHours > 36) return false
+        }
         return true
       })
       .map((item) => ({

@@ -53,6 +53,19 @@ export function generateFeedback(outputDir, date, pipelineData) {
     }
   }
 
+  // 日期覆盖统计
+  const pubDates = (curated?.selected_items || [])
+    .map(i => i.published_at || i.publishedAt)
+    .filter(Boolean)
+    .map(d => new Date(d))
+
+  const dateCoverage = {
+    target: date,
+    earliest: pubDates.length > 0 ? new Date(Math.min(...pubDates)).toISOString() : null,
+    latest: pubDates.length > 0 ? new Date(Math.max(...pubDates)).toISOString() : null,
+    out_of_window: manifest?.quality?.date_violations || 0,
+  }
+
   const feedback = {
     date,
     pipeline_version: PIPELINE_VERSION,
@@ -66,6 +79,7 @@ export function generateFeedback(outputDir, date, pipelineData) {
       dedup_overlap_count: manifest?.quality?.dedup_overlap_count || 0,
       hallucinated_url_count: manifest?.quality?.hallucinated_url_count || 0,
       dead_link_count: manifest?.quality?.dead_link_count || 0,
+      date_coverage: dateCoverage,
     },
     entity_performance: entityPerformance,
     event_type_performance: eventPerformance,
