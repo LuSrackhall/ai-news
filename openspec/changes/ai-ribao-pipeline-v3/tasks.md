@@ -49,19 +49,19 @@
 
 ## 6. Pipeline 引擎（ai-ribao-daily.js 重写）
 
-- [ ] 6.1 重写 `ai-ribao-daily.js`：8 阶段 Pipeline 编排（phase/log/agent 调用）
-- [ ] 6.2 Phase 1：调用 collect-rss.mjs，检查 raw_count > 0（否则 Fatal）
-- [ ] 6.3 Phase 2：调用 verify-urls.mjs，移除死链
-- [ ] 6.4 Phase 3：调用 score.mjs + dedup.mjs，输出 candidates.json（含 auto/review/skip 分级）
-- [ ] 6.5 Phase 4：agent() LLM 选题，只处理 review 区条目，输出 curated.json；约束只允许修改 importance 和 curation_note
-- [ ] 6.6 Phase 5a：agent() 生成 article.json（JSON Schema 约束），串行执行
-- [ ] 6.7 Phase 5b：agent() 生成 script.json（JSON Schema 约束），基于 curated.json + article.json
-- [ ] 6.8 Phase 5 JSON 解析兜底：截取第一个 `{` 到最后一个 `}` 再解析
-- [ ] 6.9 Phase 6：调用 render-article.mjs + render-script.mjs
-- [ ] 6.10 Phase 7：调用 validate-output.mjs，Schema 失败重试一次，内容校验不通过标记 manifest
-- [ ] 6.11 Phase 8：代码直接写文件（不用 agent），更新 index.json，生成 manifest.json
-- [ ] 6.12 实现错误分级：Fatal 返回 status:'fatal'，Recoverable 记录到 manifest 继续执行
-- [ ] 6.13 manifest 包含四版本号 + input_hashes + output_hashes + 各阶段耗时 + quality 指标
+- [x] 6.1 重写 `ai-ribao-daily.js`：8 阶段 Pipeline 编排（phase/log/agent 调用）
+- [x] 6.2 Phase 1：调用 collect-rss.mjs，检查 raw_count > 0（否则 Fatal）
+- [x] 6.3 Phase 2：调用 verify-urls.mjs，移除死链
+- [x] 6.4 Phase 3：调用 score.mjs + dedup.mjs，输出 candidates.json（含 auto/review/skip 分级）
+- [x] 6.5 Phase 4：agent() LLM 选题，只处理 review 区条目，输出 curated.json；约束只允许修改 importance 和 curation_note
+- [x] 6.6 Phase 5a：agent() 生成 article.json（JSON Schema 约束），串行执行
+- [x] 6.7 Phase 5b：agent() 生成 script.json（JSON Schema 约束），基于 curated.json + article.json
+- [x] 6.8 Phase 5 JSON 解析兜底：截取第一个 `{` 到最后一个 `}` 再解析
+- [x] 6.9 Phase 6：调用 render-article.mjs + render-script.mjs
+- [x] 6.10 Phase 7：调用 validate-output.mjs，Schema 失败重试一次，内容校验不通过标记 manifest
+- [x] 6.11 Phase 8：代码直接写文件（不用 agent），更新 index.json，生成 manifest.json
+- [x] 6.12 实现错误分级：Fatal 返回 status:'fatal'，Recoverable 记录到 manifest 继续执行
+- [x] 6.13 manifest 包含四版本号 + input_hashes + output_hashes + 各阶段耗时 + quality 指标
 
 ## 7. Renderer 模块
 
@@ -80,8 +80,8 @@
 
 ## 9. Shell 入口更新
 
-- [ ] 9.1 更新 `scripts/run-workflow.sh`：简化为委托给 Workflow 执行
-- [ ] 9.2 废弃 `scripts/pipeline-runner.mjs`（改为存档或删除）
+- [x] 9.1 更新 `scripts/run-workflow.sh`：简化为委托给 Workflow 执行
+- [x] 9.2 废弃 `scripts/pipeline-runner.mjs`（改为存档或删除）
 
 ## 10. 集成测试
 
