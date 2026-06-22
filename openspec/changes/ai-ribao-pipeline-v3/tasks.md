@@ -17,11 +17,11 @@
 
 ## 2. 采集阶段增强（collect-rss.mjs）
 
-- [ ] 2.1 在每条采集结果中新增 `impactScore` 字段（实体权重+事件类型+量化信号，代码预计算）
-- [ ] 2.2 学术源（arXiv）时间窗口从 24h 扩展到 48h
-- [ ] 2.3 支持 Tier 2 源的关键词过滤（36kr、Microsoft Research、NVIDIA 需要过滤）
-- [ ] 2.4 在每条结果中新增 `pipeline_version` 字段
-- [ ] 2.5 输出 JSON 中新增 `summary` 字段（采集时的 description 清洗后版本）
+- [x] 2.1 在每条采集结果中新增 `impactScore` 字段（实体权重+事件类型+量化信号，代码预计算）
+- [x] 2.2 学术源（arXiv）时间窗口从 24h 扩展到 48h
+- [x] 2.3 支持 Tier 2 源的关键词过滤（36kr、Microsoft Research、NVIDIA 需要过滤）
+- [x] 2.4 在每条结果中新增 `pipeline_version` 字段
+- [x] 2.5 输出 JSON 中新增 `summary` 字段（采集时的 description 清洗后版本）
 
 ## 3. URL 验证模块（verify-urls.mjs）
 
