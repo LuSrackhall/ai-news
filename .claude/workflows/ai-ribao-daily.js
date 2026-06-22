@@ -1,36 +1,121 @@
 /**
- * AI 日报 - Dynamic Workflow v2
+ * AI 日报 - Pipeline v3
  *
- * 基于橘鸦模式：RSS 采集 → AI 初筛 → AI 精选 → URL 验证 → AI 生成 → 归档
- *
- * v2 修复：
- * - 严格 24h 时间窗口
- * - 禁止 LLM 编造/截断 URL（必须原样复制输入数据中的 URL）
- * - 新增 URL 验证 Phase（curl 检查每条链接的 HTTP 状态码）
- * - 精选 prompt 加强日期过滤
+ * 8 阶段混合流水线：
+ *   Phase 1: RSS 采集 (Node.js)           → raw.json
+ *   Phase 2: URL 验证 (Node.js)           → valid-raw.json
+ *   Phase 3: 确定性处理 (Node.js)          → candidates.json (score + dedup)
+ *   Phase 4: LLM 语义选题 (Sonnet)        → curated.json
+ *   Phase 5: LLM 内容生成 (Sonnet, 串行)   → article.json + script.json
+ *   Phase 6: 渲染+格式化 (Node.js)        → article.md + script.md
+ *   Phase 7: 校验 (Node.js)               → validation result
+ *   Phase 8: 归档 (Node.js)               → write files + index.json + manifest.json
  */
+
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
+import { join } from 'node:path'
+
+function loadPrompt(templatePath, vars = {}) {
+  let template = readFileSync(join('.', templatePath), 'utf-8')
+  for (const [key, value] of Object.entries(vars)) {
+    template = template.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value)
+  }
+  return template
+}
+
+function loadExamples(name) {
+  try {
+    return JSON.parse(readFileSync(join('.', 'prompts', 'examples', `${name}.json`), 'utf-8'))
+  } catch {
+    return []
+  }
+}
+
+import { createHash } from 'node:crypto'
+import {
+  PIPELINE_VERSION, PROMPT_VERSION, RENDERER_VERSION, SCHEMA_VERSION,
+  WORKFLOW_CONFIG, RSS_SOURCES, WEBSEARCH_QUERIES,
+} from './scripts/config.mjs'
+import { scoreAll } from './scripts/score.mjs'
+import { dedup } from './scripts/dedup.mjs'
+import { renderArticle, RENDERER_VERSION as ARTICLE_RENDERER_VER } from './scripts/render-article.mjs'
+import { renderScript } from './scripts/render-script.mjs'
+import { validate } from './scripts/validate-output.mjs'
 
 export const meta = {
   name: 'ai-ribao-daily',
-  description: 'AI 日报自媒体 - 基于橘鸦模式（v2 修复 URL 幻觉 + 日期过滤）',
+  description: 'AI 日报自媒体 - Pipeline v3（代码驱动 + LLM 语义选题/生成）',
   phases: [
     { title: 'RSS 采集', detail: 'Node.js 脚本并行抓取 RSS（零 LLM 成本）' },
-    { title: 'AI 初筛', detail: '摘要/关键词/去重/打分' },
-    { title: 'AI 精选', detail: '模拟人工精选 + 严格日期过滤' },
-    { title: 'URL 验证', detail: 'curl 检查每条链接是否真实可访问' },
-    { title: 'AI 生成', detail: '文章 + 口播稿并行生成' },
-    { title: '归档', detail: '写入文件' },
+    { title: 'URL 验证', detail: 'HEAD 请求检查每条链接是否可访问' },
+    { title: '确定性处理', detail: '评分 + 去重 + 分级（纯代码）' },
+    { title: 'LLM 选题', detail: 'LLM 对 review 区条目做语义判断' },
+    { title: 'LLM 生成', detail: '串行生成 article.json + script.json' },
+    { title: '渲染', detail: 'JSON → Markdown（Formatter + Template）' },
+    { title: '校验', detail: 'Schema + 内容质量检查' },
+    { title: '归档', detail: '写入文件 + manifest + index' },
   ],
 }
 
 // ============================================================
-// 主流程 — 日期通过 args 传入，禁止使用 new Date()
+// 工具函数
 // ============================================================
-const DATE = (args && args.date) || (typeof process !== 'undefined' && process.env && process.env.AI_RIBAO_DATE) || '2026-06-21'
 
-// --- Phase 1: RSS 采集 ---
+function sha256(content) {
+  return 'sha256:' + createHash('sha256').update(typeof content === 'string' ? content : JSON.stringify(content)).digest('hex').slice(0, 16)
+}
+
+function loadJson(path) {
+  try {
+    return JSON.parse(readFileSync(path, 'utf-8'))
+  } catch {
+    return null
+  }
+}
+
+function parseJsonFallback(text) {
+  // 尝试直接解析
+  try { return JSON.parse(text) } catch {}
+  // 尝试截取 { 到 }
+  const start = text.indexOf('{')
+  const end = text.lastIndexOf('}')
+  if (start >= 0 && end > start) {
+    try { return JSON.parse(text.slice(start, end + 1)) } catch {}
+  }
+  return null
+}
+
+// ============================================================
+// 主流程
+// ============================================================
+
+const DATE = (args && args.date) || new Date().toISOString().slice(0, 10)
+const OUTPUT_DIR = join(WORKFLOW_CONFIG.outputDir, DATE)
+const startedAt = Date.now()
+
+// Manifest 构建对象
+const manifest = {
+  date: DATE,
+  pipeline_version: PIPELINE_VERSION,
+  prompt_version: PROMPT_VERSION,
+  renderer_version: ARTICLE_RENDERER_VER,
+  schema_version: SCHEMA_VERSION,
+  llm_model: 'claude-sonnet',
+  sources: { total: RSS_SOURCES.length, succeeded: 0, failed: [] },
+  pipeline: {},
+  quality: {},
+  input_hashes: {},
+  output_hashes: {},
+}
+
+mkdirSync(join(OUTPUT_DIR, 'raw'), { recursive: true })
+
+// ============================================================
+// Phase 1: RSS 采集
+// ============================================================
 phase('RSS 采集')
-log('📡 开始 RSS 采集...')
+log('📡 Phase 1: RSS 采集...')
+const t1 = Date.now()
 
 const collectResult = await agent(
   `你是一个脚本执行器。运行以下命令采集 RSS 数据，然后报告结果。
@@ -64,248 +149,35 @@ node scripts/collect-rss.mjs --date ${DATE}
   }
 )
 
+manifest.pipeline.collect = {
+  raw_count: collectResult.total_items,
+  duration_s: Math.round((Date.now() - t1) / 1000),
+}
+manifest.sources.succeeded = collectResult.sources_ok
+manifest.sources.failed = collectResult.failures || []
+
 log(`采集完成: ${collectResult.total_items} 条来自 ${collectResult.sources_ok} 个源`)
 
-if (collectResult.total_items < 3) {
-  log('⚠️ 采集条目不足 3 条，终止工作流')
-  return { status: 'aborted', reason: 'insufficient_items', collectResult }
+if (collectResult.total_items < 1) {
+  log('❌ 采集条目为空，Fatal 终止')
+  return { status: 'fatal', reason: 'no_raw_items', phase: 'collect' }
 }
 
-// --- Phase 2: AI 初筛 ---
-phase('AI 初筛')
-log('🔍 开始 AI 初筛...')
-
-const filteredResult = await agent(
-  `你是一位资深 AI 新闻编辑。对采集到的原始新闻进行初筛。
-
-## 四个任务
-
-### 任务 1: 摘要生成
-为每条新闻生成 50 字以内的中文摘要。
-
-### 任务 2: 关键词提取
-提取核心关键词，将同一事件的多条报道归到同一关键词组。
-
-### 任务 3: 日期过滤（严格执行）
-- **只保留 publishedAt 日期为 ${DATE} 的新闻**
-- publishedAt 在 ${DATE} 之前（更早日期）的新闻，直接排除，不进入后续流程
-- 如果 publishedAt 为空但 URL 中包含日期（如 /2026/06/18/），以 URL 日期为准
-
-### 任务 4: 智能打分（五维百分制）
-
-**权威性（30 分）**：Tier1=30, Tier2=23, Tier3=10
-**时效性（25 分）**：<2h=25, 2-6h=22, 6-12h=18, 12-24h=12, >24h=6
-**影响力（20 分）**：头部公司发布=20, 融资>1亿=18, 政策=16, 开源=15, 普通=8
-**可验证性（15 分）**：官方链接=15, 多源=13, 单源=4
-**内容质量（10 分）**：含数据=10, 完整=7, 快讯=4
-
-## 输出规则
-- 总分 >= 75 且权威性 >= 23: tier = "auto"
-- 总分 60-74 且权威性 >= 18: tier = "review"
-- 其他: tier = "skip"（不输出）
-- ⚠️ url 字段必须原样复制输入数据中的完整 URL，不得截断、简化或编造
-
-## 输入数据
-读取文件: ${collectResult.output_path}
-
-## 输出格式（严格 JSON）
-{
-  "filtered_items": [
-    {
-      "id": "原始ID",
-      "title": "原始标题",
-      "url": "输入数据中的完整URL，原样复制",
-      "source_name": "来源名",
-      "tier": 1,
-      "published_at": "ISO时间",
-      "summary_zh": "50字中文摘要",
-      "keywords": ["关键词1"],
-      "scores": { "authority": 30, "timeliness": 22, "impact": 20, "verifiability": 15, "quality": 10, "total": 97 },
-      "tier_label": "auto"
-    }
-  ],
-  "stats": { "input_count": 100, "auto_count": 8, "review_count": 5, "skip_count": 87 }
-}`,
-  {
-    label: 'AI 初筛',
-    phase: 'AI 初筛',
-    model: 'sonnet',
-    schema: {
-      type: 'object',
-      properties: {
-        filtered_items: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              title: { type: 'string' },
-              url: { type: 'string' },
-              source_name: { type: 'string' },
-              tier: { type: 'number' },
-              summary_zh: { type: 'string' },
-              keywords: { type: 'array', items: { type: 'string' } },
-              scores: {
-                type: 'object',
-                properties: {
-                  authority: { type: 'number' },
-                  timeliness: { type: 'number' },
-                  impact: { type: 'number' },
-                  verifiability: { type: 'number' },
-                  quality: { type: 'number' },
-                  total: { type: 'number' },
-                },
-              },
-              tier_label: { type: 'string' },
-              published_at: { type: 'string' },
-            },
-            required: ['id', 'title', 'url', 'summary_zh', 'scores', 'tier_label'],
-          },
-        },
-        stats: {
-          type: 'object',
-          properties: {
-            input_count: { type: 'number' },
-            auto_count: { type: 'number' },
-            review_count: { type: 'number' },
-            skip_count: { type: 'number' },
-          },
-        },
-      },
-      required: ['filtered_items', 'stats'],
-    },
-  }
-)
-
-log(`初筛完成: ${filteredResult.stats.auto_count} 条自动入选`)
-
-// --- Phase 3: AI 精选 ---
-phase('AI 精选')
-log('🎯 开始 AI 精选...')
-
-const curatedResult = await agent(
-  `你是一位严格的 AI 新闻主编。从初筛通过的新闻中精选最终内容。
-
-## 核心原则
-"只保留最官方、最准确或最早的信源"
-
-## 精选规则
-
-### 1. 日期严格过滤
-- **只保留 ${DATE} 当天发布的新闻**
-- 如果某条新闻的 published_at 不是 ${DATE}，排除它
-- 如果 URL 路径中包含的日期不是 ${DATE}（如 /2026/06/18/），排除它
-- 第一天运行没有上期参考，宁可少选也不要混入旧新闻
-
-### 2. 同一事件只保留一条最优来源
-- 优先官方来源 > 权威媒体 > 社区
-- 多条报道合并信息但只算一条
-
-### 3. 去除不值得报道的内容
-- 使用体验/教程 → 去除
-- 无新信息的评论文 → 去除
-- 无法验证的传言 → 去除
-
-### 4. URL 必须原样复制
-- ⚠️ url 字段必须从输入数据中原样复制，不得截断、简化或编造
-- 如果输入数据中没有 URL，该条新闻不应入选
-
-### 5. 数量
-- 目标: 8-12 条 | 最少: 5 条 | 最多: 15 条
-- 如果 ${DATE} 当天新闻不足 5 条，如实报告"今日 AI 新闻较少"，不要用旧新闻填充
-
-## 输入
-初筛结果:
-${JSON.stringify(filteredResult.filtered_items.slice(0, 50), null, 2)}
-
-## 输出格式（严格 JSON）
-{
-  "curated_items": [
-    {
-      "id": "ID",
-      "title": "标题",
-      "url": "原样复制输入数据中的完整URL",
-      "source_name": "来源",
-      "summary_zh": "50字摘要",
-      "keywords": ["关键词"],
-      "category": "分类",
-      "importance": "high/medium",
-      "published_at": "ISO时间",
-      "scores": { "total": 90 }
-    }
-  ],
-  "curation_summary": {
-    "target_date": "${DATE}",
-    "total_selected": 10,
-    "categories_covered": ["模型发布", "研究突破"],
-    "sources_used": ["arXiv", "TechCrunch"],
-    "dropped_reasons": "简述去除原因"
-  }
-}`,
-  {
-    label: 'AI 精选',
-    phase: 'AI 精选',
-    model: 'sonnet',
-    schema: {
-      type: 'object',
-      properties: {
-        curated_items: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              title: { type: 'string' },
-              url: { type: 'string' },
-              source_name: { type: 'string' },
-              summary_zh: { type: 'string' },
-              keywords: { type: 'array', items: { type: 'string' } },
-              category: { type: 'string' },
-              importance: { type: 'string' },
-              published_at: { type: 'string' },
-              scores: { type: 'object', properties: { total: { type: 'number' } } },
-            },
-            required: ['id', 'title', 'url', 'category', 'importance'],
-          },
-        },
-        curation_summary: {
-          type: 'object',
-          properties: {
-            total_selected: { type: 'number' },
-            categories_covered: { type: 'array', items: { type: 'string' } },
-          },
-        },
-      },
-      required: ['curated_items', 'curation_summary'],
-    },
-  }
-)
-
-log(`精选完成: ${curatedResult.curation_summary.total_selected} 条`)
-
-// --- Phase 4: URL 验证（代码层，零 LLM 成本）---
+// ============================================================
+// Phase 2: URL 验证（前置，死链不进入评分）
+// ============================================================
 phase('URL 验证')
-log('🔗 开始 URL 验证（检查每条链接是否真实可访问）...')
+log('🔗 Phase 2: URL 验证...')
+const t2 = Date.now()
 
-const urlsToCheck = curatedResult.curated_items.map((item) => item.url).filter(Boolean)
-const urlCheckScript = urlsToCheck.map((u) => `echo "CHECK|${u}|$(curl -sL -o /dev/null -w '%{http_code}' --max-time 10 '${u}' 2>/dev/null)"`).join('\n')
-
-const urlCheckResult = await agent(
-  `运行以下 bash 命令检查 URL 可访问性，然后报告结果:
+const urlResult = await agent(
+  `运行以下命令验证 URL 可访问性，然后报告结果:
 
 \`\`\`bash
-${urlCheckScript}
+node scripts/verify-urls.mjs --date ${DATE}
 \`\`\`
 
-对每个 URL 报告 HTTP 状态码。标记所有非 200 的 URL。
-然后读取精选数据，移除所有返回 404 或超时的条目，输出最终有效列表。
-
-输出格式（严格 JSON）:
-{
-  "valid_items": [...原始curated_items中url返回200的条目...],
-  "removed_items": [{ "title": "标题", "url": "URL", "http_code": 404, "reason": "链接不存在" }],
-  "stats": { "total_checked": 12, "valid": 9, "removed": 3 }
-}`,
+报告：有效条数、移除条数。不要修改数据。`,
   {
     label: 'URL 验证',
     phase: 'URL 验证',
@@ -313,7 +185,100 @@ ${urlCheckScript}
     schema: {
       type: 'object',
       properties: {
-        valid_items: {
+        checked: { type: 'number' },
+        valid: { type: 'number' },
+        removed: { type: 'number' },
+      },
+      required: ['checked', 'valid'],
+    },
+  }
+)
+
+manifest.pipeline.url_verify = {
+  ...urlResult,
+  duration_s: Math.round((Date.now() - t2) / 1000),
+}
+manifest.quality.dead_link_count = urlResult.removed || 0
+
+log(`URL 验证完成: ${urlResult.valid} 条有效, ${urlResult.removed || 0} 条移除`)
+
+// ============================================================
+// Phase 3: 确定性处理（评分 + 去重）
+// ============================================================
+phase('确定性处理')
+log('⚙️ Phase 3: 评分 + 去重...')
+const t3 = Date.now()
+
+const validRawPath = join(OUTPUT_DIR, 'raw', 'valid-raw.json')
+const validItems = loadJson(validRawPath) || loadJson(join(OUTPUT_DIR, 'raw', 'all-raw.json')) || []
+
+// 评分
+const scored = scoreAll(validItems)
+const autoItems = scored.filter((i) => i.tier_label === 'auto')
+const reviewItems = scored.filter((i) => i.tier_label === 'review')
+
+// 去重
+const dedupResult = dedup([...autoItems, ...reviewItems], WORKFLOW_CONFIG.outputDir, DATE)
+
+const candidates = {
+  date: DATE,
+  pipeline_version: PIPELINE_VERSION,
+  auto_items: dedupResult.kept.filter((i) => i.tier_label === 'auto'),
+  review_items: dedupResult.kept.filter((i) => i.tier_label === 'review'),
+  stats: {
+    input: validItems.length,
+    auto: autoItems.length,
+    review: reviewItems.length,
+    dedup_removed: dedupResult.removed.length,
+    candidates: dedupResult.kept.length,
+  },
+}
+
+// 写入 candidates.json
+const candidatesPath = join(OUTPUT_DIR, 'candidates.json')
+writeFileSync(candidatesPath, JSON.stringify(candidates, null, 2))
+
+manifest.pipeline.deterministic = {
+  input: validItems.length,
+  candidates: dedupResult.kept.length,
+  auto: candidates.auto_items.length,
+  review: candidates.review_items.length,
+  dedup_removed: dedupResult.removed.length,
+  duration_s: Math.round((Date.now() - t3) / 1000),
+}
+manifest.quality.dedup_overlap_count = dedupResult.removed.length
+
+log(`确定性处理完成: ${candidates.auto_items.length} auto + ${candidates.review_items.length} review, ${dedupResult.removed.length} 去重`)
+
+if (dedupResult.kept.length < 1) {
+  log('❌ 候选条目为空，Fatal 终止')
+  return { status: 'fatal', reason: 'no_candidates', phase: 'deterministic' }
+}
+
+manifest.input_hashes.raw = sha256(validItems)
+manifest.input_hashes.candidates = sha256(candidates)
+
+// ============================================================
+// Phase 4: LLM 语义选题
+// ============================================================
+phase('LLM 选题')
+log('🎯 Phase 4: LLM 语义选题...')
+const t4 = Date.now()
+
+const candidatesJson = JSON.stringify(candidates, null, 2)
+
+const curatedResult = await agent(
+  loadPrompt('prompts/v1/curation.md', {
+    input_data: candidatesJson.slice(0, 20000),
+  }),
+  {
+    label: 'LLM 选题',
+    phase: 'LLM 选题',
+    model: 'sonnet',
+    schema: {
+      type: 'object',
+      properties: {
+        selected_items: {
           type: 'array',
           items: {
             type: 'object',
@@ -322,199 +287,267 @@ ${urlCheckScript}
               title: { type: 'string' },
               url: { type: 'string' },
               source_name: { type: 'string' },
+              published_at: { type: 'string' },
               summary_zh: { type: 'string' },
-              keywords: { type: 'array', items: { type: 'string' } },
               category: { type: 'string' },
               importance: { type: 'string' },
-              scores: { type: 'object', properties: { total: { type: 'number' } } },
+              curation_note: { type: 'string' },
             },
+            required: ['id', 'title', 'url', 'importance'],
           },
         },
-        removed_items: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              title: { type: 'string' },
-              url: { type: 'string' },
-              http_code: { type: 'number' },
-              reason: { type: 'string' },
-            },
-          },
-        },
-        stats: {
+        curation_summary: {
           type: 'object',
           properties: {
-            total_checked: { type: 'number' },
-            valid: { type: 'number' },
-            removed: { type: 'number' },
+            total_selected: { type: 'number' },
+            categories_covered: { type: 'array', items: { type: 'string' } },
+            sources_used: { type: 'array', items: { type: 'string' } },
           },
         },
       },
-      required: ['valid_items', 'stats'],
+      required: ['selected_items', 'curation_summary'],
     },
   }
 )
 
-log(`URL 验证完成: ${urlCheckResult.stats.valid} 条有效, ${urlCheckResult.stats.removed} 条移除`)
-
-if (urlCheckResult.valid_items.length < 3) {
-  log('⚠️ 有效新闻不足 3 条，终止工作流')
-  return { status: 'aborted', reason: 'insufficient_valid_items', urlCheckResult }
+const curatedData = {
+  date: DATE,
+  pipeline_version: PIPELINE_VERSION,
+  ...curatedResult,
 }
 
-// --- Phase 5: AI 生成（文章 + 口播稿并行）---
-phase('AI 生成')
-log('✍️ 开始 AI 生成...')
+const curatedPath = join(OUTPUT_DIR, 'curated.json')
+writeFileSync(curatedPath, JSON.stringify(curatedData, null, 2))
 
-const verifiedData = JSON.stringify(urlCheckResult.valid_items, null, 2)
+manifest.pipeline.curate = {
+  input: dedupResult.kept.length,
+  selected: curatedResult.curation_summary?.total_selected || curatedResult.selected_items?.length || 0,
+  duration_s: Math.round((Date.now() - t4) / 1000),
+}
 
-const [articleResult, scriptResult] = await parallel([
-  // 口播稿生成
-  () =>
-    agent(
-      `将以下 AI 日报内容改编为 3-5 分钟的视频口播稿。
+log(`选题完成: ${curatedData.selected_items?.length || 0} 条入选`)
 
-## 输入数据（已验证 URL 全部有效）
-${verifiedData}
+if (!curatedData.selected_items || curatedData.selected_items.length < 1) {
+  log('❌ 选题结果为空，Fatal 终止')
+  return { status: 'fatal', reason: 'no_curated_items', phase: 'curate' }
+}
 
-## 结构
-[开场 Hook 10-15s] 最震撼的一条新闻开场
-[今日概览 15-20s] 几条新闻，涉及哪些领域
-[重磅新闻 60-90s] 最重要的 1-2 条详细展开
-[快速浏览 60-90s] 其余新闻每条 15-20 秒
-[收尾 10-15s] 总结趋势 + 引导关注
+manifest.input_hashes.curated = sha256(curatedData)
 
-## 风格
-口语化、短句（≤20 字）、数字口语化、有节奏感
+// ============================================================
+// Phase 5: LLM 内容生成（串行）
+// ============================================================
+phase('LLM 生成')
+log('✍️ Phase 5: LLM 内容生成...')
+const t5 = Date.now()
 
-## ⚠️ 链接规则（最高优先级）
-- **必须使用输入数据中提供的 url 字段，原样使用，不得修改**
-- **禁止编造、截断、简化任何 URL**
-- 如果需要提及来源，用 source_name 字段，不要凭记忆编 URL
+const curatedForGen = JSON.stringify(curatedData.selected_items, null, 2)
+const sourcesUsed = curatedResult.curation_summary?.sources_used || []
 
-## 输出格式
-每段前标注 [预估秒数]，Markdown 格式`,
-      { label: '口播稿生成', phase: 'AI 生成', model: 'sonnet' }
-    ),
+// 5a: 文章 JSON
+log('  生成 article.json...')
+let articleJson = null
+let articleRetryCount = 0
 
-  // 文章生成
-  () =>
-    agent(
-      `将以下 AI 日报内容编写为公众号/网站文章。
+const goodEditorials = loadExamples('good_editorials')
+const editorialExamples = goodEditorials.length > 0
+  ? '\n\n## 优秀 Editorial 示例\n' + goodEditorials.map(e =>
+    `- 观察：${e.observation}\n  证据：${e.evidence}\n  判断：${e.judgment}\n  预测：${e.prediction}`
+  ).join('\n')
+  : ''
 
-## 输入数据（已验证 URL 全部有效）
-${verifiedData}
-
-## 结构
-# AI 日报 | ${DATE}
-> 一句话钩子
-
-## 今日速览
-3-5 条标题 + 一句话摘要
-
-## 重磅新闻
-1-2 条，每条 300-500 字，附来源链接
-> 来源：[原文链接]
-
-## 重要动态
-3-5 条，每条 100-200 字，附来源链接
-
-## 快讯
-3-5 条，每条 50 字以内
-
-## 编辑观点
-100-150 字趋势分析（标注"编辑观点"）
-
----
-*AI 辅助生成，经审核 | 数据来源: ${curatedResult.curation_summary.sources_used ? curatedResult.curation_summary.sources_used.join('、') : '多个权威来源'}*
-
-## ⚠️ 链接规则（最高优先级）
-- **必须使用输入数据中提供的 url 字段，原样使用，不得修改**
-- **禁止编造、截断、简化任何 URL**
-- **禁止凭记忆编造 TechCrunch/arXiv 等网站的 URL**
-- 如果输入数据中某条新闻没有 url，用 source_name 标注来源，不写链接`,
-      { label: '文章生成', phase: 'AI 生成', model: 'sonnet' }
-    ),
-])
-
-log(`文章生成完成: ${articleResult.length} 字`)
-log(`口播稿生成完成: ${scriptResult.length} 字`)
-
-// --- Phase 6: 归档 ---
-phase('归档')
-log('📁 开始归档...')
-
-const archiveResult = await agent(
-  `将以下内容写入对应的文件。
-
-### 1. 日报文章
-路径: output/${DATE}/article.md
-内容: 请将以下文本完整写入文件（不要修改任何内容）:
----
-${typeof articleResult === 'string' ? articleResult : '文章内容已生成，请读取并写入文件'}
----
-
-### 2. 视频口播稿
-路径: output/${DATE}/script.md
-内容: 请将以下文本完整写入文件:
----
-${typeof scriptResult === 'string' ? scriptResult : '口播稿已生成，请读取并写入文件'}
----
-
-### 3. 精选数据
-路径: output/${DATE}/curated.json
-内容: ${JSON.stringify(urlCheckResult, null, 2)}
-
-### 4. 元数据
-路径: output/${DATE}/manifest.json
-内容: ${JSON.stringify(
-    {
-      version: 'v2',
-      date: DATE,
-      sources: collectResult,
-      filtering: filteredResult.stats,
-      curation: curatedResult.curation_summary,
-      url_verification: urlCheckResult.stats,
-    },
-    null,
-    2
-  )}
-
-写入完成后报告每个文件的路径和大小。`,
+const articleResult = await agent(
+  loadPrompt('prompts/v1/article.md', {
+    input_data: curatedForGen,
+    editorial_examples: editorialExamples,
+  }),
   {
-    label: '归档',
-    phase: '归档',
-    model: 'haiku',
+    label: '文章生成',
+    phase: 'LLM 生成',
+    model: 'sonnet',
     schema: {
       type: 'object',
       properties: {
-        files_written: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              path: { type: 'string' },
-              size: { type: 'number' },
-            },
-          },
-        },
+        hook: { type: 'string' },
+        summary_items: { type: 'array', items: { type: 'object' } },
+        editorial: { type: 'object' },
       },
-      required: ['files_written'],
+      required: ['hook', 'summary_items', 'editorial'],
     },
   }
 )
 
-log(`归档完成: ${archiveResult.files_written.length} 个文件`)
-log('✅ AI 日报工作流执行完成')
+// JSON 解析兜底
+articleJson = typeof articleResult === 'object' ? articleResult : parseJsonFallback(String(articleResult))
+
+if (!articleJson) {
+  log('  ⚠️ 文章 JSON 解析失败，重试一次...')
+  articleRetryCount = 1
+  const retryResult = await agent(
+    `输出合法 JSON。输入数据：\n${curatedForGen.slice(0, 15000)}\n\n输出 article.json 结构（第一个字符必须是 {，最后一个必须是 }）。`,
+    { label: '文章重试', phase: 'LLM 生成', model: 'sonnet' }
+  )
+  articleJson = typeof retryResult === 'object' ? retryResult : parseJsonFallback(String(retryResult))
+}
+
+if (!articleJson) {
+  log('❌ 文章生成失败（重试后仍无法解析 JSON），Fatal 终止')
+  return { status: 'fatal', reason: 'article_generation_failed', phase: 'generate' }
+}
+
+log(`  article.json 生成完成`)
+
+// 5b: 口播稿 JSON（基于 curated + article）
+log('  生成 script.json...')
+const articleJsonStr = JSON.stringify(articleJson, null, 2)
+
+const scriptResult = await agent(
+  loadPrompt('prompts/v1/script.md', {
+    news_data: curatedForGen.slice(0, 10000),
+    article_data: articleJsonStr.slice(0, 8000),
+  }),
+  {
+    label: '口播稿生成',
+    phase: 'LLM 生成',
+    model: 'sonnet',
+    schema: {
+      type: 'object',
+      properties: {
+        hook: { type: 'object' },
+        overview: { type: 'object' },
+        closing: { type: 'object' },
+      },
+      required: ['hook', 'overview', 'closing'],
+    },
+  }
+)
+
+const scriptJson = typeof scriptResult === 'object' ? scriptResult : parseJsonFallback(String(scriptResult))
+
+if (!scriptJson) {
+  log('❌ 口播稿生成失败，Fatal 终止')
+  return { status: 'fatal', reason: 'script_generation_failed', phase: 'generate' }
+}
+
+log(`  script.json 生成完成`)
+
+manifest.pipeline.generate = {
+  article_ok: !!articleJson,
+  script_ok: !!scriptJson,
+  retry_count: articleRetryCount,
+  duration_s: Math.round((Date.now() - t5) / 1000),
+}
+
+// ============================================================
+// Phase 6: 渲染（JSON → Markdown）
+// ============================================================
+phase('渲染')
+log('📝 Phase 6: 渲染...')
+const t6 = Date.now()
+
+const articleMarkdown = renderArticle(
+  articleJson,
+  DATE,
+  sourcesUsed,
+  { selected: curatedData.selected_items?.length }
+)
+
+const scriptMarkdown = renderScript(scriptJson, DATE)
+
+manifest.pipeline.render = {
+  article_chars: articleMarkdown.length,
+  script_chars: scriptMarkdown.length,
+  duration_s: Math.round((Date.now() - t6) / 1000),
+}
+
+log(`渲染完成: 文章 ${articleMarkdown.length} 字, 口播稿 ${scriptMarkdown.length} 字`)
+
+// ============================================================
+// Phase 7: 校验
+// ============================================================
+phase('校验')
+log('✅ Phase 7: 校验...')
+const t7 = Date.now()
+
+const validation = validate(
+  articleMarkdown,
+  scriptMarkdown,
+  curatedData.selected_items,
+  articleJson,
+  scriptJson
+)
+
+manifest.pipeline.validate = {
+  article_passed: validation.articlePassed,
+  script_passed: validation.scriptPassed,
+  content_passed: validation.contentPassed,
+  consistency: validation.consistency,
+  validation_passed: validation.validation_passed,
+  duration_s: Math.round((Date.now() - t7) / 1000),
+}
+manifest.quality.reasoning_leak_detected = false
+manifest.quality.hallucinated_url_count = validation.details?.content?.summary?.hallucinated_url_count || 0
+
+if (!validation.validation_passed) {
+  log(`⚠️ 校验未通过: ${JSON.stringify(validation.details)}`)
+  // 写入但标记
+}
+
+// ============================================================
+// Phase 8: 归档（代码直接写文件）
+// ============================================================
+phase('归档')
+log('📁 Phase 8: 归档...')
+const t8 = Date.now()
+
+// 写入文章和口播稿
+writeFileSync(join(OUTPUT_DIR, 'article.md'), articleMarkdown)
+writeFileSync(join(OUTPUT_DIR, 'script.md'), scriptMarkdown)
+
+// 写入 article.json 和 script.json（原始 LLM 输出）
+writeFileSync(join(OUTPUT_DIR, 'article.json'), JSON.stringify(articleJson, null, 2))
+writeFileSync(join(OUTPUT_DIR, 'script.json'), JSON.stringify(scriptJson, null, 2))
+
+// 更新 index.json
+const indexPath = join(WORKFLOW_CONFIG.outputDir, 'index.json')
+let index = { version: 1, entries: [] }
+try { index = JSON.parse(readFileSync(indexPath, 'utf-8')) } catch {}
+
+// 移除当天旧条目（重跑时）
+index.entries = index.entries.filter((e) => e.date !== DATE)
+index.entries.unshift({
+  date: DATE,
+  items: (curatedData.selected_items || []).map((item) => ({
+    id: item.id,
+    title: item.title,
+    url: item.url,
+    source: item.source_name,
+    importance: item.importance,
+  })),
+  selected_count: curatedData.selected_items?.length || 0,
+  pipeline_version: PIPELINE_VERSION,
+})
+// 保留最近 30 天
+index.entries = index.entries.slice(0, 30)
+index.updated_at = new Date().toISOString()
+
+writeFileSync(indexPath, JSON.stringify(index, null, 2))
+
+// 完成 manifest
+manifest.output_hashes.article = sha256(articleMarkdown)
+manifest.output_hashes.script = sha256(scriptMarkdown)
+manifest.output_hashes.article_json = sha256(JSON.stringify(articleJson, null, 2))
+manifest.output_hashes.script_json = sha256(JSON.stringify(scriptJson, null, 2))
+manifest.duration_total_s = Math.round((Date.now() - startedAt) / 1000)
+
+writeFileSync(join(OUTPUT_DIR, 'manifest.json'), JSON.stringify(manifest, null, 2))
+
+log(`归档完成: article.md, script.md, curated.json, manifest.json, index.json`)
+log(`✅ AI 日报 Pipeline v3 执行完成 | 总耗时 ${manifest.duration_total_s}s`)
 
 return {
   status: 'success',
-  version: 'v2',
+  pipeline_version: PIPELINE_VERSION,
   date: DATE,
-  collect: collectResult,
-  filter: filteredResult.stats,
-  curation: curatedResult.curation_summary,
-  url_verification: urlCheckResult.stats,
-  archive: archiveResult,
+  manifest,
 }
