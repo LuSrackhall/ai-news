@@ -121,27 +121,30 @@ export function createPipeline() {
         ctx.services.logger.info(`▶ ${phase.name}`)
         await phase.before?.(ctx)
 
+        const phaseStartedAt = Date.now()
         let result
         try {
           result = await phase.run(ctx)
         } catch (err) {
           result = PhaseResult.fatal(err.message)
         }
-        result.duration = ctx.environment.clock.elapsed(startedAt)
+        result.duration = ctx.environment.clock.elapsed(phaseStartedAt)
 
         await phase.after?.(ctx, result)
         results.push({ phase: phase.name, ...result })
 
         if (result.status === 'fatal') {
           ctx.services.logger.error(`Fatal: ${result.reason}`)
-          // 即使中途 fatal，也把当前 manifest 落盘
-          const partialManifest = assembleRunView(results, startedAt)
-          ctx.stores.execution.savePartial(partialManifest)
-          return { status: 'fatal', phase: phase.name, reason: result.reason, manifest: partialManifest }
+          // 即使中途 fatal，也把当前 execution 落盘
+          const run = buildRun(ctx, results, startedAt, 'fatal')
+          ctx.stores.execution.save(run)
+          return { status: 'fatal', phase: phase.name, reason: result.reason, manifest: run.manifest }
         }
       }
 
-      return { status: 'success', manifest: assembleRunView(results, startedAt) }
+      const run = buildRun(ctx, results, startedAt, 'success')
+      ctx.stores.execution.save(run)
+      return { status: 'success', manifest: run.manifest }
     },
   }
 }
@@ -209,7 +212,7 @@ ctx
 
 **关键约束：**
 - ctx 顶层只有 5 个属性（runtime/environment/services/stores/domain），永不膨胀
-- Phase 只调 `ctx.domain.*`，不直接碰 stores
+- 绝大多数 Phase 只调 `ctx.domain.*`，不直接碰 stores。Collect 和 Verify 是少数例外，它们作为薄用例直接走 `ctx.services.agent`，不需要 domain 层介入
 - Domain 方法内部访问 stores，业务规则和数据访问解耦
 - 以后增加 Notifier/Publisher/Embedding/VectorStore 等，放到 `ctx.services.*`，不污染顶层
 
@@ -269,7 +272,7 @@ PhaseResult {
 }
 ```
 
-**Manifest 就是 PhaseResult[] 的聚合**，由 `assembleRunView(results, startedAt)` 统一构建，不散落在各 Phase 中。
+**Manifest 就是 PhaseResult[] 的聚合**，由 `buildRun()` 统一构建，不散落在各 Phase 中。
 
 ### Execution 模型
 
@@ -283,7 +286,7 @@ PipelineRun {
   finishedAt:      ISO timestamp
   status:          'success' | 'fatal' | 'partial'
   results:         PhaseResult[]
-  manifest:        object         // assembleRunView 生成的聚合视图
+  manifest:        object         // buildRun 生成的聚合视图
 }
 
 PhaseExecution {
