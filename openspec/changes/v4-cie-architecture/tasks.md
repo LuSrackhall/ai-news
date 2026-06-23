@@ -53,8 +53,8 @@
 
 ## 8. 测试与验证
 
-- [ ] 8.1 创建 `scripts/test-modules-v4.mjs`：Store save/load/history 单元测试、Domain ranking/dedup/render/validate 单元测试、v3-compat adapter 转换测试（用真实 v3 产物）、PhaseResult 构建测试
-- [ ] 8.2 运行 `node scripts/test-modules.mjs` 确认 v3 测试不受影响
+- [x] 8.1 创建 `scripts/test-modules-v4.mjs`：Store save/load/history 单元测试、Domain ranking/dedup/render/validate 单元测试、v3-compat adapter 转换测试（用真实 v3 产物）、PhaseResult 构建测试
+- [x] 8.2 运行 `node scripts/test-modules.mjs` 确认 v3 测试不受影响
 - [ ] 8.3 端到端运行 v4 workflow（用 `--date` 参数指定日期），对比 v3 产物：candidates 数量差异 < 5%、curated 重叠率 > 90%、article.md 字数差异 < 20%、schema validation pass rate 一致
 
 ---
