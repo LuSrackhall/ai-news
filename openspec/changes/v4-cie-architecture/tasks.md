@@ -35,16 +35,16 @@
 
 ## 6. Phase 模块
 
-- [ ] 6.1 创建 `scripts/phases/collect.mjs`：CollectPhase，直接调 `ctx.services.agent.call()` 执行 `node scripts/collect-rss.mjs`，写入 `ctx.stores.assets.save()`
-- [ ] 6.2 创建 `scripts/phases/verify.mjs`：VerifyPhase，读 `ctx.stores.assets.load()`，调 agent 执行 `node scripts/verify-urls.mjs`，写回 `ctx.stores.assets.save(validItems)`
-- [ ] 6.3 创建 `scripts/phases/score.mjs`：ScorePhase，调 `ctx.domain.ranking.buildEvents()`，写入 `ctx.stores.events.save()`
-- [ ] 6.4 创建 `scripts/phases/dedup.mjs`：DedupPhase，调 `ctx.domain.dedup.run()`，写回 `ctx.stores.events.save(deduped)`
-- [ ] 6.5 创建 `scripts/phases/curate.mjs`：CuratePhase，调 `ctx.domain.curation.select()`，写回 `ctx.stores.events.save(curated)`
-- [ ] 6.6 创建 `scripts/phases/generate-article.mjs`：GenerateArticlePhase，调 `ctx.domain.generate.article()`，写入 `ctx.stores.artifacts.save('article', ...)`
-- [ ] 6.7 创建 `scripts/phases/generate-script.mjs`：GenerateScriptPhase，调 `ctx.domain.generate.script()`，写入 `ctx.stores.artifacts.save('script', ...)`
-- [ ] 6.8 创建 `scripts/phases/render.mjs`：RenderPhase，调 `ctx.domain.render.article/script()`，写回 `ctx.stores.artifacts.save()` 的 rendered 层
-- [ ] 6.9 创建 `scripts/phases/validate.mjs`：ValidatePhase，调 `ctx.domain.validate.run()`，返回 PhaseResult 含校验结果
-- [ ] 6.10 创建 `scripts/phases/archive.mjs`：ArchivePhase，读取 artifacts + events + execution，写磁盘文件（article.md/script.md/article.json/script.json），更新 output/index.json
+- [x] 6.1 创建 `scripts/phases/collect.mjs`：CollectPhase，直接调 `ctx.services.agent.call()` 执行 `node scripts/collect-rss.mjs`，写入 `ctx.stores.assets.save()`
+- [x] 6.2 创建 `scripts/phases/verify.mjs`：VerifyPhase，读 `ctx.stores.assets.load()`，调 agent 执行 `node scripts/verify-urls.mjs`，写回 `ctx.stores.assets.save(validItems)`
+- [x] 6.3 创建 `scripts/phases/score.mjs`：ScorePhase，调 `ctx.domain.ranking.buildEvents()`，写入 `ctx.stores.events.save()`
+- [x] 6.4 创建 `scripts/phases/dedup.mjs`：DedupPhase，调 `ctx.domain.dedup.run()`，写回 `ctx.stores.events.save(deduped)`
+- [x] 6.5 创建 `scripts/phases/curate.mjs`：CuratePhase，调 `ctx.domain.curation.select()`，写回 `ctx.stores.events.save(curated)`
+- [x] 6.6 创建 `scripts/phases/generate-article.mjs`：GenerateArticlePhase，调 `ctx.domain.generate.article()`，写入 `ctx.stores.artifacts.save('article', ...)`
+- [x] 6.7 创建 `scripts/phases/generate-script.mjs`：GenerateScriptPhase，调 `ctx.domain.generate.script()`，写入 `ctx.stores.artifacts.save('script', ...)`
+- [x] 6.8 创建 `scripts/phases/render.mjs`：RenderPhase，调 `ctx.domain.render.article/script()`，写回 `ctx.stores.artifacts.save()` 的 rendered 层
+- [x] 6.9 创建 `scripts/phases/validate.mjs`：ValidatePhase，调 `ctx.domain.validate.run()`，返回 PhaseResult 含校验结果
+- [x] 6.10 创建 `scripts/phases/archive.mjs`：ArchivePhase，读取 artifacts + events + execution，写磁盘文件（article.md/script.md/article.json/script.json），更新 output/index.json
 
 ## 7. 新 Workflow 入口
 
