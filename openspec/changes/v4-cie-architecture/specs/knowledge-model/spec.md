@@ -61,9 +61,9 @@ Asset 和 Event 的 `contentHash` 是一等字段（不在 metadata 中），用
 v4 通过 `scripts/engine/adapters/v3-compat.mjs` 读取 v3 历史产物，只做读兼容，不做写兼容。
 
 #### Scenario: 读取 v3 curated.json
-- **WHEN** `EventStore.history(14)` 遇到 v3 格式的 curated.json（包含 `selected_items`）
-- **THEN** adapter 将 v3 item 转换为 Event 格式返回，字段映射：`summary_zh→summary`、`source_name→source.name`、`source_tier→source.tier`、`total_score→rank.totalScore`、`tier_label→rank.tierLabel`、`importance→curation.importance`
+- **WHEN** `EventStore.history(14)` 遇到 v3 格式的 curated.json
+- **THEN** adapter 自动检测 items 数组 key（`selected_items` → `curated_items` → `valid_items`），将 v3 item 转换为 Event 格式返回，字段映射：`summary_zh→summary`、`source_name→source.name`、`source_tier→source.tier`、`total_score ?? scores?.total→rank.totalScore`、`tier_label→rank.tierLabel`、`importance→curation.importance`、`keywords→entities`
 
 #### Scenario: v3 产物格式异常
-- **WHEN** v3 curated.json 缺少 `selected_items` 字段
+- **WHEN** v3 curated.json 缺少所有 items key（selected_items / curated_items / valid_items）
 - **THEN** adapter 返回空数组，不抛异常

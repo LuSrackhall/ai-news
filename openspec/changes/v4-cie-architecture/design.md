@@ -42,9 +42,9 @@ export function createPipelineContext({ date, workflowRuntime }) {
 
 每一层（environment → services → stores → domain）的工厂函数独立可测。
 
-### D3: Phase 基类 vs 无基类 — 无基类，纯对象
+### D3: Phase 基类 vs 无基类 — 无基类，轻量 class
 
-Phase 不需要基类或 interface 注解。每个 Phase 就是一个导出 `{ name, run(ctx) }` 的对象，可选实现 `shouldSkip / before / after`。
+Phase 不需要基类继承。每个 Phase 是一个轻量 `export class`（无 extends），通过 duck typing `phase.run(ctx)` 调用，可选实现 `shouldSkip / before / after`。
 
 ```js
 export class ScorePhase {
@@ -53,7 +53,7 @@ export class ScorePhase {
 }
 ```
 
-PipelineRunner 通过 `phase.run(ctx)` 调用，不检查 interface，duck typing 即可。
+PipelineRunner 通过 `phase.run(ctx)` 调用，不检查 interface，duck typing 即可。Domain/Store/Service 使用工厂函数（D1），Phase 使用 class —— 两者不矛盾，因为 Phase 是应用层编排单元，不是可复用的基础设施。
 
 ### D4: Store 文件格式 — 单文件 per date，结构化 JSON
 

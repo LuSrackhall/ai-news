@@ -182,7 +182,7 @@ ctx
 │
 ├── environment      // 运行环境（只读）
 │   ├── date
-│   ├── config       // versions, sources, thresholds
+│   ├── config       // sources, entityWeights, eventTypeWeights, academicSignals, scoring, outputDir, dedupDays, 版本号
 │   ├── workspace    // base output path
 │   └── clock
 │
