@@ -10,10 +10,10 @@
 
 ## 2. Store Repository
 
-- [ ] 2.1 创建 `scripts/stores/assets.mjs`：实现 AssetStore，提供 `save(items)` / `load()` / `append(newItems)`，JSON 文件读写 `output/<date>/assets.json`
-- [ ] 2.3 创建 `scripts/stores/events.mjs`：实现 EventStore，提供 `save(events)` / `load()` / `history(days)`，`history` 遍历最近 N 天，支持 v3 格式自动检测
-- [ ] 2.4 创建 `scripts/stores/artifacts.mjs`：实现 ArtifactStore，提供 `save(type, artifact)` / `load(type)` / `loadMarkdown(type)`，存储在 `output/<date>/artifacts.json`
-- [ ] 2.5 创建 `scripts/stores/execution.mjs`：实现 ExecutionStore，提供 `save(pipelineRun)`，写入 `output/<date>/execution.json`
+- [x] 2.1 创建 `scripts/stores/assets.mjs`：实现 AssetStore，提供 `save(items)` / `load()` / `append(newItems)`，JSON 文件读写 `output/<date>/assets.json`
+- [x] 2.3 创建 `scripts/stores/events.mjs`：实现 EventStore，提供 `save(events)` / `load()` / `history(days)`，`history` 遍历最近 N 天，支持 v3 格式自动检测
+- [x] 2.4 创建 `scripts/stores/artifacts.mjs`：实现 ArtifactStore，提供 `save(type, artifact)` / `load(type)` / `loadMarkdown(type)`，存储在 `output/<date>/artifacts.json`
+- [x] 2.5 创建 `scripts/stores/execution.mjs`：实现 ExecutionStore，提供 `save(pipelineRun)`，写入 `output/<date>/execution.json`
 
 ## 3. 数据模型与兼容层
 
