@@ -52,6 +52,8 @@ Pipeline 的职责不是"生成日报"，而是让知识对象在各个阶段不
 - Prompt Engine 升级（PromptBuilder）
 - 多平台 Renderer（公众号 HTML / B站字幕 / Newsletter）
 
+> **注：** §2 PhaseResult 中的 `hash / cacheHit / replayed` 字段是为 v4.1+ 预留的结构占位，v4.0 不实现这些能力，Phase 返回时可省略或填 null。
+
 ## 设计原则
 
 > **Phase 永远不关心数据存在哪里，也不关心数据从哪里来；Phase 只负责驱动一个 Use Case，而所有业务规则由 Domain 完成，所有数据访问由 Repository 完成。**
@@ -195,8 +197,6 @@ ctx
 │   └── execution    // ctx.stores.execution (PipelineRun / PhaseExecution)
 │
 └── domain           // 业务规则入口（Phase 直接调用）
-    ├── collect
-    ├── verify
     ├── ranking
     ├── dedup
     ├── curation
@@ -204,6 +204,8 @@ ctx
     ├── render
     └── validate
 ```
+
+> **注：** `collect` 和 `verify` 不作为独立 domain 暴露。它们是 application-phase 直接编排的薄用例（调用 `ctx.services.agent` 执行外部脚本），Phase 内部处理即可，不需要 domain 层介入。
 
 **关键约束：**
 - ctx 顶层只有 5 个属性（runtime/environment/services/stores/domain），永不膨胀
@@ -527,6 +529,16 @@ ScriptArtifact {
 
 作为独立模块，不埋在 Store 里。Store 负责存取，Adapter 负责格式演化。
 
+### contentHash 计算责任
+
+| 对象 | 计算时机 | 计算内容 |
+|------|---------|---------|
+| Asset | 采集/归一化阶段（CollectDomain 写入前） | `sha256(title + url + summary + publishedAt)` |
+| Event | 由关联 Asset 派生（ScorePhase buildEvents 时） | v4.0 直接继承 Asset 的 contentHash；v4.1 聚类后为多 Asset hash 的稳定组合 |
+| Artifact.inputHash | GenerateDomain 内部（调用 LLM 前） | `sha256(序列化的 Event[] 输入)` |
+
+contentHash 是一等字段，不放在 metadata 里。dedup、cache、replay 的边界由此字段界定。
+
 ```js
 // scripts/engine/adapters/v3-compat.mjs
 
@@ -675,8 +687,8 @@ validate    ← 纯规则
 
 | Phase | 调用 Domain | 读 Store | 写 Store |
 |-------|-----------|---------|---------|
-| CollectPhase | domain.collect | — | assets.save() |
-| VerifyPhase | domain.verify | assets.load() | assets.save(valid) |
+| CollectPhase | services.agent（直接编排） | — | assets.save() |
+| VerifyPhase | services.agent（直接编排） | assets.load() | assets.save(valid) |
 | ScorePhase | domain.ranking | assets.load() | events.save() |
 | DedupPhase | domain.dedup | events.load() + history | events.save(deduped) |
 | CuratePhase | domain.curation | events.load() | events.save(curated) |
@@ -758,8 +770,14 @@ v4: /ai-ribao-daily            ← 新 workflow
 
 ### 切换操作
 
+**切换前，v3 入口保持原名（`ai-ribao-daily.js`）；切换确认后，才进行 rename。** 双跑期间 v4 以 `ai-ribao-daily-v4.js` 运行。
+
 ```bash
-# 重命名
+# 双跑期间（v3 保持原名，v4 为临时名）
+# v3: /ai-ribao-daily          ← 旧 workflow，原名不变
+# v4: /ai-ribao-daily-v4       ← 新 workflow，临时名
+
+# 确认 v4 稳定后，正式切换
 mv .claude/workflows/ai-ribao-daily.js    .claude/workflows/ai-ribao-daily-v3.js
 mv .claude/workflows/ai-ribao-daily-v4.js .claude/workflows/ai-ribao-daily.js
 
