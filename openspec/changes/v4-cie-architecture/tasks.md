@@ -30,8 +30,8 @@
 
 ## 5. Domain — LLM 编排
 
-- [ ] 5.1 创建 `scripts/domain/curation.mjs`：从 workflow Phase 4 代码提取，实现 `select(candidates)`，封装 prompt 加载 + agent.generate + 结果校验
-- [ ] 5.2 创建 `scripts/domain/generate.mjs`：从 workflow Phase 5 代码提取，实现 `article()` / `script(articleContent)`，返回 `{ content, meta }` 结构（meta 含 eventIds/model/promptVersion/inputHash/retryCount）
+- [x] 5.1 创建 `scripts/domain/curation.mjs`：从 workflow Phase 4 代码提取，实现 `select(candidates)`，封装 prompt 加载 + agent.generate + 结果校验
+- [x] 5.2 创建 `scripts/domain/generate.mjs`：从 workflow Phase 5 代码提取，实现 `article()` / `script(articleContent)`，返回 `{ content, meta }` 结构（meta 含 eventIds/model/promptVersion/inputHash/retryCount）
 
 ## 6. Phase 模块
 
