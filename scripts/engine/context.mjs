@@ -6,7 +6,7 @@
 import { createLoggerService } from '../services/logger.mjs'
 import { createPromptService } from '../services/prompt.mjs'
 import { createAgentService } from '../services/agent.mjs'
-import { WORKFLOW_CONFIG, RSS_SOURCES, ENTITY_WEIGHTS, EVENT_TYPE_WEIGHTS, ACADEMIC_SIGNALS, SOURCE_TIERS } from '../config.mjs'
+import { WORKFLOW_CONFIG, RSS_SOURCES, ENTITY_WEIGHTS, EVENT_TYPE_WEIGHTS, ACADEMIC_SIGNALS, SCORING } from '../config.mjs'
 import { createAssetStore } from '../stores/assets.mjs'
 import { createEventStore } from '../stores/events.mjs'
 import { createArtifactStore } from '../stores/artifacts.mjs'
@@ -29,7 +29,7 @@ export function createPipelineContext({ date, workflowRuntime }) {
       entityWeights: ENTITY_WEIGHTS,
       eventTypeWeights: EVENT_TYPE_WEIGHTS,
       academicSignals: ACADEMIC_SIGNALS,
-      sourceTiers: SOURCE_TIERS,
+      scoring: SCORING,
       pipelineVersion: 'v4',
       promptVersion: 'v1',
       rendererVersion: 'v1',

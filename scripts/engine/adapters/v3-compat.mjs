@@ -8,12 +8,14 @@
 
 /**
  * v3 curated.json → Event[]
- * v3 格式：{ date, pipeline_version, selected_items: [...], curation_summary: {...} }
+ * v3 格式可能有多种 key：selected_items / curated_items / valid_items
  */
 export function adaptV3CuratedToEvents(v3Curated) {
-  if (!v3Curated || !Array.isArray(v3Curated.selected_items)) return []
+  if (!v3Curated) return []
+  const items = v3Curated.selected_items || v3Curated.curated_items || v3Curated.valid_items
+  if (!Array.isArray(items)) return []
 
-  return v3Curated.selected_items.map(item => ({
+  return items.map(item => ({
     id: item.id || `v3-${item.title?.slice(0, 20)}`,
     type: 'news',
     title: item.title || '',
@@ -32,11 +34,11 @@ export function adaptV3CuratedToEvents(v3Curated) {
     contentHash: item.content_hash || null,
 
     rank: {
-      baseScore: item.base_score ?? null,
-      bonusScore: item.bonus_score ?? null,
-      totalScore: item.total_score ?? null,
+      baseScore: item.base_score ?? item.scores?.base?.subtotal ?? null,
+      bonusScore: item.bonus_score ?? item.scores?.bonus?.subtotal ?? null,
+      totalScore: item.total_score ?? item.scores?.total ?? null,
       tierLabel: item.tier_label || null,
-      factors: item.factors || null,
+      factors: item.factors || item.scores?.base || null,
     },
 
     curation: item.importance ? {
@@ -44,7 +46,7 @@ export function adaptV3CuratedToEvents(v3Curated) {
       note: item.curation_note || null,
     } : null,
 
-    entities: item.entities || [],
+    entities: item.entities || item.keywords || [],
     topics: item.topics || [],
     relatedEventIds: [],
 
