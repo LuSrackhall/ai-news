@@ -17,9 +17,9 @@
 
 ## 3. 数据模型与兼容层
 
-- [ ] 3.1 在 `scripts/engine/schemas.mjs` 中定义 Asset/Event/Artifact 数据结构（纯对象 schema，含字段类型注释和 contentHash 计算规则）
-- [ ] 3.2 创建 `scripts/engine/adapters/v3-compat.mjs`：实现 `adaptV3CuratedToEvents(v3Curated)` 和 `adaptV3ArticleToArtifact(v3Article)`，处理字段映射（summary_zh→summary 等）和异常防御
-- [ ] 3.3 创建 `scripts/engine/adapters/v4-compat.mjs`：实现 `adaptEventsToV3Curated(events)`，供需要 v3 格式的工具读取
+- [x] 3.1 在 `scripts/engine/schemas.mjs` 中定义 Asset/Event/Artifact 数据结构（纯对象 schema，含字段类型注释和 contentHash 计算规则）
+- [x] 3.2 创建 `scripts/engine/adapters/v3-compat.mjs`：实现 `adaptV3CuratedToEvents(v3Curated)` 和 `adaptV3ArticleToArtifact(v3Article)`，处理字段映射（summary_zh→summary 等）和异常防御
+- [x] 3.3 创建 `scripts/engine/adapters/v4-compat.mjs`：实现 `adaptEventsToV3Curated(events)`，供需要 v3 格式的工具读取
 
 ## 4. Domain — 纯规则
 
