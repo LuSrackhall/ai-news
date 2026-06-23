@@ -23,10 +23,10 @@
 
 ## 4. Domain — 纯规则
 
-- [ ] 4.1 创建 `scripts/domain/ranking.mjs`：从 `score.mjs` + `collect-rss.mjs` 的 `computeImpactScore` 合并，实现 `scoreAll(assets)` / `classify(scoredAssets)` / `buildEvents(scoredAssets)`，消除评分逻辑重复
-- [ ] 4.2 创建 `scripts/domain/dedup.mjs`：从 `dedup.mjs` 迁移，去掉 `outputDir` 参数，改为 `run(events)` 内部通过 `ctx.stores.events.history(14)` 获取历史
-- [ ] 4.3 创建 `scripts/domain/render.mjs`：合并 `render-article.mjs` + `render-script.mjs`，实现 `article(content, context)` / `script(content)`
-- [ ] 4.4 创建 `scripts/domain/validate.mjs`：从 `validate-output.mjs` 迁移，实现 `run(articleArtifact, scriptArtifact, curatedEvents)`，继承 8 项内容质量检查 + 一致性检查
+- [x] 4.1 创建 `scripts/domain/ranking.mjs`：从 `score.mjs` + `collect-rss.mjs` 的 `computeImpactScore` 合并，实现 `scoreAll(assets)` / `classify(scoredAssets)` / `buildEvents(scoredAssets)`，消除评分逻辑重复
+- [x] 4.2 创建 `scripts/domain/dedup.mjs`：从 `dedup.mjs` 迁移，去掉 `outputDir` 参数，改为 `run(events)` 内部通过 `ctx.stores.events.history(14)` 获取历史
+- [x] 4.3 创建 `scripts/domain/render.mjs`：合并 `render-article.mjs` + `render-script.mjs`，实现 `article(content, context)` / `script(content)`
+- [x] 4.4 创建 `scripts/domain/validate.mjs`：从 `validate-output.mjs` 迁移，实现 `run(articleArtifact, scriptArtifact, curatedEvents)`，继承 8 项内容质量检查 + 一致性检查
 
 ## 5. Domain — LLM 编排
 
