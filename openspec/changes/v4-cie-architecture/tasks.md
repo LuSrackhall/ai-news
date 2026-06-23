@@ -1,12 +1,12 @@
 ## 1. 基础设施 — Engine 框架
 
-- [ ] 1.1 创建 `scripts/engine/phase-result.mjs`：实现 `PhaseResult.ok/fatal/warn/skipped` 静态方法，字段包含 status/inputs/outputs/metrics/warnings/errors/duration
-- [ ] 1.2 创建 `scripts/engine/execution.mjs`：实现 `buildRun(ctx, results, startedAt, status)` 函数，生成 PipelineRun 对象（id/date/versions/timestamps/status/results/manifest）
-- [ ] 1.3 创建 `scripts/engine/context.mjs`：实现 `createPipelineContext({ date, workflowRuntime })`，组装 runtime/environment/services/stores/domain 五个 root namespace
-- [ ] 1.4 创建 `scripts/services/agent.mjs`：实现 `createAgentService(runtime)`，封装 `call()` 和 `generate()` 方法，`generate` 内含 parseJsonFallback + 一次重试逻辑
-- [ ] 1.5 创建 `scripts/services/prompt.mjs`：实现 `createPromptService(environment)`，迁移 workflow 的 `loadPrompt()` 和 `loadExamples()`
-- [ ] 1.6 创建 `scripts/services/logger.mjs`：实现 `createLoggerService(runtime)`，封装 `info/warn/error` 调用 `runtime.log()`
-- [ ] 1.7 创建 `scripts/engine/pipeline.mjs`：实现 PipelineRunner，持有 phases 数组，驱动 shouldSkip/before/run/after 生命周期，统一补 duration，捕获异常，fatal 时落盘 execution
+- [x] 1.1 创建 `scripts/engine/phase-result.mjs`：实现 `PhaseResult.ok/fatal/warn/skipped` 静态方法，字段包含 status/inputs/outputs/metrics/warnings/errors/duration
+- [x] 1.2 创建 `scripts/engine/execution.mjs`：实现 `buildRun(ctx, results, startedAt, status)` 函数，生成 PipelineRun 对象（id/date/versions/timestamps/status/results/manifest）
+- [x] 1.3 创建 `scripts/engine/context.mjs`：实现 `createPipelineContext({ date, workflowRuntime })`，组装 runtime/environment/services/stores/domain 五个 root namespace
+- [x] 1.4 创建 `scripts/services/agent.mjs`：实现 `createAgentService(runtime)`，封装 `call()` 和 `generate()` 方法，`generate` 内含 parseJsonFallback + 一次重试逻辑
+- [x] 1.5 创建 `scripts/services/prompt.mjs`：实现 `createPromptService(environment)`，迁移 workflow 的 `loadPrompt()` 和 `loadExamples()`
+- [x] 1.6 创建 `scripts/services/logger.mjs`：实现 `createLoggerService(runtime)`，封装 `info/warn/error` 调用 `runtime.log()`
+- [x] 1.7 创建 `scripts/engine/pipeline.mjs`：实现 PipelineRunner，持有 phases 数组，驱动 shouldSkip/before/run/after 生命周期，统一补 duration，捕获异常，fatal 时落盘 execution
 
 ## 2. Store Repository
 
