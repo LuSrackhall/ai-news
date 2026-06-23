@@ -48,8 +48,8 @@
 
 ## 7. 新 Workflow 入口
 
-- [ ] 7.1 重写 `ai-ribao-daily.js`（~50 行）：构建 ctx → `pipeline.run(ctx)` → 返回结果，不 import 任何业务模块
-- [ ] 7.2 复制为 `ai-ribao-daily-v4.js`（双跑期间 v4 用临时名，v3 保持原名）
+- [x] 7.1 重写 `ai-ribao-daily.js`（~50 行）：构建 ctx → `pipeline.run(ctx)` → 返回结果，不 import 任何业务模块
+- [x] 7.2 复制为 `ai-ribao-daily-v4.js`（双跑期间 v4 用临时名，v3 保持原名）
 
 ## 8. 测试与验证
 
