@@ -1,0 +1,207 @@
+# v4.1 Execution Runtime — 架构设计
+
+## Context
+
+### 现状
+
+v4.0 建立了 Pipeline Engine 骨架（PipelineRunner / PipelineContext / Phase Interface / Domain Layer / Store Repository），AI 日报是第一个应用。v4.0 的方向正确，但抽象层级还不够高：
+
+- Phase 和 Domain 仍然包含业务语言（AI Daily / Score / Dedup）
+- Pipeline 硬编码了 Phase 顺序（workflow 直接 new 每个 Phase）
+- Runtime 绑定了 Claude Code Workflow（ctx.runtime.llm.agent）
+- Store 混合了写操作和查询操作
+- 没有事务语义（多 Repository 写入无法保证一致性）
+
+### 设计目标
+
+> **构建一个通用的 Execution Runtime，让 AI 日报成为它的第一个应用，而非唯一应用。**
+
+Runtime 自身不包含任何业务语言。未来无论是日报、周报、研报、Newsletter、视频脚本，还是 AI Agent 自动规划的执行图，都只是这个 Runtime 的不同输入。
+
+核心设计原则：
+
+> **Runtime 只认识 Executable、ExecutionPlan、ExecutionContext。所有业务概念（Event、Article、Score、Dedup）都存在于 Executable 实现中，不存在于 Runtime 框架中。**
+
+## Goals / Non-Goals
+
+**Goals（v4.1）：**
+- Host 抽象：Runtime 不绑定 Claude Code，可运行在 Node/CLI/GitHub Actions 上
+- Runtime 执行引擎：接收 ExecutionPlan → 驱动 Executable 执行
+- Executable 接口：Runtime 只认识 `execute(context) → ExecutionResult`
+- ExecutableRegistry：字符串 ID → Executable 实例解析（依赖注入）
+- ExecutionContext：Resources / Repository / ReadModel / Services / RuleEngine / UnitOfWork
+- PipelineCompiler：声明式 Pipeline 定义 → ExecutionPlan
+- RuleEngine：通用规则引擎（RuleSet / Rule），替代 v4.0 的 Policy
+- InferenceProfile + InferenceService：LLM 调用配置与执行分离
+- Repository（写）+ ReadModel（读）分离 + UnitOfWork 事务
+- 移除所有 v3 兼容层（v3-compat adapter、v3-reader）
+
+**Non-Goals（明确排除）：**
+- DAG 调度 / 并行 Executable（v4.2）
+- Event Cluster / Knowledge Graph（v4.2-4.3）
+- 多 Pipeline（Weekly/Research/Newsletter）（v4.5）
+- SQLite / S3 存储后端（v4.2+）
+- Cache / Snapshot / Replay（v4.2+）
+- Learning Engine / 反馈闭环（v4.4+）
+
+## Decisions
+
+### D1: 七层依赖链
+
+```
+Host → Runtime → ExecutionPlan → Executable
+                                      ↓
+                              ExecutionContext
+                              ├── Resources
+                              ├── Repository
+                              ├── ReadModel
+                              ├── Services
+                              ├── RuleEngine
+                              └── UnitOfWork
+```
+
+依赖单向向下。Executable 通过 ExecutionContext 获取所有依赖，不直接 import 任何模块。
+
+### D2: Host — 宿主抽象
+
+Host 是 Runtime 与外部世界的唯一接口。Runtime 永远不知道自己运行在什么环境上。
+
+```js
+interface Host {
+  log(message: string): void
+  invoke(prompt: string, opts: InvokeOpts): Promise<any>
+  metric(key: string, value: any): void
+  now(): string
+  elapsed(startMs: number): number
+}
+```
+
+v4.0 的 `ctx.runtime.workflow.phase()` / `ctx.runtime.llm.agent()` 全部收进 Host。
+
+### D3: Executable — Runtime 唯一认识的执行单元
+
+```js
+interface Executable {
+  execute(context: ExecutionContext): Promise<ExecutionResult>
+}
+```
+
+UseCase 是 Executable 的一种实现。未来可以有 WorkflowExecutable、BatchExecutable、ParallelExecutable、LoopExecutable。
+
+### D4: ExecutionPlan — 执行意图（非数据结构）
+
+ExecutionPlan 是一组 ExecutionStep 的声明式描述。Pipeline 只是生成 Plan 的一种方式。
+
+```js
+ExecutionStep {
+  name: string
+  executableId: string      // 字符串 ID，通过 ExecutableRegistry 解析
+  condition: string | null   // 条件名称（可序列化）
+  retry: number
+  timeout: number | null
+  depends: string[]          // v4.2+ DAG
+}
+```
+
+**Executable 是工厂函数调用，不是 live 实例。** 图可以被序列化、打印、diff、persist。
+
+### D5: ExecutableRegistry — 字符串 ID → 实例
+
+```js
+class ExecutableRegistry {
+  register(id: string, ExecutableClass: Function): void
+  resolve(id: string, ctx: ExecutionContext): Executable
+}
+```
+
+`resolve(id, ctx)` 构造带依赖注入的实例。
+
+### D6: ExecutionContext — 只读依赖集合
+
+```js
+ExecutionContext {
+  host: Host
+  resources: Resources       // date, runId, config, workspace, pipelineName, version
+  repositories: Repository[] // 写模型（CRUD）
+  readModels: ReadModel[]    // 读模型（查询/聚合）
+  services: Service[]        // 外部能力（inference, metrics, cache）
+  ruleEngine: RuleEngine     // 规则引擎
+  unitOfWork: UnitOfWork     // 事务管理
+}
+```
+
+### D7: Resources — 运行时数据
+
+从 Host 分离出的运行时数据：date、runId、config、workspace、pipelineName、version。这些不是 Host 的能力（capability），而是运行上下文的数据。
+
+### D8: RuleEngine + RuleSet + Rule — 通用规则引擎
+
+```js
+RuleEngine.execute(RuleSet.Ranking, assets)  // 评分
+RuleEngine.execute(RuleSet.Cluster, events)  // 聚类
+RuleEngine.execute(RuleSet.Validate, output) // 校验
+```
+
+每个 Rule 无状态、无 IO、纯函数：
+
+```js
+class AuthorityRule {
+  name = 'authority'
+  evaluate(input): { type: 'base'|'bonus', score: number }
+}
+```
+
+以后加新规则：写一个 Rule class，注册到 RuleSet。RuleEngine、Executable、Pipeline 零修改。
+
+### D9: Repository + ReadModel + UnitOfWork
+
+- **Repository**：写模型，只负责 CRUD（save/load/delete）
+- **ReadModel**：读模型，只负责查询（history/byEntity/timeline/search/statistics）
+- **UnitOfWork**：事务管理，`begin()` / `commit()` / `rollback()`
+
+JSON 文件实现下，commit() 是批量写。SQLite 下是 transaction。UseCase 不需要知道。
+
+### D10: InferenceProfile + InferenceService
+
+- **InferenceProfile**：配置对象（model / prompt / schema / examples / temperature / retry / validator / postProcessor）
+- **InferenceService**：执行器，调用 host、做重试、做解析、做标准化
+
+UseCase 中：`ctx.services.inference.run('article', variables)`。不直接拿 profile 自己执行。
+
+### D11: PipelineCompiler — 声明式 → 执行计划
+
+```js
+const dailyPipeline = {
+  name: 'daily',
+  steps: [
+    { executableId: 'CollectAssets', name: '采集', retry: 2 },
+    { executableId: 'ScoreEvents', name: '评分' },
+    // ...
+  ],
+}
+
+const plan = compiler.compile(dailyPipeline)
+const result = await runtime.execute(plan, ctx)
+```
+
+### D12: Workflow 入口（~30 行）
+
+```js
+const host = createClaudeHost({ phase, agent, log })
+const ctx = createExecutionContext(host, { resources, repositories, readModels, services, ruleEngine, unitOfWork })
+const registry = buildRegistry()
+const runtime = createRuntime(host, registry)
+return await runtime.execute(dailyPipeline, ctx)
+```
+
+Workflow 不知道有几个 Executable、不知道 Policy、不知道 Repository。
+
+## Risks / Trade-offs
+
+| 风险 | 缓解 |
+|------|------|
+| 抽象层级过高，v4.1 实现复杂度增大 | 先做最小骨架，不实现所有细节（如 UnitOfWork 的 JSON 实现只是批量写） |
+| RuleEngine 引入额外间接层 | v4.1 先用简单实现（Rule[] 数组），不引入外部规则引擎框架 |
+| ExecutableRegistry 增加启动复杂度 | registry.resolve() 只是 new + 注入，无反射/动态加载 |
+| 从 v4.0 迁移工作量大 | v4.0 的 domain/store/service 逻辑可直接迁入 Policy/Repository/Service，不需要重写业务逻辑 |
+| v3 兼容层移除后历史数据不可读 | 14 天内手动迁移一次历史数据为 v4 格式，或接受历史数据丢失 |
