@@ -21,4 +21,10 @@ export class TaskRegistry {
   has(id) {
     return this.map.has(id)
   }
+
+  registerAll(entries) {
+    for (const [id, TaskClass] of Object.entries(entries)) {
+      this.map.set(id, TaskClass)
+    }
+  }
 }

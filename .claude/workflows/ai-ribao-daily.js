@@ -16,8 +16,6 @@ import { compile } from './scripts/runtime/compiler.mjs'
 import { buildScope } from './scripts/infrastructure/scope.mjs'
 import { createInferenceService } from './scripts/services/inference-service.mjs'
 import { dailyPipeline } from './scripts/pipelines/daily.mjs'
-
-// ── Task 注册 ──
 import { CollectAssets } from './scripts/tasks/collect-assets.mjs'
 import { VerifyAssets } from './scripts/tasks/verify-assets.mjs'
 import { ScoreEvents } from './scripts/tasks/score-events.mjs'
@@ -46,18 +44,11 @@ const ctx = createExecutionContext(host, {
 })
 
 const registry = new TaskRegistry()
-registry.register('CollectAssets', CollectAssets)
-registry.register('VerifyAssets', VerifyAssets)
-registry.register('ScoreEvents', ScoreEvents)
-registry.register('DedupEvents', DedupEvents)
-registry.register('CurateEvents', CurateEvents)
-registry.register('GenerateArticle', GenerateArticle)
-registry.register('GenerateScript', GenerateScript)
-registry.register('RenderArtifacts', RenderArtifacts)
-registry.register('ValidateOutput', ValidateOutput)
-registry.register('ArchiveOutput', ArchiveOutput)
+registry.registerAll({
+  CollectAssets, VerifyAssets, ScoreEvents, DedupEvents, CurateEvents,
+  GenerateArticle, GenerateScript, RenderArtifacts, ValidateOutput, ArchiveOutput,
+})
 
 const runtime = createRuntime(host, registry)
-const graph = compile(dailyPipeline)
-const session = await runtime.execute(graph, ctx)
+const session = await runtime.execute(compile(dailyPipeline), ctx)
 return session.toResult()
