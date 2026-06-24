@@ -31,14 +31,14 @@
 
 ## 4. Data Access
 
-- [ ] 4.1 创建 `scripts/storage/json-file-storage.mjs`：JsonFileStorage（read/write，output/<date>/ 目录）
-- [ ] 4.2 创建 `scripts/repositories/event-repository.mjs`：EventRepository（store/remove）
-- [ ] 4.3 创建 `scripts/repositories/asset-repository.mjs`：AssetRepository（store/remove）
-- [ ] 4.4 创建 `scripts/repositories/artifact-repository.mjs`：ArtifactRepository（store/remove）
-- [ ] 4.5 创建 `scripts/read-models/event-read-model.mjs`：EventReadModel（load/history）
-- [ ] 4.6 创建 `scripts/read-models/asset-read-model.mjs`：AssetReadModel（load）
-- [ ] 4.7 创建 `scripts/read-models/artifact-read-model.mjs`：ArtifactReadModel（load/loadMarkdown）
-- [ ] 4.8 创建 `scripts/infrastructure/scope.mjs`：buildScope(host, date)（组装 events/assets/artifacts 的 repository + readModel，以及 inferenceService/policyEngine/unitOfWork）
+- [x] 4.1 创建 `scripts/storage/json-file-storage.mjs`：JsonFileStorage（read/write，output/<date>/ 目录）
+- [x] 4.2 创建 `scripts/repositories/event-repository.mjs`：EventRepository（store/remove）
+- [x] 4.3 创建 `scripts/repositories/asset-repository.mjs`：AssetRepository（store/remove）
+- [x] 4.4 创建 `scripts/repositories/artifact-repository.mjs`：ArtifactRepository（store/remove）
+- [x] 4.5 创建 `scripts/read-models/event-read-model.mjs`：EventReadModel（load/history）
+- [x] 4.6 创建 `scripts/read-models/asset-read-model.mjs`：AssetReadModel（load）
+- [x] 4.7 创建 `scripts/read-models/artifact-read-model.mjs`：ArtifactReadModel（load/loadMarkdown）
+- [x] 4.8 创建 `scripts/infrastructure/scope.mjs`：buildScope(host, date)（组装 events/assets/artifacts 的 repository + readModel，以及 inferenceService/policyEngine/unitOfWork）
 
 ## 5. Inference Service
 
