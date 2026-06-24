@@ -49,16 +49,16 @@
 
 ## 6. Task 实现
 
-- [ ] 6.1 创建 `scripts/tasks/collect-assets.mjs`：CollectAssets Task（调 host.invoke 执行 collect-rss.mjs，写入 assets repository）
-- [ ] 6.2 创建 `scripts/tasks/verify-assets.mjs`：VerifyAssets Task（调 host.invoke 执行 verify-urls.mjs，写回 assets repository）
-- [ ] 6.3 创建 `scripts/tasks/score-events.mjs`：ScoreEvents Task（readModel.load → policyEngine.execute('ranking') → buildEvents → repository.store）
-- [ ] 6.4 创建 `scripts/tasks/dedup-events.mjs`：DedupEvents Task（readModel.load + history(14) → policyEngine.execute('dedup') → repository.store）
-- [ ] 6.5 创建 `scripts/tasks/curate-events.mjs`：CurateEvents Task（readModel.load → inferenceService.run('curation') → repository.store）
-- [ ] 6.6 创建 `scripts/tasks/generate-article.mjs`：GenerateArticle Task（readModel.load → inferenceService.run('article') → artifactRepository.store）
-- [ ] 6.7 创建 `scripts/tasks/generate-script.mjs`：GenerateScript Task（readModel.load + article → inferenceService.run('script') → artifactRepository.store）
-- [ ] 6.8 创建 `scripts/tasks/render-artifacts.mjs`：RenderArtifacts Task（readModel.load article + script → policyEngine.execute('render') → artifactRepository.store rendered）
-- [ ] 6.9 创建 `scripts/tasks/validate-output.mjs`：ValidateOutput Task（readModel.load artifacts + events → policyEngine.execute('validate') → 返回 PhaseResult）
-- [ ] 6.10 创建 `scripts/tasks/archive-output.mjs`：ArchiveOutput Task（readModel.load → 写磁盘文件 article.md/script.md/article.json/script.json → 更新 index.json）
+- [x] 6.1 创建 `scripts/tasks/collect-assets.mjs`：CollectAssets Task（调 host.invoke 执行 collect-rss.mjs，写入 assets repository）
+- [x] 6.2 创建 `scripts/tasks/verify-assets.mjs`：VerifyAssets Task（调 host.invoke 执行 verify-urls.mjs，写回 assets repository）
+- [x] 6.3 创建 `scripts/tasks/score-events.mjs`：ScoreEvents Task（readModel.load → policyEngine.execute('ranking') → buildEvents → repository.store）
+- [x] 6.4 创建 `scripts/tasks/dedup-events.mjs`：DedupEvents Task（readModel.load + history(14) → policyEngine.execute('dedup') → repository.store）
+- [x] 6.5 创建 `scripts/tasks/curate-events.mjs`：CurateEvents Task（readModel.load → inferenceService.run('curation') → repository.store）
+- [x] 6.6 创建 `scripts/tasks/generate-article.mjs`：GenerateArticle Task（readModel.load → inferenceService.run('article') → artifactRepository.store）
+- [x] 6.7 创建 `scripts/tasks/generate-script.mjs`：GenerateScript Task（readModel.load + article → inferenceService.run('script') → artifactRepository.store）
+- [x] 6.8 创建 `scripts/tasks/render-artifacts.mjs`：RenderArtifacts Task（readModel.load article + script → policyEngine.execute('render') → artifactRepository.store rendered）
+- [x] 6.9 创建 `scripts/tasks/validate-output.mjs`：ValidateOutput Task（readModel.load artifacts + events → policyEngine.execute('validate') → 返回 PhaseResult）
+- [x] 6.10 创建 `scripts/tasks/archive-output.mjs`：ArchiveOutput Task（readModel.load → 写磁盘文件 article.md/script.md/article.json/script.json → 更新 index.json）
 
 ## 7. Pipeline + Workflow
 
