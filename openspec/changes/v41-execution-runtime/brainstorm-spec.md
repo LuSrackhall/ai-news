@@ -88,6 +88,21 @@ interface Executable {
 
 UseCase 是 Executable 的一种实现。未来可以有 WorkflowExecutable、BatchExecutable、ParallelExecutable、LoopExecutable。
 
+### D3.5: ExecutionResult — 统一执行结果
+
+```js
+ExecutionResult {
+  stepName: string
+  status: 'ok' | 'fatal' | 'warn' | 'skipped'
+  outputs: object | null      // 本步骤产出的数据摘要
+  metrics: object | null      // 量化指标（count, ratio, ...）
+  errors: string[]            // 错误详情
+  duration: number | null     // ms，由 Runtime 统一补
+}
+```
+
+Runtime 的返回值和各 Executable 的返回值使用同一结构。执行过程中的状态（重试次数、中间错误）全部收敛到此对象。
+
 ### D4: ExecutionPlan — 纯声明式执行意图
 
 ExecutionPlan 是一组 ExecutionStep 的声明式描述。Pipeline 只是生成 Plan 的一种方式。**Plan 只做声明，不承载任何执行时状态** — 执行过程中的结果、重试次数、耗时、错误都只进入 ExecutionResult。Plan 可以被序列化、打印、diff、持久化。
@@ -132,9 +147,22 @@ ExecutionContext {
 
 **使用命名注入而非数组：** `ctx.repositories.events.save()`、`ctx.readModels.events.history()`、`ctx.services.inference.run()`。依赖边界明确，适合类型系统和后续扩展。
 
-### D7: Resources — 运行时数据
+### D7: Resources — 只读运行时数据
 
-从 Host 分离出的运行时数据：date、runId、config、workspace、pipelineName、version。这些不是 Host 的能力（capability），而是运行上下文的数据。
+从 Host 分离出的运行时数据，**只读，不演化为第二个 Host**。核心字段：
+
+```js
+Resources {
+  date: string           // 目标日期（如 '2026-06-24'）
+  runId: string          // 运行唯一 ID
+  pipelineName: string   // 当前 Pipeline 名称（如 'daily'）
+  version: string        // Runtime 版本
+  config: object         // 静态配置（sources, weights, thresholds, ...）
+  workspace: string      // 工作目录路径
+}
+```
+
+Resources 只承载"本次运行需要知道的数据"，不承载能力（invoke/log/metric 是 Host 的事）。
 
 ### D8: RuleEngine + RuleSet + Rule — 注册表式规则引擎
 
@@ -173,7 +201,9 @@ JSON 文件实现下，commit() 是批量写。SQLite 下是 transaction。UseCa
 
 UseCase 中：`ctx.services.inference.run('article', variables)`。不直接拿 profile 自己执行。
 
-### D11: PipelineCompiler — 声明式 → 执行计划
+### D11: PipelineCompiler — 声明式输入 → ExecutionPlan
+
+Compiler **只做静态展开和校验**：将 Pipeline 声明（steps 数组）转换为 ExecutionPlan。不做执行期逻辑，不做依赖注入，不做重试，不做缓存。Runtime、Compiler、Executable 三者边界干净。
 
 ```js
 const dailyPipeline = {
