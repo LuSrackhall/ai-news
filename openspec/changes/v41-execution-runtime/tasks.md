@@ -68,8 +68,8 @@
 
 ## 8. 测试
 
-- [ ] 8.1 创建 `scripts/test-runtime.mjs`：Runtime 框架测试（TaskRegistry resolve 全新实例、ExecutionGraph 序列化、ExecutionSession 记录、PolicyEngine 注册表、Repository store/load、ReadModel history）
-- [ ] 8.2 运行 v3 测试确认不受影响（scripts/test-modules.mjs）
+- [x] 8.1 创建 `scripts/test-runtime.mjs`：Runtime 框架测试（TaskRegistry resolve 全新实例、ExecutionGraph 序列化、ExecutionSession 记录、PolicyEngine 注册表、Repository store/load、ReadModel history）
+- [x] 8.2 运行 v3 测试确认不受影响（scripts/test-modules.mjs）
 - [ ] 8.3 端到端运行 v4.1 workflow 对比产出
 
 ---
