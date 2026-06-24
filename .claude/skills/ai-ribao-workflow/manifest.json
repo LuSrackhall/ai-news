@@ -1,9 +1,0 @@
-{
-  "name": "ai-ribao-workflow",
-  "version": "1.0.0",
-  "category": "AI News / Content Automation",
-  "description": "AI 领域日报自媒体自动化工作流。多源并行采集（RSS + WebSearch + WebFetch）→ 交叉验证 → 质量评分 → 内容生成（文章 + 视频口播稿）。支持定时执行、历史去重、幻觉防护。",
-  "compat": [
-    "claude-code"
-  ]
-}
