@@ -15,19 +15,19 @@
 
 ## 3. Policy Engine
 
-- [ ] 3.1 创建 `scripts/policies/ranking-policy.mjs`：RankingPolicy（组合 AuthorityRule/TimelinessRule/EntityWeightRule/EventTypeRule/QuantitativeRule/AcademicRule，返回 ranked assets）
-- [ ] 3.2 创建 `scripts/rules/authority-rule.mjs`：AuthorityRule（tier → score，纯函数）
-- [ ] 3.3 创建 `scripts/rules/timeliness-rule.mjs`：TimelinessRule（age → score）
-- [ ] 3.4 创建 `scripts/rules/entity-weight-rule.mjs`：EntityWeightRule（实体匹配 → bonus score）
-- [ ] 3.5 创建 `scripts/rules/event-type-rule.mjs`：EventTypeRule（关键词/regex → bonus score）
-- [ ] 3.6 创建 `scripts/rules/quantitative-rule.mjs`：QuantitativeRule（数字信号 → bonus score）
-- [ ] 3.7 创建 `scripts/rules/academic-rule.mjs`：AcademicRule（学术信号 → bonus score）
-- [ ] 3.8 创建 `scripts/policies/dedup-policy.mjs`：DedupPolicy（组合 title-similarity-rule + event-fingerprint-rule，返回 { kept, removed }）
-- [ ] 3.9 创建 `scripts/rules/title-similarity-rule.mjs`：TitleSimilarityRule（bigram 相似度 ≥ 0.5 判定重复）
-- [ ] 3.10 创建 `scripts/rules/event-fingerprint-rule.mjs`：EventFingerprintRule（Entity|EventType|Keywords|Week 指纹匹配）
-- [ ] 3.11 创建 `scripts/policies/validation-policy.mjs`：ValidationPolicy（schema 校验 + 8 项内容质量检查）
-- [ ] 3.12 创建 `scripts/policies/render-policy.mjs`：RenderPolicy（article/script 模板渲染）
-- [ ] 3.13 创建 `scripts/infrastructure/policies.mjs`：buildPolicyEngine()（注册所有 Policy）
+- [x] 3.1 创建 `scripts/policies/ranking-policy.mjs`：RankingPolicy（组合 AuthorityRule/TimelinessRule/EntityWeightRule/EventTypeRule/QuantitativeRule/AcademicRule，返回 ranked assets）
+- [x] 3.2 创建 `scripts/rules/authority-rule.mjs`：AuthorityRule（tier → score，纯函数）
+- [x] 3.3 创建 `scripts/rules/timeliness-rule.mjs`：TimelinessRule（age → score）
+- [x] 3.4 创建 `scripts/rules/entity-weight-rule.mjs`：EntityWeightRule（实体匹配 → bonus score）
+- [x] 3.5 创建 `scripts/rules/event-type-rule.mjs`：EventTypeRule（关键词/regex → bonus score）
+- [x] 3.6 创建 `scripts/rules/quantitative-rule.mjs`：QuantitativeRule（数字信号 → bonus score）
+- [x] 3.7 创建 `scripts/rules/academic-rule.mjs`：AcademicRule（学术信号 → bonus score）
+- [x] 3.8 创建 `scripts/policies/dedup-policy.mjs`：DedupPolicy（组合 title-similarity-rule + event-fingerprint-rule，返回 { kept, removed }）
+- [x] 3.9 创建 `scripts/rules/title-similarity-rule.mjs`：TitleSimilarityRule（bigram 相似度 ≥ 0.5 判定重复）
+- [x] 3.10 创建 `scripts/rules/event-fingerprint-rule.mjs`：EventFingerprintRule（Entity|EventType|Keywords|Week 指纹匹配）
+- [x] 3.11 创建 `scripts/policies/validation-policy.mjs`：ValidationPolicy（schema 校验 + 8 项内容质量检查）
+- [x] 3.12 创建 `scripts/policies/render-policy.mjs`：RenderPolicy（article/script 模板渲染）
+- [x] 3.13 创建 `scripts/infrastructure/policies.mjs`：buildPolicyEngine()（注册所有 Policy）
 
 ## 4. Data Access
 
