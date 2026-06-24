@@ -11,7 +11,7 @@
 
 ## 2. Host 实现
 
-- [ ] 2.1 创建 `scripts/hosts/claude-host.mjs`：ClaudeHost 实现（封装 phase/agent/log 原语）
+- [x] 2.1 创建 `scripts/hosts/claude-host.mjs`：ClaudeHost 实现（封装 phase/agent/log 原语）
 
 ## 3. Policy Engine
 
