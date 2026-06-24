@@ -120,23 +120,32 @@ scripts/
 └── test-runtime.mjs
 ```
 
-### D4: Workflow 入口（~30 行）
+### D4: Workflow 入口（~50 行）
 
 ```js
 import { createClaudeHost } from './scripts/hosts/claude-host.mjs'
 import { createRuntime } from './scripts/runtime/runtime.mjs'
-import { buildTaskRegistry } from './scripts/runtime/registry.mjs'
-import { graphCompiler } from './scripts/runtime/compiler.mjs'
+import { createExecutionContext } from './scripts/runtime/context.mjs'
+import { TaskRegistry } from './scripts/runtime/registry.mjs'
+import { compile } from './scripts/runtime/compiler.mjs'
 import { buildScope } from './scripts/infrastructure/scope.mjs'
+import { createInferenceService } from './scripts/services/inference-service.mjs'
 import { dailyPipeline } from './scripts/pipelines/daily.mjs'
+// ... 10 个 Task import ...
 
-export const meta = { name: 'ai-ribao-daily', description: 'AI 日报', phases: [{ title: '执行' }] }
+export const meta = { name: 'ai-ribao-daily', description: 'AI 日报 - Execution Runtime v4.1', phases: [{ title: '执行' }] }
 
 const host = createClaudeHost({ phase, agent, log })
 const date = (args && args.date) || new Date().toISOString().slice(0, 10)
 const scope = buildScope(host, date)
-const ctx = { host, resources: { date, runId: `run-${date}`, pipelineName: 'daily', version: 'v4.1', config: {}, workspace: '.' }, scope }
-const registry = buildTaskRegistry()
+scope.inference = createInferenceService(host)
+const ctx = createExecutionContext(host, { resources: { date, runId: `run-${date}-${Date.now()}`, pipelineName: 'daily', version: 'v4.1', config: {}, workspace: '.' }, scope })
+const registry = new TaskRegistry()
+registry.registerAll({ CollectAssets, VerifyAssets, ScoreEvents, DedupEvents, CurateEvents, GenerateArticle, GenerateScript, RenderArtifacts, ValidateOutput, ArchiveOutput })
+const runtime = createRuntime(host, registry)
+const session = await runtime.execute(compile(dailyPipeline), ctx)
+return session.toResult()
+```
 const runtime = createRuntime(host, registry)
 const session = runtime.execute(graphCompiler.compile(dailyPipeline), ctx)
 return session.toResult()
