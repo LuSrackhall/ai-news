@@ -1,13 +1,13 @@
 ## 1. Runtime 框架层
 
-- [ ] 1.1 创建 `scripts/runtime/host.mjs`：Host 接口定义（log/invoke/metric/now/elapsed）
-- [ ] 1.2 创建 `scripts/runtime/result.mjs`：ExecutionResult 结构（stepName/status/outputs/metrics/errors/duration）
-- [ ] 1.3 创建 `scripts/runtime/graph.mjs`：ExecutionGraph + ExecutionNode 定义（taskId/condition/retry/timeout/depends）
-- [ ] 1.4 创建 `scripts/runtime/session.mjs`：ExecutionSession（runId/status/stepResults/toResult()）
-- [ ] 1.5 创建 `scripts/runtime/registry.mjs`：TaskRegistry（register/resolve，resolve 每次返回全新实例）
-- [ ] 1.6 创建 `scripts/runtime/context.mjs`：ExecutionContext（host + resources + scope）
-- [ ] 1.7 创建 `scripts/runtime/compiler.mjs`：GraphCompiler（compile(pipeline) → ExecutionGraph，只做静态展开和校验）
-- [ ] 1.8 创建 `scripts/runtime/runtime.mjs`：Runtime 执行引擎（execute(graph, ctx) → Session，驱动 Task 生命周期，统一补 duration，捕获异常）
+- [x] 1.1 创建 `scripts/runtime/host.mjs`：Host 接口定义（log/invoke/metric/now/elapsed）
+- [x] 1.2 创建 `scripts/runtime/result.mjs`：ExecutionResult 结构（stepName/status/outputs/metrics/errors/duration）
+- [x] 1.3 创建 `scripts/runtime/graph.mjs`：ExecutionGraph + ExecutionNode 定义（taskId/condition/retry/timeout/depends）
+- [x] 1.4 创建 `scripts/runtime/session.mjs`：ExecutionSession（runId/status/stepResults/toResult()）
+- [x] 1.5 创建 `scripts/runtime/registry.mjs`：TaskRegistry（register/resolve，resolve 每次返回全新实例）
+- [x] 1.6 创建 `scripts/runtime/context.mjs`：ExecutionContext（host + resources + scope）
+- [x] 1.7 创建 `scripts/runtime/compiler.mjs`：GraphCompiler（compile(pipeline) → ExecutionGraph，只做静态展开和校验）
+- [x] 1.8 创建 `scripts/runtime/runtime.mjs`：Runtime 执行引擎（execute(graph, ctx) → Session，驱动 Task 生命周期，统一补 duration，捕获异常）
 
 ## 2. Host 实现
 
