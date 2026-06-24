@@ -88,9 +88,9 @@ interface Executable {
 
 UseCase 是 Executable 的一种实现。未来可以有 WorkflowExecutable、BatchExecutable、ParallelExecutable、LoopExecutable。
 
-### D4: ExecutionPlan — 执行意图（非数据结构）
+### D4: ExecutionPlan — 纯声明式执行意图
 
-ExecutionPlan 是一组 ExecutionStep 的声明式描述。Pipeline 只是生成 Plan 的一种方式。
+ExecutionPlan 是一组 ExecutionStep 的声明式描述。Pipeline 只是生成 Plan 的一种方式。**Plan 只做声明，不承载任何执行时状态** — 执行过程中的结果、重试次数、耗时、错误都只进入 ExecutionResult。Plan 可以被序列化、打印、diff、持久化。
 
 ```js
 ExecutionStep {
@@ -116,30 +116,35 @@ class ExecutableRegistry {
 
 `resolve(id, ctx)` 构造带依赖注入的实例。
 
-### D6: ExecutionContext — 只读依赖集合
+### D6: ExecutionContext — 只读依赖集合（命名注入）
 
 ```js
 ExecutionContext {
   host: Host
-  resources: Resources       // date, runId, config, workspace, pipelineName, version
-  repositories: Repository[] // 写模型（CRUD）
-  readModels: ReadModel[]    // 读模型（查询/聚合）
-  services: Service[]        // 外部能力（inference, metrics, cache）
-  ruleEngine: RuleEngine     // 规则引擎
-  unitOfWork: UnitOfWork     // 事务管理
+  resources: Resources                // date, runId, config, workspace, pipelineName, version
+  repositories: { events, assets, artifacts }  // 写模型（CRUD）
+  readModels: { events, assets, artifacts }    // 读模型（查询/聚合）
+  services: { inference, metrics, cache }       // 外部能力
+  ruleEngine: RuleEngine              // 规则引擎
+  unitOfWork: UnitOfWork              // 事务管理
 }
 ```
+
+**使用命名注入而非数组：** `ctx.repositories.events.save()`、`ctx.readModels.events.history()`、`ctx.services.inference.run()`。依赖边界明确，适合类型系统和后续扩展。
 
 ### D7: Resources — 运行时数据
 
 从 Host 分离出的运行时数据：date、runId、config、workspace、pipelineName、version。这些不是 Host 的能力（capability），而是运行上下文的数据。
 
-### D8: RuleEngine + RuleSet + Rule — 通用规则引擎
+### D8: RuleEngine + RuleSet + Rule — 注册表式规则引擎
+
+RuleSet 通过注册表管理，不是枚举常量。新增规则集不需要改 Runtime，只改注册表。
 
 ```js
-RuleEngine.execute(RuleSet.Ranking, assets)  // 评分
-RuleEngine.execute(RuleSet.Cluster, events)  // 聚类
-RuleEngine.execute(RuleSet.Validate, output) // 校验
+ruleEngine.execute('ranking', assets)    // 评分
+ruleEngine.execute('cluster', events)    // 聚类
+ruleEngine.execute('validate', output)   // 校验
+ruleEngine.execute('recommend', items)   // 推荐（v4.4+）
 ```
 
 每个 Rule 无状态、无 IO、纯函数：
@@ -204,4 +209,4 @@ Workflow 不知道有几个 Executable、不知道 Policy、不知道 Repository
 | RuleEngine 引入额外间接层 | v4.1 先用简单实现（Rule[] 数组），不引入外部规则引擎框架 |
 | ExecutableRegistry 增加启动复杂度 | registry.resolve() 只是 new + 注入，无反射/动态加载 |
 | 从 v4.0 迁移工作量大 | v4.0 的 domain/store/service 逻辑可直接迁入 Policy/Repository/Service，不需要重写业务逻辑 |
-| v3 兼容层移除后历史数据不可读 | 14 天内手动迁移一次历史数据为 v4 格式，或接受历史数据丢失 |
+| v3 兼容层移除后历史数据不可读 | 历史数据视为废弃；如需对比验证，使用 v4 在同日期重新生成 |
