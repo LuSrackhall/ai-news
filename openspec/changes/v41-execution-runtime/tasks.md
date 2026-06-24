@@ -62,9 +62,9 @@
 
 ## 7. Pipeline + Workflow
 
-- [ ] 7.1 创建 `scripts/pipelines/daily.mjs`：DailyPipeline 声明（10 个 steps）
-- [ ] 7.2 创建 `scripts/pipelines/index.mjs`：PipelineSet（{ daily: dailyPipeline }）
-- [ ] 7.3 创建 `ai-ribao-daily.js`（~30 行）：Host → Scope → ExecutionContext → TaskRegistry → Runtime → execute(dailyPipeline)
+- [x] 7.1 创建 `scripts/pipelines/daily.mjs`：DailyPipeline 声明（10 个 steps）
+- [x] 7.2 创建 `scripts/pipelines/index.mjs`：PipelineSet（{ daily: dailyPipeline }）
+- [x] 7.3 创建 `ai-ribao-daily.js`（~30 行）：Host → Scope → ExecutionContext → TaskRegistry → Runtime → execute(dailyPipeline)
 
 ## 8. 测试
 
