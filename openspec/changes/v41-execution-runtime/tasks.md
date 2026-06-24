@@ -42,10 +42,10 @@
 
 ## 5. Inference Service
 
-- [ ] 5.1 创建 `scripts/services/inference-profiles/article-profile.mjs`：ArticleProfile（prompt/schema/retry/validator）
-- [ ] 5.2 创建 `scripts/services/inference-profiles/script-profile.mjs`：ScriptProfile
-- [ ] 5.3 创建 `scripts/services/inference-profiles/curation-profile.mjs`：CurationProfile
-- [ ] 5.4 创建 `scripts/services/inference-service.mjs`：InferenceService（run(name, vars) → 渲染 Profile → host.invoke → JSON 解析兜底 → 重试 → 校验）
+- [x] 5.1 创建 `scripts/services/inference-profiles/article-profile.mjs`：ArticleProfile（prompt/schema/retry/validator）
+- [x] 5.2 创建 `scripts/services/inference-profiles/script-profile.mjs`：ScriptProfile
+- [x] 5.3 创建 `scripts/services/inference-profiles/curation-profile.mjs`：CurationProfile
+- [x] 5.4 创建 `scripts/services/inference-service.mjs`：InferenceService（run(name, vars) → 渲染 Profile → host.invoke → JSON 解析兜底 → 重试 → 校验）
 
 ## 6. Task 实现
 
