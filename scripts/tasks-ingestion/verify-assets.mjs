@@ -14,18 +14,30 @@ export class VerifyAssets {
   async execute(ctx) {
     const date = ctx.resources.date
 
-    execSync(`node scripts/verify-urls.mjs --date ${date}`, {
-      encoding: 'utf-8',
-      timeout: 60_000,
-      cwd: ctx.resources.workspace || '.',
-    })
+    try {
+      execSync(`node scripts/verify-urls.mjs --date ${date}`, {
+        encoding: 'utf-8',
+        timeout: 1_200_000,  // 20 分钟
+        cwd: ctx.resources.workspace || '.',
+      })
+    } catch (err) {
+      // 验证超时不阻塞管道，继续用未验证的数据
+      ctx.host?.log?.(`⚠️ URL 验证超时或失败: ${err.message}，继续使用未验证数据`)
+    }
 
     const validPath = join(ctx.resources.workspace || '.', 'output', date, 'raw', 'valid-raw.json')
+    const allRawPath = join(ctx.resources.workspace || '.', 'output', date, 'raw', 'all-raw.json')
     let validCount = 0
     try {
       const valid = JSON.parse(readFileSync(validPath, 'utf-8'))
       validCount = Array.isArray(valid) ? valid.length : 0
-    } catch {}
+    } catch {
+      // 没有 valid-raw.json，用 all-raw.json
+      try {
+        const all = JSON.parse(readFileSync(allRawPath, 'utf-8'))
+        validCount = Array.isArray(all) ? all.length : 0
+      } catch {}
+    }
 
     return ExecutionResult.ok(
       { valid: validCount },

@@ -4,7 +4,7 @@
 
 import { ExecutionResult } from '../runtime/result.mjs'
 import { computeEffectiveTime } from '../domain/time-model.mjs'
-import { computeAssetHash } from '../engine/schemas.mjs'
+import { computeAssetHash } from '../domain/hash.mjs'
 
 export class NormalizeAssets {
   constructor(ctx) { this.ctx = ctx }

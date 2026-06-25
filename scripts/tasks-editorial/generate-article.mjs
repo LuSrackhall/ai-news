@@ -3,7 +3,7 @@
  */
 
 import { ExecutionResult } from '../runtime/result.mjs'
-import { computeHash } from '../engine/schemas.mjs'
+import { computeHash } from '../domain/hash.mjs'
 
 export class GenerateArticle {
   constructor(ctx) { this.ctx = ctx }
