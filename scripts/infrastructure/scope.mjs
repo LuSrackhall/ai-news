@@ -1,5 +1,9 @@
 /**
  * buildScope — 组装所有业务依赖
+ *
+ * 支持两种模式：
+ * - buildScope(host, date) → JSON 文件存储（v4.1 兼容）
+ * - buildScope(null, null, { db }) → SQLite 存储（v4.2）
  */
 
 import { createJsonFileStorage } from '../storage/json-file-storage.mjs'
@@ -9,11 +13,27 @@ import { createArtifactRepository } from '../repositories/artifact-repository.mj
 import { createEventReadModel } from '../read-models/event-read-model.mjs'
 import { createAssetReadModel } from '../read-models/asset-read-model.mjs'
 import { createArtifactReadModel } from '../read-models/artifact-read-model.mjs'
+import { createSqliteEventRepository } from '../repositories/sqlite/event-repository.mjs'
+import { createSqliteEventReadModel } from '../read-models/sqlite/event-read-model.mjs'
 import { buildPolicyEngine } from './policies.mjs'
 
-export function buildScope(host, date) {
+export function buildScope(host, date, opts = {}) {
+  // SQLite 模式
+  if (opts.db) {
+    return {
+      events: {
+        repository: createSqliteEventRepository(opts.db),
+        readModel: createSqliteEventReadModel(opts.db),
+      },
+      assets: null,     // v4.2 Ingestion 不需要独立 asset store
+      artifacts: null,   // v4.2 Editorial 直接用 ctx._articleContent
+      policyEngine: buildPolicyEngine(),
+      inference: null,   // 由调用方填充
+    }
+  }
+
+  // JSON 文件模式（v4.1 兼容）
   const storage = createJsonFileStorage(date)
-  // 存储 date 到 _meta 供 readModel.history 使用
   storage.write('_meta', { date })
 
   const eventRepo = createEventRepository(storage)
@@ -28,11 +48,11 @@ export function buildScope(host, date) {
     assets: { repository: assetRepo, readModel: assetRead },
     artifacts: { repository: artifactRepo, readModel: artifactRead },
     policyEngine: buildPolicyEngine(),
-    inference: null, // v4.1 任务组 5 填充
+    inference: null,
     unitOfWork: {
       begin() {},
-      commit() { /* JSON 下 = 已经直接写入 */ },
-      rollback() { /* v4.2+ 实现 */ },
+      commit() {},
+      rollback() {},
     },
   }
 }
