@@ -46,8 +46,8 @@
 
 ## 7. Skill 入口
 
-- [ ] 7.1 修改 `.claude/skills/ai-daily/SKILL.md`：添加 /run-ingestion 和 /run-editorial 说明
-- [ ] 7.2 创建 `.claude/skills/ai-daily/references/INGESTION.md`：Ingestion 运维文档
+- [x] 7.1 修改 `.claude/skills/ai-daily/SKILL.md`：添加 /run-ingestion 和 /run-editorial 说明
+- [x] 7.2 创建 `.claude/skills/ai-daily/references/INGESTION.md`：Ingestion 运维文档
 
 ## 8. 测试
 
