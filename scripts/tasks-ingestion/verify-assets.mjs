@@ -1,33 +1,35 @@
 /**
  * VerifyAssets Task — URL 可访问性检查
+ * 直接调用 verify-urls.mjs 脚本，不依赖 Host.invoke
  */
 
 import { ExecutionResult } from '../runtime/result.mjs'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { execSync } from 'node:child_process'
 
 export class VerifyAssets {
   constructor(ctx) { this.ctx = ctx }
 
   async execute(ctx) {
     const date = ctx.resources.date
-    const result = await ctx.host.invoke(
-      `运行命令: node scripts/verify-urls.mjs --date ${date}\n报告：有效条数、移除条数。不要修改数据。`,
-      {
-        model: 'haiku',
-        schema: {
-          type: 'object',
-          properties: {
-            checked: { type: 'number' },
-            valid: { type: 'number' },
-            removed: { type: 'number' },
-          },
-          required: ['checked', 'valid'],
-        },
-      }
-    )
+
+    execSync(`node scripts/verify-urls.mjs --date ${date}`, {
+      encoding: 'utf-8',
+      timeout: 60_000,
+      cwd: ctx.resources.workspace || '.',
+    })
+
+    const validPath = join(ctx.resources.workspace || '.', 'output', date, 'raw', 'valid-raw.json')
+    let validCount = 0
+    try {
+      const valid = JSON.parse(readFileSync(validPath, 'utf-8'))
+      validCount = Array.isArray(valid) ? valid.length : 0
+    } catch {}
 
     return ExecutionResult.ok(
-      { valid: result.valid },
-      { checked: result.checked, valid: result.valid, removed: result.removed || 0 }
+      { valid: validCount },
+      { valid: validCount }
     )
   }
 }
