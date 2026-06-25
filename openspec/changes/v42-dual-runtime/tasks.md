@@ -12,15 +12,15 @@
 
 ## 3. Ingestion Runtime
 
-- [ ] 3.1 创建 `scripts/tasks-ingestion/collect-assets.mjs`：读 RSS feeds，产出 Asset[]
-- [ ] 3.2 创建 `scripts/tasks-ingestion/normalize-assets.mjs`：统一字段 + 计算 effective_at + time_precision
-- [ ] 3.3 创建 `scripts/tasks-ingestion/verify-assets.mjs`：URL 可访问性检查
-- [ ] 3.4 创建 `scripts/tasks-ingestion/extract-entities.mjs`：规则提取实体（regex + ENTITY_WEIGHTS 表），写入 event_entities
-- [ ] 3.5 创建 `scripts/tasks-ingestion/score-events.mjs`：调 policyEngine.execute('ranking')
-- [ ] 3.6 创建 `scripts/tasks-ingestion/dedup-events.mjs`：content_hash + 事件指纹 + 标题相似度
-- [ ] 3.7 创建 `scripts/tasks-ingestion/store-events.mjs`：INSERT OR IGNORE 写入 SQLite + event_entities + event_topics
-- [ ] 3.8 创建 `scripts/pipelines/ingestion.mjs`：IngestionPipeline 声明（7 个 steps）
-- [ ] 3.9 创建 `scripts/run-ingestion.mjs`：入口脚本（~30 行，纯 Node.js）
+- [x] 3.1 创建 `scripts/tasks-ingestion/collect-assets.mjs`：读 RSS feeds，产出 Asset[]
+- [x] 3.2 创建 `scripts/tasks-ingestion/normalize-assets.mjs`：统一字段 + 计算 effective_at + time_precision
+- [x] 3.3 创建 `scripts/tasks-ingestion/verify-assets.mjs`：URL 可访问性检查
+- [x] 3.4 创建 `scripts/tasks-ingestion/extract-entities.mjs`：规则提取实体（regex + ENTITY_WEIGHTS 表），写入 event_entities
+- [x] 3.5 创建 `scripts/tasks-ingestion/score-events.mjs`：调 policyEngine.execute('ranking')
+- [x] 3.6 创建 `scripts/tasks-ingestion/dedup-events.mjs`：content_hash + 事件指纹 + 标题相似度
+- [x] 3.7 创建 `scripts/tasks-ingestion/store-events.mjs`：INSERT OR IGNORE 写入 SQLite + event_entities + event_topics
+- [x] 3.8 创建 `scripts/pipelines/ingestion.mjs`：IngestionPipeline 声明（7 个 steps）
+- [x] 3.9 创建 `scripts/run-ingestion.mjs`：入口脚本（~30 行，纯 Node.js）
 
 ## 4. Editorial Runtime
 
