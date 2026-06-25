@@ -135,7 +135,7 @@ Ingestion 的 NormalizeAssets Task 负责计算。Editorial 永远按 `effective
 CollectAssets → NormalizeAssets → VerifyAssets → ExtractEntities → ScoreEvents → DedupEvents → StoreEvents
 ```
 
-6 个 Task，全部确定性（无 LLM）。高频（每 5-30 分钟），增量处理。
+7 个 Task，全部确定性（无 LLM）。高频（每 5-30 分钟），增量处理。
 
 | Task | 职责 |
 |------|------|

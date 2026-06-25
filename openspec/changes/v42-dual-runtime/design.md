@@ -17,7 +17,7 @@ v4.1 的 Execution Runtime 框架（Host → Runtime → Task → ExecutionConte
 - `log(msg)` → `console.log`
 - `metric(key, value)` → 内存记录
 
-入口脚本：`node scripts/run-editorial.mjs` 或 `node scripts/run-ingestion.mjs`
+入口脚本：`node scripts/run-editorial.mjs` 或 `node scripts/run-ingestion.mjs`（~70 行，含 TaskRegistry 注册 + scope 组装）
 
 ### D2: better-sqlite3 作为存储
 
