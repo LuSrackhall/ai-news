@@ -9,7 +9,6 @@ import { createSqliteDatabase } from './infrastructure/database.mjs'
 import { createSqliteEventRepository } from './repositories/sqlite/event-repository.mjs'
 import { createSqliteEventReadModel } from './read-models/sqlite/event-read-model.mjs'
 import { buildPolicyEngine } from './infrastructure/policies.mjs'
-import { createNodeHost } from './hosts/node-host.mjs'
 import { createRuntime } from './runtime/runtime.mjs'
 import { TaskRegistry } from './runtime/registry.mjs'
 import { compile } from './runtime/compiler.mjs'
@@ -31,8 +30,16 @@ console.log(`Ingestion Runtime — date: ${date}`)
 
 // 构建依赖
 const db = createSqliteDatabase()
-const host = createNodeHost()
 const policyEngine = buildPolicyEngine()
+
+// Ingestion 不需要 LLM，用简单 console host
+const host = {
+  log(msg) { console.log(`[${new Date().toISOString()}] ${msg}`) },
+  async invoke() { throw new Error('Ingestion does not use LLM') },
+  metric() {},
+  now() { return new Date().toISOString() },
+  elapsed(startMs) { return Date.now() - startMs },
+}
 
 const scope = {
   events: {
