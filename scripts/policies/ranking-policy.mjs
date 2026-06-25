@@ -70,7 +70,7 @@ export class RankingPolicy {
       summary: asset.summary || asset.summary_zh || '',
       url: asset.url,
       sources: [{
-        name: asset.source?.name || asset.source_name || 'unknown',
+        name: asset.source?.name || asset.source_name || asset.sourceName || 'unknown',
         tier: asset.source?.tier || asset.tier || 3,
         url: asset.url,
         publishedAt: asset.publishedAt || asset.published_at,

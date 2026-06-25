@@ -32,11 +32,11 @@ export class NormalizeAssets {
         timePrecision: time_precision,
 
         source: {
-          name: asset.source_name || asset.source?.name || 'unknown',
+          name: asset.source_name || asset.sourceName || asset.source?.name || 'unknown',
           tier: asset.source_tier || asset.source?.tier || asset.tier || 3,
           url: asset.url || null,
         },
-        sourceId: asset.sourceId || asset.source_id || null,
+        sourceId: asset.sourceId || asset.source_id || asset.sourceId || null,
 
         category: asset.category || null,
         language: asset.language || 'en',

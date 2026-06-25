@@ -74,11 +74,13 @@ db.close()
 - 同一事件只保留最重要的一条
 - 为每条分配 importance: `deep`（重磅深度）/ `important`（重要动态）/ `brief`（快讯）
 - 至少 1 条 deep，至少 3 个不同来源
+- **URL 规则：** 每条 selected item 的 `url`、`source_name`、`summary` 字段必须原样复制自 Step 1 查询结果，禁止编造或修改。如果某条事件没有 `url`，设为 `null`，不得自行构造
 
 **检查点：**
 - [ ] selected 在 8-15 之间
 - [ ] 至少 1 条 deep
 - [ ] 来源多样性 >= 3
+- [ ] 每条 selected item 的 url 与 Step 1 查询结果中的 url 完全一致
 
 将选题结果写入 `output/<date>/curated.json`。
 
