@@ -1,9 +1,9 @@
 ## 1. SQLite 基础设施
 
-- [ ] 1.1 安装 better-sqlite3 依赖（`npm install better-sqlite3`）
-- [ ] 1.2 创建 `scripts/infrastructure/database.mjs`：createSqliteDatabase()，建表 + 索引 + WAL mode
-- [ ] 1.3 创建 `scripts/repositories/sqlite-event-repository.mjs`：store/storeBatch（INSERT OR IGNORE）
-- [ ] 1.4 创建 `scripts/read-models/sqlite-event-read-model.mjs`：findByWindow/findByEntity/findByTopic/existsByHash
+- [x] 1.1 安装 better-sqlite3 依赖（`npm install better-sqlite3`）
+- [x] 1.2 创建 `scripts/infrastructure/database.mjs`：createSqliteDatabase()，建表 + 索引 + WAL mode
+- [x] 1.3 创建 `scripts/repositories/sqlite-event-repository.mjs`：store/storeBatch（INSERT OR IGNORE）
+- [x] 1.4 创建 `scripts/read-models/sqlite-event-read-model.mjs`：findByWindow/findByEntity/findByTopic/existsByHash
 
 ## 2. 时间语义模型
 
