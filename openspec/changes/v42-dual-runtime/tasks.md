@@ -41,8 +41,8 @@
 
 ## 6. Host 改造
 
-- [ ] 6.1 创建 `scripts/hosts/node-host.mjs`：纯 Node.js Host 实现（invoke 调 Claude API，log 调 console.log）
-- [ ] 6.2 修改 `scripts/services/inference-service.mjs`：接收 host 参数而非依赖 workflowRuntime
+- [x] 6.1 创建 `scripts/hosts/node-host.mjs`：纯 Node.js Host 实现（invoke 调 Claude API，log 调 console.log）
+- [x] 6.2 修改 `scripts/services/inference-service.mjs`：接收 host 参数而非依赖 workflowRuntime
 
 ## 7. Skill 入口
 
