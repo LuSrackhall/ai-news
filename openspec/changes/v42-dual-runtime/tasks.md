@@ -51,7 +51,7 @@
 
 ## 8. 测试
 
-- [ ] 8.1 创建 `scripts/test-sqlite.mjs`：SQLite 建表 + store/load/query 测试
+- [x] 8.1 创建 `scripts/test-sqlite.mjs`：SQLite 建表 + store/load/query 测试
 - [ ] 8.2 创建 `scripts/test-ingestion.mjs`：Ingestion 管道测试（mock RSS 数据 → SQLite）
 - [ ] 8.3 创建 `scripts/test-editorial.mjs`：Editorial 管道测试（mock SQLite 数据 → output/）
 - [ ] 8.4 端到端运行 Ingestion（真实 RSS → SQLite）

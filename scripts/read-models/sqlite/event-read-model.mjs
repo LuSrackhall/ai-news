@@ -52,13 +52,13 @@ export function createSqliteEventReadModel(db) {
 
     findByEntity(entity) {
       return db.prepare(
-        'SELECT e.* FROM events e JOIN event_entities ee ON e.id = ee.id WHERE ee.entity = ? ORDER BY e.effective_at DESC'
+        'SELECT e.* FROM events e JOIN event_entities ee ON e.id = ee.event_id WHERE ee.entity = ? ORDER BY e.effective_at DESC'
       ).all(entity).map(fromRow)
     },
 
     findByTopic(topic) {
       return db.prepare(
-        'SELECT e.* FROM events e JOIN event_topics et ON e.id = et.id WHERE et.topic = ? ORDER BY e.effective_at DESC'
+        'SELECT e.* FROM events e JOIN event_topics et ON e.id = et.event_id WHERE et.topic = ? ORDER BY e.effective_at DESC'
       ).all(topic).map(fromRow)
     },
 
