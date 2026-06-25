@@ -7,8 +7,8 @@
 
 ## 2. 时间语义模型
 
-- [ ] 2.1 创建 `scripts/domain/time-model.mjs`：computeEffectiveTime(publishedAt, collectedAt) + detectPrecision()
-- [ ] 2.2 在 NormalizeAssets Task 中调用 computeEffectiveTime
+- [x] 2.1 创建 `scripts/domain/time-model.mjs`：computeEffectiveTime(publishedAt, collectedAt) + detectPrecision()
+- [x] 2.2 在 NormalizeAssets Task 中调用 computeEffectiveTime
 
 ## 3. Ingestion Runtime
 
