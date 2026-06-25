@@ -36,8 +36,8 @@
 
 ## 5. Scope 改造
 
-- [ ] 5.1 修改 `scripts/infrastructure/scope.mjs`：buildScope 接收 db 实例，注入 SQLite Repository + ReadModel
-- [ ] 5.2 修改 `scripts/infrastructure/policies.mjs`：buildPolicyEngine 不变（Policy 不依赖存储）
+- [x] 5.1 修改 `scripts/infrastructure/scope.mjs`：buildScope 接收 db 实例，注入 SQLite Repository + ReadModel
+- [x] 5.2 修改 `scripts/infrastructure/policies.mjs`：buildPolicyEngine 不变（Policy 不依赖存储）
 
 ## 6. Host 改造
 
