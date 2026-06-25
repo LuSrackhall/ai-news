@@ -24,15 +24,15 @@
 
 ## 4. Editorial Runtime
 
-- [ ] 4.1 创建 `scripts/tasks-editorial/select-editorial-window.mjs`：readModel.findByWindow(from, to)
-- [ ] 4.2 创建 `scripts/tasks-editorial/curate-events.mjs`：inferenceService.run('curation')
-- [ ] 4.3 创建 `scripts/tasks-editorial/generate-article.mjs`：inferenceService.run('article')
-- [ ] 4.4 创建 `scripts/tasks-editorial/generate-script.mjs`：inferenceService.run('script')
-- [ ] 4.5 创建 `scripts/tasks-editorial/render-artifacts.mjs`：policyEngine.execute('render')
-- [ ] 4.6 创建 `scripts/tasks-editorial/validate-output.mjs`：policyEngine.execute('validate')
-- [ ] 4.7 创建 `scripts/tasks-editorial/archive-output.mjs`：写 output/<date>/ 文件
-- [ ] 4.8 创建 `scripts/pipelines/editorial.mjs`：EditorialPipeline 声明（7 个 steps）
-- [ ] 4.9 创建 `scripts/run-editorial.mjs`：入口脚本（~30 行，纯 Node.js，支持 --date 参数）
+- [x] 4.1 创建 `scripts/tasks-editorial/select-editorial-window.mjs`：readModel.findByWindow(from, to)
+- [x] 4.2 创建 `scripts/tasks-editorial/curate-events.mjs`：inferenceService.run('curation')
+- [x] 4.3 创建 `scripts/tasks-editorial/generate-article.mjs`：inferenceService.run('article')
+- [x] 4.4 创建 `scripts/tasks-editorial/generate-script.mjs`：inferenceService.run('script')
+- [x] 4.5 创建 `scripts/tasks-editorial/render-artifacts.mjs`：policyEngine.execute('render')
+- [x] 4.6 创建 `scripts/tasks-editorial/validate-output.mjs`：policyEngine.execute('validate')
+- [x] 4.7 创建 `scripts/tasks-editorial/archive-output.mjs`：写 output/<date>/ 文件
+- [x] 4.8 创建 `scripts/pipelines/editorial.mjs`：EditorialPipeline 声明（7 个 steps）
+- [x] 4.9 创建 `scripts/run-editorial.mjs`：入口脚本（~30 行，纯 Node.js，支持 --date 参数）
 
 ## 5. Scope 改造
 
