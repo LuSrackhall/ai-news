@@ -28,15 +28,24 @@ export class StoreEvents {
       sourceId: asset.sourceId,
       entities: asset.entities || [],
       topics: asset.topics || [],
+      cluster_id: asset.cluster_id || null,
       assetIds: [asset.id],
       metadata: asset.metadata || {},
     }))
 
     const inserted = repo.storeBatch(events)
 
+    // 写入聚类数据
+    const clusters = ctx._clusters || []
+    const clusterRepo = ctx.scope?.events?.clusterRepository
+    let clustersStored = 0
+    if (clusterRepo && clusters.length > 0) {
+      clustersStored = clusterRepo.storeBatch(clusters)
+    }
+
     return ExecutionResult.ok(
-      { stored: inserted },
-      { input: events.length, inserted, skipped: events.length - inserted }
+      { stored: inserted, clustersStored },
+      { input: events.length, inserted, skipped: events.length - inserted, clusters: clustersStored }
     )
   }
 }

@@ -7,7 +7,9 @@
 
 import { createSqliteDatabase } from './infrastructure/database.mjs'
 import { createSqliteEventRepository } from './repositories/sqlite/event-repository.mjs'
+import { createSqliteClusterRepository } from './repositories/sqlite/cluster-repository.mjs'
 import { createSqliteEventReadModel } from './read-models/sqlite/event-read-model.mjs'
+import { createSqliteClusterReadModel } from './read-models/sqlite/cluster-read-model.mjs'
 import { buildPolicyEngine } from './infrastructure/policies.mjs'
 import { createRuntime } from './runtime/runtime.mjs'
 import { TaskRegistry } from './runtime/registry.mjs'
@@ -45,7 +47,9 @@ const host = {
 const scope = {
   events: {
     repository: createSqliteEventRepository(db),
+    clusterRepository: createSqliteClusterRepository(db),
     readModel: createSqliteEventReadModel(db),
+    clusterReadModel: createSqliteClusterReadModel(db),
   },
   policyEngine,
   inference: null, // Ingestion 不需要 LLM

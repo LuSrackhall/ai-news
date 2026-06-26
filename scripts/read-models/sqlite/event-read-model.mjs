@@ -66,6 +66,12 @@ export function createSqliteEventReadModel(db) {
       return db.prepare('SELECT 1 FROM events WHERE content_hash = ?').get(hash) !== undefined
     },
 
+    findByCluster(clusterId) {
+      return db.prepare(
+        'SELECT * FROM events WHERE cluster_id = ? ORDER BY rank_total DESC'
+      ).all(clusterId).map(fromRow)
+    },
+
     count() {
       return db.prepare('SELECT COUNT(*) as count FROM events').get().count
     },
