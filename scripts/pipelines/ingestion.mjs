@@ -9,6 +9,7 @@ export const ingestionPipeline = {
     { taskId: 'NormalizeAssets', name: '归一化' },
     { taskId: 'VerifyAssets', name: '验证' },
     { taskId: 'ExtractEntities', name: '实体提取' },
+    { taskId: 'ClusterEvents', name: '聚类' },
     { taskId: 'ScoreEvents', name: '评分' },
     { taskId: 'DedupEvents', name: '去重' },
     { taskId: 'StoreEvents', name: '入库' },

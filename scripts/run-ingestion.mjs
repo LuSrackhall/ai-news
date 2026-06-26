@@ -18,6 +18,7 @@ import { CollectAssets } from './tasks-ingestion/collect-assets.mjs'
 import { NormalizeAssets } from './tasks-ingestion/normalize-assets.mjs'
 import { VerifyAssets } from './tasks-ingestion/verify-assets.mjs'
 import { ExtractEntities } from './tasks-ingestion/extract-entities.mjs'
+import { ClusterEvents } from './tasks-ingestion/cluster-events.mjs'
 import { ScoreEvents } from './tasks-ingestion/score-events.mjs'
 import { DedupEvents } from './tasks-ingestion/dedup-events.mjs'
 import { StoreEvents } from './tasks-ingestion/store-events.mjs'
@@ -61,7 +62,7 @@ const ctx = {
 const registry = new TaskRegistry()
 registry.registerAll({
   CollectAssets, NormalizeAssets, VerifyAssets, ExtractEntities,
-  ScoreEvents, DedupEvents, StoreEvents,
+  ClusterEvents, ScoreEvents, DedupEvents, StoreEvents,
 })
 
 // 执行
