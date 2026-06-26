@@ -199,6 +199,21 @@ export const ENTITY_WEIGHTS = {
     ],
     score: 6,
   },
+  // v4.4: 中文实体词典
+  chinese_tech: {
+    entities: [
+      // 科技公司
+      '36氪', '36Kr', '商汤', '科大讯飞', '寒武纪', '旷视', '云从', '第四范式',
+      '蚂蚁集团', '京东', '美团', '网易', '快手', '哔哩哔哩',
+      // AI 产品与模型
+      '文心一言', '文心大模型', '通义千问', '通义', '豆包', 'Kimi', '智谱',
+      'GLM', 'ChatGLM', '百川', 'MiniMax', '零一万物', '月之暗面',
+      'DeepSeek', 'Qwen', 'SenseTime',
+      // AI 研究者（中国）
+      '杨植麟', '王小川', '李彦宏', '马化腾', '张一鸣',
+    ],
+    score: 6,
+  },
   notable: {
     entities: [
       'Sam Altman', 'Demis Hassabis', 'Yann LeCun', 'Ilya Sutskever',
