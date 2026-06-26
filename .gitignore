@@ -4,3 +4,7 @@ output/
 /tmp/
 .worktrees/
 data/*.db
+
+*.db
+*.db-shm
+*.db-wal
