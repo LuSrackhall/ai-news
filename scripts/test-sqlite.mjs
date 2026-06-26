@@ -27,6 +27,15 @@ const db = createSqliteDatabase(TEST_DB)
 const repo = createSqliteEventRepository(db)
 const readModel = createSqliteEventReadModel(db)
 
+// v4.4: 新增依赖
+const { createSqliteClusterRepository } = await import('./repositories/sqlite/cluster-repository.mjs')
+const { createSqliteClusterReadModel } = await import('./read-models/sqlite/cluster-read-model.mjs')
+const { createSqliteFeedbackRepository } = await import('./repositories/sqlite/feedback-repository.mjs')
+
+const clusterRepo = createSqliteClusterRepository(db)
+const clusterReadModel = createSqliteClusterReadModel(db)
+const feedbackRepo = createSqliteFeedbackRepository(db)
+
 // 建表
 test('数据库创建成功', () => {
   assert.ok(existsSync(TEST_DB))
@@ -38,6 +47,9 @@ test('events 表存在', () => {
   assert.ok(names.includes('events'))
   assert.ok(names.includes('event_entities'))
   assert.ok(names.includes('event_topics'))
+  assert.ok(names.includes('event_clusters'))
+  assert.ok(names.includes('weekly_reports'))
+  assert.ok(names.includes('feedback'))
 })
 
 // 写入
@@ -120,6 +132,82 @@ test('event_topics 写入正确', () => {
   const topics = db.prepare('SELECT topic FROM event_topics WHERE event_id = ?').all('test-1')
   assert.equal(topics.length, 1)
   assert.equal(topics[0].topic, 'LLM')
+})
+
+// === v4.4: 新表测试 ===
+
+// event_clusters
+test('clusterRepository.store 写入 Cluster', () => {
+  const changes = clusterRepo.store({
+    id: 'cluster-001',
+    title: 'OpenAI GPT-6 发布',
+    type: 'auto',
+    importance: 'high',
+    event_count: 2,
+    entity_keys: ['OpenAI', 'GPT-6'],
+    topic_keys: ['LLM'],
+    first_seen: '2026-06-24T09:00:00Z',
+    last_updated: '2026-06-24T10:00:00Z',
+  })
+  assert.equal(changes, 1)
+})
+
+test('clusterReadModel.findAll 查询', () => {
+  const clusters = clusterReadModel.findAll()
+  assert.equal(clusters.length, 1)
+  assert.equal(clusters[0].title, 'OpenAI GPT-6 发布')
+  assert.ok(Array.isArray(clusters[0].entity_keys))
+  assert.ok(clusters[0].entity_keys.includes('OpenAI'))
+})
+
+test('clusterReadModel.findByEntity 查询', () => {
+  const clusters = clusterReadModel.findByEntity('OpenAI')
+  assert.equal(clusters.length, 1)
+})
+
+test('clusterReadModel.findByDateRange 查询', () => {
+  const clusters = clusterReadModel.findByDateRange('2026-06-24T00:00:00Z', '2026-06-25T00:00:00Z')
+  assert.equal(clusters.length, 1)
+})
+
+// events.cluster_id 关联
+test('events.cluster_id 写入正确', () => {
+  const event = db.prepare('SELECT cluster_id FROM events WHERE id = ?').get('test-1')
+  // test-1 没有设 cluster_id，应为 null
+  assert.equal(event.cluster_id, null)
+})
+
+test('findByCluster 查询', () => {
+  const events = readModel.findByCluster('nonexistent')
+  assert.equal(events.length, 0)
+})
+
+// feedback
+test('feedbackRepository.store 写入反馈', () => {
+  const changes = feedbackRepo.store({
+    eventId: 'test-1',
+    type: 'click',
+    value: 1,
+    source: 'web',
+  })
+  assert.equal(changes, 1)
+})
+
+test('feedback 表记录正确', () => {
+  const rows = db.prepare('SELECT * FROM feedback WHERE event_id = ?').all('test-1')
+  assert.equal(rows.length, 1)
+  assert.equal(rows[0].type, 'click')
+  assert.equal(rows[0].value, 1)
+  assert.equal(rows[0].source, 'web')
+})
+
+// weekly_reports (schema only, no repository needed for v4.4)
+test('weekly_reports 表可写入', () => {
+  const changes = db.prepare(`
+    INSERT INTO weekly_reports (id, week_start, week_end, cluster_count, event_count, article_chars, script_chars, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `).run('wr-001', '2026-06-20', '2026-06-26', 5, 20, 3000, 1500, '2026-06-26T09:00:00Z').changes
+  assert.equal(changes, 1)
 })
 
 db.close()
