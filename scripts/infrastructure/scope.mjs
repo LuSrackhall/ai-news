@@ -14,7 +14,10 @@ import { createEventReadModel } from '../read-models/event-read-model.mjs'
 import { createAssetReadModel } from '../read-models/asset-read-model.mjs'
 import { createArtifactReadModel } from '../read-models/artifact-read-model.mjs'
 import { createSqliteEventRepository } from '../repositories/sqlite/event-repository.mjs'
+import { createSqliteClusterRepository } from '../repositories/sqlite/cluster-repository.mjs'
+import { createSqliteFeedbackRepository } from '../repositories/sqlite/feedback-repository.mjs'
 import { createSqliteEventReadModel } from '../read-models/sqlite/event-read-model.mjs'
+import { createSqliteClusterReadModel } from '../read-models/sqlite/cluster-read-model.mjs'
 import { buildPolicyEngine } from './policies.mjs'
 
 export function buildScope(host, date, opts = {}) {
@@ -23,7 +26,10 @@ export function buildScope(host, date, opts = {}) {
     return {
       events: {
         repository: createSqliteEventRepository(opts.db),
+        clusterRepository: createSqliteClusterRepository(opts.db),
+        feedbackRepository: createSqliteFeedbackRepository(opts.db),
         readModel: createSqliteEventReadModel(opts.db),
+        clusterReadModel: createSqliteClusterReadModel(opts.db),
       },
       assets: null,     // v4.2 Ingestion 不需要独立 asset store
       artifacts: null,   // v4.2 Editorial 直接用 ctx._articleContent
