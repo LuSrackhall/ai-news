@@ -114,8 +114,8 @@ export function createSqliteDatabase(dbPath = null) {
     -- v4.4: 反馈表
     CREATE TABLE IF NOT EXISTS feedback (
       id            TEXT PRIMARY KEY,
-      event_id      TEXT,
-      cluster_id    TEXT,
+      event_id      TEXT REFERENCES events(id),
+      cluster_id    TEXT REFERENCES event_clusters(id),
       type          TEXT NOT NULL,
       value         REAL NOT NULL,
       source        TEXT NOT NULL DEFAULT 'unknown',

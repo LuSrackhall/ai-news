@@ -15,11 +15,12 @@ export class ClusterEvents {
 
   async execute(ctx) {
     const assets = ctx._assets || []
-    const clusterPolicy = new ClusterPolicy()
+    // B5: 支持通过 scope 注入策略，方便 v4.5 LLM 替换
+    const clusterPolicy = ctx.scope?.clusterPolicy || new ClusterPolicy()
 
-    // 获取 scope 中的 clusterRepository（在 StoreEvents 之前，Cluster 只在内存中操作）
-    const clusterRepo = ctx.scope?.events?.clusterRepository
-    const existingClusters = clusterRepo ? clusterRepo.findAll() : []
+    // A1: 用 ReadModel 读取已有 Cluster（CQRS 隔离，写模型无 findAll）
+    const clusterReadModel = ctx.scope?.events?.clusterReadModel
+    const existingClusters = clusterReadModel ? clusterReadModel.findAll() : []
 
     let clustered = 0
     let newClusters = 0

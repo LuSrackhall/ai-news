@@ -10,6 +10,7 @@
 import { createSqliteDatabase } from './infrastructure/database.mjs'
 import { createSqliteEventRepository } from './repositories/sqlite/event-repository.mjs'
 import { createSqliteClusterRepository } from './repositories/sqlite/cluster-repository.mjs'
+import { createSqliteWeeklyReportRepository } from './repositories/sqlite/weekly-report-repository.mjs'
 import { createSqliteEventReadModel } from './read-models/sqlite/event-read-model.mjs'
 import { createSqliteClusterReadModel } from './read-models/sqlite/cluster-read-model.mjs'
 import { buildPolicyEngine } from './infrastructure/policies.mjs'
@@ -52,11 +53,12 @@ const scope = {
   events: {
     repository: createSqliteEventRepository(db),
     clusterRepository: createSqliteClusterRepository(db),
+    weeklyReportRepository: createSqliteWeeklyReportRepository(db),
     readModel: createSqliteEventReadModel(db),
     clusterReadModel: createSqliteClusterReadModel(db),
   },
   policyEngine,
-  inference: null, // 由 Editorial Runtime 提供
+  inference: null,
 }
 
 const ctx = {

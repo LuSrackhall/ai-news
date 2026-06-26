@@ -48,12 +48,13 @@ export class ClusterPolicy {
   }
 
   /**
-   * 事件指纹: SHA-256(Entity|EventType|Keywords|Week)
+   * 事件指纹: 哈希指纹(Entity|EventType|Keywords|Week)
    */
   fingerprint(event) {
     const sortedEntities = (event.entities || []).sort().join(',')
     const sortedKeywords = (event.keywords || []).sort().join(',')
-    const raw = `${sortedEntities}|${event.eventType || ''}|${sortedKeywords}|${event.weekKey || ''}`
+    // A3: 用 \x00 做分隔符，避免实体名含 | 导致碰撞
+    const raw = `${sortedEntities}\x00${event.eventType || ''}\x00${sortedKeywords}\x00${event.weekKey || ''}`
     return simpleHash(raw)
   }
 
@@ -85,14 +86,28 @@ export class ClusterPolicy {
   }
 
   /**
-   * 生成周键（ISO 周: YYYY-Www）
+   * 生成周键（ISO 8601 周: YYYY-Www）
+   * 使用标准算法：该周的周四所在的年份即为年，周数从周四推算
    */
   weekKey(date) {
     const d = new Date(date)
-    const jan1 = new Date(d.getFullYear(), 0, 1)
-    const days = Math.floor((d - jan1) / 86400000)
-    const week = Math.ceil((days + jan1.getDay() + 1) / 7)
-    return `${d.getFullYear()}-W${String(week).padStart(2, '0')}`
+    // 找到本周的周四（ISO 周从周一开始，周四在中间）
+    const dayOfWeek = d.getUTCDay() || 7 // 周日=7
+    const thursday = new Date(d)
+    thursday.setUTCDate(d.getUTCDate() + (4 - dayOfWeek))
+
+    // 年份 = 周四所在年
+    const year = thursday.getUTCFullYear()
+
+    // 该年 1 月 4 日一定在 W01
+    const jan4 = new Date(Date.UTC(year, 0, 4))
+    const jan4Day = jan4.getUTCDay() || 7
+    const weekStart = new Date(jan4)
+    weekStart.setUTCDate(jan4.getUTCDate() - (jan4Day - 1))
+
+    const weekNum = Math.floor((thursday - weekStart) / 604800000) + 1
+
+    return `${year}-W${String(weekNum).padStart(2, '0')}`
   }
 }
 

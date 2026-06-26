@@ -16,6 +16,7 @@ import { createArtifactReadModel } from '../read-models/artifact-read-model.mjs'
 import { createSqliteEventRepository } from '../repositories/sqlite/event-repository.mjs'
 import { createSqliteClusterRepository } from '../repositories/sqlite/cluster-repository.mjs'
 import { createSqliteFeedbackRepository } from '../repositories/sqlite/feedback-repository.mjs'
+import { createSqliteWeeklyReportRepository } from '../repositories/sqlite/weekly-report-repository.mjs'
 import { createSqliteEventReadModel } from '../read-models/sqlite/event-read-model.mjs'
 import { createSqliteClusterReadModel } from '../read-models/sqlite/cluster-read-model.mjs'
 import { buildPolicyEngine } from './policies.mjs'
@@ -28,6 +29,7 @@ export function buildScope(host, date, opts = {}) {
         repository: createSqliteEventRepository(opts.db),
         clusterRepository: createSqliteClusterRepository(opts.db),
         feedbackRepository: createSqliteFeedbackRepository(opts.db),
+        weeklyReportRepository: createSqliteWeeklyReportRepository(opts.db),
         readModel: createSqliteEventReadModel(opts.db),
         clusterReadModel: createSqliteClusterReadModel(opts.db),
       },

@@ -1,9 +1,10 @@
 /**
- * ArchiveWeekly Task — 写入 output/weekly/<week>/
+ * ArchiveWeekly Task — 写入 output/weekly/<week>/ + weekly_reports 表
  */
 
 import { join } from 'node:path'
 import { mkdirSync, writeFileSync } from 'node:fs'
+import { randomUUID } from 'node:crypto'
 import { ExecutionResult } from '../runtime/result.mjs'
 
 export class ArchiveWeekly {
@@ -28,18 +29,37 @@ export class ArchiveWeekly {
     const scriptPath = join(weekDir, 'script.md')
     writeFileSync(scriptPath, rendered.script || '', 'utf8')
 
-    // 写入 manifest.json
+    // 构建 manifest
+    const articleChars = (rendered.article || '').length
+    const scriptChars = (rendered.script || '').length
+    const eventCount = clusters.reduce((s, c) => s + c.eventCount, 0)
+
     const manifest = {
       week_start: startDate,
       week_end: endDate,
       cluster_count: clusters.length,
-      event_count: clusters.reduce((s, c) => s + c.eventCount, 0),
-      article_chars: (rendered.article || '').length,
-      script_chars: (rendered.script || '').length,
+      event_count: eventCount,
+      article_chars: articleChars,
+      script_chars: scriptChars,
       created_at: new Date().toISOString(),
     }
     const manifestPath = join(weekDir, 'manifest.json')
     writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf8')
+
+    // A4: 写入 weekly_reports 表
+    const weeklyReportRepo = ctx.scope?.events?.weeklyReportRepository
+    if (weeklyReportRepo) {
+      weeklyReportRepo.store({
+        id: `wr-${randomUUID().slice(0, 8)}`,
+        week_start: startDate,
+        week_end: endDate,
+        cluster_count: clusters.length,
+        event_count: eventCount,
+        article_chars: articleChars,
+        script_chars: scriptChars,
+        created_at: manifest.created_at,
+      })
+    }
 
     ctx._archivePath = weekDir
 
