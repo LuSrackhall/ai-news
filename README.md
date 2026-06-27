@@ -1,104 +1,103 @@
 # AI 日报 (ai-ribao)
 
-基于 **Execution Runtime v4.1** 的 AI 内容智能平台。每日从 15+ 信源采集、评分、去重、选题、生成日报文章和视频口播稿。
+基于 **Dual Runtime v4.4** 的 AI 内容智能平台。每日从 33 个信源采集、评分、去重、聚类、选题，生成日报文章和视频口播稿。
 
 ## 架构
 
 ```
-Host → Runtime → ExecutionSession → ExecutionGraph → Task
-                                                       ↓
-                                               ExecutionContext
-                                               ├── Resources
-                                               └── Scope
-                                                   ├── events (Repository + ReadModel)
-                                                   ├── assets (Repository + ReadModel)
-                                                   ├── artifacts (Repository + ReadModel)
-                                                   ├── inference (InferenceService)
-                                                   ├── policyEngine (PolicyEngine)
-                                                   └── unitOfWork (UnitOfWork)
+Ingestion（纯 Node.js，无需 LLM）
+  collect → normalize → verify → extract → cluster → score → dedup → store
+  输出 → SQLite (data/events.db)
+
+Editorial（Agent 驱动，/daily）
+  Agent 读取 SQLite → 选题 → 写文章 → 写口播稿 → 渲染/校验/归档
+  输出 → output/<date>/
+
+Weekly（纯 Node.js + 可选 LLM，/weekly）
+  加载 7 天事件 → 按 Cluster 聚合 → 生成文章 → 渲染 → 归档
+  输出 → output/weekly/<start>_<end>/
 ```
 
-**七层依赖链，单向向下。** Task 通过 ExecutionContext 获取所有依赖，不直接 import 任何模块。
-
-### Pipeline 流程
-
-```
-CollectAssets → VerifyAssets → ScoreEvents → DedupEvents → CurateEvents
-                                                              ↓
-                          GenerateArticle → GenerateScript → RenderArtifacts → ValidateOutput → ArchiveOutput
-```
+**Ingestion 是纯 Node.js，不需要 LLM。Editorial 是 Skill，Agent 自己就是 LLM。**
 
 ### 核心设计原则
 
+- **Runtime 边界不变** — 只新增 Task + Pipeline，不修改 Runtime 核心
 - **Task 负责数据组装，Policy 只做纯计算** — Policy 不碰 IO、不碰 Repository
 - **Repository（写）+ ReadModel（读）** — 纯 CQRS
-- **PolicyEngine 注册表式** — 新增 Policy/Rule 不改 Runtime
-- **InferenceProfile 配置 + InferenceService 执行** — LLM 调用与业务解耦
-- **Runtime 只认识 Task / ExecutionGraph / ExecutionContext** — 零业务语言
+- **ClusterPolicy 可替换** — 当前规则版，v4.5 可通过 scope DI 注入 LLM 版
+- **RSSHub 连接池 + 熔断器** — 无原生 RSS 的源自动走池化实例
 
 ## 快速开始
 
 ```bash
-# 生成今日日报
-/ai-ribao-daily
+# 1. 采集新闻（每天跑一次，或 cron 定时）
+node scripts/run-ingestion.mjs
 
-# 指定日期
-/ai-ribao-daily --date=2026-06-24
+# 2. 生成日报（对 Agent 说 /daily）
+#    Agent 读取 SQLite → 选题 → 写文章 → 写口播稿 → 渲染 → 归档
+
+# 3. 生成周报
+node scripts/run-weekly.mjs
 ```
+
+## 信源（33 个）
+
+| 分类 | 数量 | 示例 |
+|------|------|------|
+| Tier 1 官方一手 | 10 | OpenAI、Google DeepMind、Google AI Blog、Meta、HuggingFace、arXiv |
+| Tier 2 权威媒体 | 14 | TechCrunch、The Verge、Ars Technica、TLDR AI、36氪、量子位 |
+| Tier 3 社区 | 3 | Hacker News、LessWrong、Alignment Forum |
+| RSSHub 中转 | 8 | Anthropic、DeepSeek、机器之心、虎嗅、晚点LatePost、Cursor |
+| **RSSHub 连接池** | 5 个实例 | 自动熔断 + 指数退避 + 健康持久化 |
 
 ## 目录结构
 
 ```
 scripts/
-├── runtime/                    # 框架层（零业务知识）
-│   ├── host.mjs                # Host 接口
-│   ├── runtime.mjs             # Runtime 执行引擎
-│   ├── context.mjs             # ExecutionContext
-│   ├── session.mjs             # ExecutionSession
-│   ├── graph.mjs               # ExecutionGraph
-│   ├── compiler.mjs            # GraphCompiler
-│   ├── registry.mjs            # TaskRegistry
-│   └── result.mjs              # ExecutionResult
-├── hosts/claude-host.mjs       # Claude Code Workflow 适配
-├── pipelines/daily.mjs         # DailyPipeline 声明
-├── tasks/                      # Task 实现（10 个）
-├── policies/                   # Policy 实现（4 个）
-├── rules/                      # Rule 实现（8 个）
-├── repositories/               # 写模型（3 个）
-├── read-models/                # 读模型（3 个）
-├── services/                   # InferenceService + Profiles
-├── infrastructure/             # Scope + PolicyEngine 组装
-├── storage/json-file-storage.mjs
-├── config.mjs                  # 信源/评分/权重配置
-├── collect-rss.mjs             # RSS 采集脚本
-├── verify-urls.mjs             # URL 验证脚本
-└── test-runtime.mjs            # 测试（13 项）
+├── runtime/                        # 框架层（零业务知识）
+│   ├── runtime.mjs                 # Runtime 执行引擎
+│   ├── registry.mjs                # TaskRegistry
+│   ├── compiler.mjs                # GraphCompiler
+│   └── result.mjs                  # ExecutionResult
+├── pipelines/
+│   ├── ingestion.mjs               # Ingestion Pipeline 声明
+│   └── weekly.mjs                  # Weekly Pipeline 声明
+├── tasks-ingestion/                # Ingestion Tasks（8 个）
+├── tasks-weekly/                   # Weekly Tasks（5 个）
+├── domain/                         # 领域模型
+│   ├── cluster.mjs                 # ClusterPolicy（三重匹配）
+│   └── hash.mjs                    # 哈希工具
+├── repositories/sqlite/            # 写模型
+├── read-models/sqlite/             # 读模型
+├── policies/                       # 评分/渲染/校验策略
+├── services/                       # InferenceService
+├── infrastructure/
+│   ├── database.mjs                # SQLite 建表
+│   ├── scope.mjs                   # 依赖注入
+│   ├── policies.mjs                # PolicyEngine
+│   └── rsshub-pool.mjs             # RSSHub 连接池 + 熔断器
+├── config.mjs                      # 信源/评分/权重/RSSHub 实例配置
+├── collect-rss.mjs                 # RSS 采集脚本
+├── run-ingestion.mjs               # Ingestion 入口
+├── run-weekly.mjs                  # Weekly 入口
+├── test-sqlite.mjs                 # SQLite 测试（21 项）
+└── test-rsshub-pool.mjs            # RsshubPool 测试（10 项）
 ```
-
-## 扩展指南
-
-### 新增 Policy
-创建 `scripts/policies/my-policy.mjs`，在 `infrastructure/policies.mjs` 中注册。
-
-### 新增 Rule
-创建 `scripts/rules/my-rule.mjs`，在 Policy 构造函数中注入。
-
-### 新增 Task
-创建 `scripts/tasks/my-task.mjs`，在 workflow 中 `registry.registerAll()` 注册。
-
-### 新增 Pipeline
-创建 `scripts/pipelines/weekly.mjs`，定义 `steps` 数组即可。
 
 ## 测试
 
 ```bash
-node scripts/test-runtime.mjs
+node scripts/test-sqlite.mjs        # SQLite + 聚类 + 周报 + 反馈（21 项）
+node scripts/test-rsshub-pool.mjs   # RSSHub 连接池（10 项）
 ```
 
 ## 版本历史
 
 | 版本 | 日期 | 说明 |
 |------|------|------|
+| v4.4 | 2026-06-26 | Event 聚类 + 周报 + 反馈收集 + RSSHub 连接池 + RSS 源扩展至 33 个 |
+| v4.2 | 2026-06-25 | Dual Runtime：Ingestion（纯代码）+ Editorial（Agent 驱动）+ SQLite |
 | v4.1 | 2026-06-24 | Execution Runtime：Host/Task/PolicyEngine/Repository 七层架构 |
 | v4.0 | 2026-06-23 | Pipeline Engine（已废弃） |
 | v3 | 2026-06-22 | 8 阶段混合 Pipeline（已废弃） |
