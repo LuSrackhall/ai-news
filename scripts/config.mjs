@@ -17,12 +17,20 @@ export const SCHEMA_VERSION = 'v1'
 
 // RSSHub 公共实例连接池（不区分自建/公共，加 URL 即可）
 export const RSSHUB_INSTANCES = [
-  'https://rsshub.app',
-  'https://rsshub.rssforever.com',
-  'https://rsshub.pseudoyu.com',
-  'https://rss.fatpandac.com',
-  'https://rsshub-instance.zeabur.app',
-]
+  "https://rsshub.app",
+  "https://rsshub.rssforever.com",
+  "https://rsshub.pseudoyu.com",
+  "https://rss.fatpandac.com",
+  "https://rsshub-instance.zeabur.app",
+  "https://rsshub.ktachibana.party",
+  "https://rss.owo.nz",
+  "https://rsshub.umzzz.com",
+  "https://rsshub.isrss.com",
+  "https://rss.datuan.dev",
+  "https://rss.4040940.xyz",
+  "https://rsshub.cups.moe",
+  "https://rsshub-balancer.virworks.moe",
+];
 
 export const RSS_SOURCES = [
   // === Tier 1: 官方一手来源 ===
