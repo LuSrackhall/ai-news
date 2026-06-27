@@ -18,7 +18,7 @@
 
 ## 4. 测试
 
-- [ ] 4.1 创建 `scripts/test-rsshub-pool.mjs`：单元测试（mock fetch，覆盖熔断/恢复/全部熔断/持久化场景）
+- [x] 4.1 创建 `scripts/test-rsshub-pool.mjs`：单元测试（mock fetch，覆盖熔断/恢复/全部熔断/持久化场景）
 
 ---
 
