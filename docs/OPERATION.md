@@ -152,6 +152,62 @@ sqlite3 data/events.db "SELECT COUNT(*) FROM events"
 sqlite3 data/events.db "SELECT COUNT(*) FROM event_clusters"
 ```
 
+## 运行监控
+
+### 查看采集日志
+
+```bash
+# 最近一次采集日志
+tail -30 data/cron.log
+
+# 搜索某天的日志
+grep "2026-06-27" data/cron.log
+
+# 只看失败的源
+grep "❌" data/cron.log
+
+# 只看采集汇总
+grep "📊" data/cron.log
+```
+
+### 查看数据库数据
+
+```bash
+# 总事件数
+sqlite3 data/events.db "SELECT COUNT(*) FROM events"
+
+# 最近 7 天每天的事件数
+sqlite3 data/events.db "SELECT date(effective_at) as 日期, COUNT(*) as 条数 FROM events GROUP BY date(effective_at) ORDER BY 日期 DESC LIMIT 7"
+
+# 聚类数
+sqlite3 data/events.db "SELECT COUNT(*) FROM event_clusters"
+
+# 最高分事件
+sqlite3 data/events.db "SELECT title, rank_total FROM events ORDER BY rank_total DESC LIMIT 10"
+```
+
+### RSS 源健康状态
+
+```bash
+# 各源成败（🟢正常 🟡警告 🔴失败）
+cat data/source-health.json | node -e "
+const h = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'))
+for (const [id, s] of Object.entries(h)) {
+  const icon = s.failStreak >= 3 ? '🔴' : s.failStreak >= 1 ? '🟡' : '🟢'
+  console.log(icon, id, '| 连败:', s.failStreak, '| 最后成功:', s.lastSuccess?.slice(0,16) || 'never')
+}
+"
+
+# RSSHub 实例熔断状态
+cat data/rsshub-health.json | node -e "
+const h = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'))
+for (const [url, s] of Object.entries(h)) {
+  const icon = s.status === 'open' ? '🔴熔断' : s.status === 'half-open' ? '🟡试探' : '🟢正常'
+  console.log(icon, url, '| 连败:', s.consecutiveFailures)
+}
+"
+```
+
 ## 故障排查
 
 | 问题 | 排查方式 |
