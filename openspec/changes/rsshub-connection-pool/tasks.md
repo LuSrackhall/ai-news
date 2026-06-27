@@ -11,10 +11,10 @@
 
 ## 3. collect-rss.mjs 集成
 
-- [ ] 3.1 导入 RsshubPool，在 fetchFeed 中对 rsshub 源走连接池拼接 URL（~8 行改动）
-- [ ] 3.2 在 fetchFeed 成功/失败回调中调用 pool.reportSuccess / reportFailure
-- [ ] 3.3 RSSHub 源采集间隔从 200ms 调整为 1500ms
-- [ ] 3.4 区分网络失败（计入熔断）vs 内容失败（不计入熔断）
+- [x] 3.1 导入 RsshubPool，在 fetchFeed 中对 rsshub 源走连接池拼接 URL（~8 行改动）
+- [x] 3.2 在 fetchFeed 成功/失败回调中调用 pool.reportSuccess / reportFailure
+- [x] 3.3 RSSHub 源采集间隔从 200ms 调整为 1500ms
+- [x] 3.4 区分网络失败（计入熔断）vs 内容失败（不计入熔断）
 
 ## 4. 测试
 

@@ -12,9 +12,10 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
 import {
-  RSS_SOURCES, AI_KEYWORDS, WORKFLOW_CONFIG, ENTITY_WEIGHTS,
+  RSS_SOURCES, RSSHUB_INSTANCES, AI_KEYWORDS, WORKFLOW_CONFIG, ENTITY_WEIGHTS,
   EVENT_TYPE_WEIGHTS, ACADEMIC_SIGNALS, PIPELINE_VERSION,
 } from './config.mjs'
+import { RsshubPool } from './infrastructure/rsshub-pool.mjs'
 
 // ============================================================
 // 参数解析
@@ -200,12 +201,25 @@ function cleanSummary(description) {
 // ============================================================
 // 并行采集
 // ============================================================
+const rsshubPool = new RsshubPool(RSSHUB_INSTANCES)
+
 async function fetchFeed(source) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), WORKFLOW_CONFIG.fetchTimeout)
 
+  // RSSHub 源通过连接池获取实例 URL
+  let fetchUrl = source.url
+  let usedInstance = null
+  if (source.rsshub) {
+    usedInstance = rsshubPool.getInstance()
+    if (!usedInstance) {
+      return { source: source.id, status: 'error', error: 'All RSSHub instances down', items: [] }
+    }
+    fetchUrl = usedInstance + source.rsshub
+  }
+
   try {
-    const res = await fetch(source.url, {
+    const res = await fetch(fetchUrl, {
       signal: controller.signal,
       headers: {
         'User-Agent': 'AiRibao/1.0 (daily-ai-news)',
@@ -284,9 +298,14 @@ async function fetchFeed(source) {
           : {}),
       }))
 
+    // RSSHub 源成功时报告
+    if (usedInstance) rsshubPool.reportSuccess(usedInstance)
+
     return { source: source.id, status: 'ok', count: items.length, items }
   } catch (err) {
     const error = err.name === 'AbortError' ? 'Timeout' : err.message
+    // 网络失败（超时、连接拒绝等）计入熔断
+    if (usedInstance) rsshubPool.reportFailure(usedInstance)
     return { source: source.id, status: 'error', error, items: [] }
   } finally {
     clearTimeout(timeout)
@@ -407,9 +426,11 @@ async function main() {
   mkdirSync(OUTPUT_DIR, { recursive: true })
 
   const results = await Promise.allSettled(
-    activeSources.map((source, i) =>
-      new Promise((resolve) => setTimeout(() => resolve(fetchFeed(source)), i * 200))
-    )
+    activeSources.map((source, i) => {
+      // RSSHub 源间隔 1.5 秒，避免对同一实例突发流量
+      const delay = source.rsshub ? i * 1500 : i * 200
+      return new Promise((resolve) => setTimeout(() => resolve(fetchFeed(source)), delay))
+    })
   )
 
   const allItems = []
