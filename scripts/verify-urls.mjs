@@ -32,7 +32,7 @@ async function verifyUrl(url) {
 
   try {
     const res = await fetch(url, {
-      method: 'HEAD',
+      method: 'GET',
       signal: controller.signal,
       redirect: 'follow',
       headers: { 'User-Agent': 'AiRibao/1.0 (url-check)' },
