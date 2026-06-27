@@ -14,6 +14,16 @@ export const SCHEMA_VERSION = 'v1'
 // ============================================================
 // RSS 数据源
 // ============================================================
+
+// RSSHub 公共实例连接池（不区分自建/公共，加 URL 即可）
+export const RSSHUB_INSTANCES = [
+  'https://rsshub.app',
+  'https://rsshub.rssforever.com',
+  'https://rsshub.pseudoyu.com',
+  'https://rss.fatpandac.com',
+  'https://rsshub-instance.zeabur.app',
+]
+
 export const RSS_SOURCES = [
   // === Tier 1: 官方一手来源 ===
   {
@@ -234,6 +244,73 @@ export const RSS_SOURCES = [
     tier: 3,
     language: 'en',
     category: 'community',
+  },
+
+  // === RSSHub 中转源（需连接池）===
+  {
+    id: 'anthropic-news',
+    name: 'Anthropic',
+    rsshub: '/anthropic/news',
+    tier: 1,
+    language: 'en',
+    category: 'official',
+  },
+  {
+    id: 'anthropic-research',
+    name: 'Anthropic Research',
+    rsshub: '/anthropic/research',
+    tier: 1,
+    language: 'en',
+    category: 'official',
+  },
+  {
+    id: 'deepseek-news',
+    name: 'DeepSeek',
+    rsshub: '/deepseek/news',
+    tier: 1,
+    language: 'zh',
+    category: 'official',
+  },
+  {
+    id: 'jiqizhixin',
+    name: '机器之心',
+    rsshub: '/jiqizhixin',
+    tier: 2,
+    language: 'zh',
+    category: 'media',
+  },
+  {
+    id: 'huxiu-article',
+    name: '虎嗅',
+    rsshub: '/huxiu/article',
+    tier: 2,
+    language: 'zh',
+    category: 'media',
+    requireKeywordFilter: true,
+  },
+  {
+    id: 'latepost-news',
+    name: '晚点LatePost',
+    rsshub: '/latepost/news',
+    tier: 2,
+    language: 'zh',
+    category: 'media',
+  },
+  {
+    id: 'cursor-blog',
+    name: 'Cursor Blog',
+    rsshub: '/cursor/blog',
+    tier: 2,
+    language: 'en',
+    category: 'ecosystem',
+  },
+  {
+    id: 'ollama-blog',
+    name: 'Ollama Blog',
+    rsshub: '/ollama/blog',
+    tier: 2,
+    language: 'en',
+    category: 'ecosystem',
   },
 ]
 

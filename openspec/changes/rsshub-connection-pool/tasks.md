@@ -6,8 +6,8 @@
 
 ## 2. 配置
 
-- [ ] 2.1 在 `scripts/config.mjs` 中新增 `RSSHUB_INSTANCES` 数组（5 个公共实例 URL）
-- [ ] 2.2 在 `scripts/config.mjs` 的 `RSS_SOURCES` 中新增 RSSHub 中转源条目（Anthropic、DeepSeek、机器之心等，用 `rsshub` 字段标记路由路径）
+- [x] 2.1 在 `scripts/config.mjs` 中新增 `RSSHUB_INSTANCES` 数组（5 个公共实例 URL）
+- [x] 2.2 在 `scripts/config.mjs` 的 `RSS_SOURCES` 中新增 RSSHub 中转源条目（Anthropic、DeepSeek、机器之心等，用 `rsshub` 字段标记路由路径）
 
 ## 3. collect-rss.mjs 集成
 
