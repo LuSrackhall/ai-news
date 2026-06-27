@@ -16,6 +16,54 @@ import {
   EVENT_TYPE_WEIGHTS, ACADEMIC_SIGNALS, PIPELINE_VERSION,
 } from './config.mjs'
 import { RsshubPool } from './infrastructure/rsshub-pool.mjs'
+import { SocksProxyAgent } from 'socks-proxy-agent'
+import https from 'node:https'
+import http from 'node:http'
+
+// 加载本地代理配置（config.local.mjs 不存在则无代理）
+let PROXY = null
+try {
+  const local = await import('../config.local.mjs')
+  PROXY = local.PROXY || null
+} catch {}
+
+// SOCKS5 代理 Agent
+const socksAgent = PROXY ? new SocksProxyAgent(PROXY) : null
+
+/**
+ * 带代理的 fetch
+ * 有 SOCKS5 代理时用 https 模块，否则用原生 fetch
+ */
+async function proxyFetch(url, opts = {}) {
+  if (!socksAgent) return fetch(url, opts)
+
+  return new Promise((resolve, reject) => {
+    const urlObj = new URL(url)
+    const mod = urlObj.protocol === 'https:' ? https : http
+    const req = mod.get(url, {
+      agent: socksAgent,
+      timeout: opts.signal ? undefined : 15000,
+      headers: opts.headers || {},
+    }, (res) => {
+      // 包装成 fetch Response-like 对象
+      const chunks = []
+      res.on('data', chunk => chunks.push(chunk))
+      res.on('end', () => {
+        const body = Buffer.concat(chunks).toString('utf-8')
+        resolve({
+          ok: res.statusCode >= 200 && res.statusCode < 400,
+          status: res.statusCode,
+          text: async () => body,
+        })
+      })
+    })
+    req.on('error', reject)
+    req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')) })
+    if (opts.signal) {
+      opts.signal.addEventListener('abort', () => { req.destroy(); reject(new Error('Aborted')) })
+    }
+  })
+}
 
 // ============================================================
 // 参数解析
@@ -219,7 +267,7 @@ async function fetchFeed(source) {
   }
 
   try {
-    const res = await fetch(fetchUrl, {
+    const res = await proxyFetch(fetchUrl, {
       signal: controller.signal,
       headers: {
         'User-Agent': 'AiRibao/1.0 (daily-ai-news)',
@@ -359,7 +407,7 @@ async function verifyPageDates(items, targetDate) {
     try {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 10000)
-      const res = await fetch(item.url, {
+      const res = await proxyFetch(item.url, {
         signal: controller.signal,
         headers: { 'User-Agent': 'AiRibao/1.0 (date-check)' },
       })

@@ -13,6 +13,45 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
 import { WORKFLOW_CONFIG, PIPELINE_VERSION } from './config.mjs'
+import { SocksProxyAgent } from 'socks-proxy-agent'
+import https from 'node:https'
+import http from 'node:http'
+
+// 加载本地代理配置
+let PROXY = null
+try {
+  const local = await import('../config.local.mjs')
+  PROXY = local.PROXY || null
+} catch {}
+const socksAgent = PROXY ? new SocksProxyAgent(PROXY) : null
+
+async function proxyFetch(url, opts = {}) {
+  if (!socksAgent) return fetch(url, opts)
+  return new Promise((resolve, reject) => {
+    const mod = new URL(url).protocol === 'https:' ? https : http
+    const req = mod.get(url, {
+      agent: socksAgent,
+      timeout: opts.signal ? undefined : 15000,
+      headers: opts.headers || {},
+    }, (res) => {
+      const chunks = []
+      res.on('data', chunk => chunks.push(chunk))
+      res.on('end', () => {
+        const body = Buffer.concat(chunks).toString('utf-8')
+        resolve({
+          ok: res.statusCode >= 200 && res.statusCode < 400,
+          status: res.statusCode,
+          text: async () => body,
+        })
+      })
+    })
+    req.on('error', reject)
+    req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')) })
+    if (opts.signal) {
+      opts.signal.addEventListener('abort', () => { req.destroy(); reject(new Error('Aborted')) })
+    }
+  })
+}
 
 const { values: args } = parseArgs({
   options: {
@@ -31,8 +70,8 @@ async function verifyUrl(url) {
   const timeout = setTimeout(() => controller.abort(), WORKFLOW_CONFIG.urlVerifyTimeout)
 
   try {
-    const res = await fetch(url, {
-      method: 'GET',
+    const res = await proxyFetch(url, {
+      method: 'HEAD',
       signal: controller.signal,
       redirect: 'follow',
       headers: { 'User-Agent': 'AiRibao/1.0 (url-check)' },

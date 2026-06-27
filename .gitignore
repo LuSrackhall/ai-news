@@ -11,3 +11,6 @@ output/
 
 # 运行时状态（不纳入版本管理）
 data/
+
+# 本地配置（含代理地址等敏感信息）
+config.local.mjs.claude/worktrees/
