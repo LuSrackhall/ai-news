@@ -15,6 +15,65 @@ node scripts/run-ingestion.mjs --date 2026-06-26
 # 0 */6 * * * cd /path/to/ai-ribao && node scripts/run-ingestion.mjs
 ```
 
+### 设置定时采集（cron）
+
+cron 是系统自带的定时任务调度器（macOS/Linux），不是项目功能。项目只提供脚本，什么时候跑由 cron 决定。
+
+```bash
+# 1. 编辑定时任务
+crontab -e
+
+# 2. 添加以下行（每 6 小时采集一次，日志写入 data/cron.log）
+0 */6 * * * cd /Users/srackhalllu/safe-project/Ai-ribao && node scripts/run-ingestion.mjs >> data/cron.log 2>&1
+
+# 3. 保存退出，验证是否生效
+crontab -l
+```
+
+**常用调度频率：**
+
+| cron 表达式 | 含义 |
+|-------------|------|
+| `0 */6 * * *` | 每 6 小时（推荐） |
+| `0 */4 * * *` | 每 4 小时 |
+| `0 8,14,20 * * *` | 每天 8:00、14:00、20:00 |
+| `0 */12 * * *` | 每 12 小时 |
+
+**注意：** cron 运行时没有交互式终端，日志输出到 `data/cron.log`。排查问题时查看此文件。
+
+### 观测 RSS 源健康状态
+
+采集完成后，查看各源的成败：
+
+```bash
+# 各源健康状态（🟢正常 🟡警告 🔴失败）
+cat data/source-health.json | node -e "
+const h = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'))
+for (const [id, s] of Object.entries(h)) {
+  const icon = s.failStreak >= 3 ? '🔴' : s.failStreak >= 1 ? '🟡' : '🟢'
+  console.log(icon, id, '| 连败:', s.failStreak, '| 最后成功:', s.lastSuccess?.slice(0,16) || 'never')
+}
+"
+
+# RSSHub 实例熔断状态
+cat data/rsshub-health.json | node -e "
+const h = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'))
+for (const [url, s] of Object.entries(h)) {
+  const icon = s.status === 'open' ? '🔴熔断' : s.status === 'half-open' ? '🟡试探' : '🟢正常'
+  console.log(icon, url, '| 连败:', s.consecutiveFailures)
+}
+"
+```
+
+每次采集结束也会输出汇总日志：
+
+```
+📊 汇总:
+   成功源: 28/33 (禁用: 2)
+   原始条目: 156 → 去重后: 89
+   失败源: anthropic-news, deepseek-news
+```
+
 ### 生成日报
 
 ```
