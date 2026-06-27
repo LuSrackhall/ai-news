@@ -85,8 +85,6 @@ export const RSS_SOURCES = [
     category: 'official',
     proxy: true,
   },
-    category: 'official',
-  },
   {
     id: 'arxiv-cs-ai',
     name: 'arXiv CS.AI',

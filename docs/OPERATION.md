@@ -94,33 +94,35 @@ crontab -r
 
 ### 代理配置（访问被墙的源）
 
-部分 RSS 源（Google AI Blog、HuggingFace 等）在国内网络环境下无法直接访问，需要配置代理。
+部分 RSS 源在国内网络环境下无法直接访问，需要配置代理。代理是**按源配置**的，只有标记了 `proxy: true` 的源才走代理，默认不走代理。
 
-```bash
-# 编辑本地配置文件
-vim config.local.mjs
-```
-
-文件内容：
+**第一步：编辑 `config.local.mjs`，填入你的代理地址**
 
 ```js
 // 本地配置（不纳入版本管理，手动编辑）
-
-// 代理地址，不需要代理则设为 null
-// 支持格式: 'socks5://127.0.0.1:1080' 或 'socks5://127.0.0.1:7890'
 export const PROXY = 'socks5://127.0.0.1:1080'
+```
+
+不需要代理则设为 `export const PROXY = null`。
+
+**第二步：在 `scripts/config.mjs` 中给需要代理的源加 `proxy: true`**
+
+```js
+// 需要代理的源（被墙）
+{ id: 'google-ai-blog', url: '...', proxy: true },
+{ id: 'google-research', url: '...', proxy: true },
+{ id: 'huggingface-blog', url: '...', proxy: true },
+
+// 不需要代理的源（默认，不用加任何标记）
+{ id: '36kr', url: '...' },
+{ id: 'techcrunch', url: '...' },
 ```
 
 **说明：**
 - `config.local.mjs` 已加入 `.gitignore`，不会提交到 git
 - 支持 SOCKS5 代理（Clash、V2Ray 等工具通常提供 SOCKS5 端口）
-- 设为 `null` 则不使用代理
-- 改完后立即生效，下次采集自动走代理
-
-**哪些源需要代理：**
-- Google AI Blog、Google Research（被墙）
-- HuggingFace Blog（被墙）
-- 其他源根据你的网络环境判断
+- 默认所有源不走代理，只有 `proxy: true` 的源才走
+- URL 验证步骤也会对标记了 `proxy: true` 的源使用代理
 
 ### 观测 RSS 源健康状态
 
