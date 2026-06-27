@@ -256,6 +256,16 @@ export const RSS_SOURCES = [
     language: 'en',
     category: 'community',
   },
+  {
+    id: 'linuxdo',
+    name: 'Linux.do',
+    url: 'https://linux.do/latest.rss',
+    tier: 3,
+    language: 'zh',
+    category: 'community',
+    requireKeywordFilter: true,
+    proxy: true,
+  },
 
   // === RSSHub 中转源（需连接池）===
   {
@@ -283,14 +293,6 @@ export const RSS_SOURCES = [
     category: 'official',
   },
   {
-    id: 'jiqizhixin',
-    name: '机器之心',
-    rsshub: '/jiqizhixin',
-    tier: 2,
-    language: 'zh',
-    category: 'media',
-  },
-  {
     id: 'huxiu-article',
     name: '虎嗅',
     rsshub: '/huxiu/article',
@@ -298,14 +300,6 @@ export const RSS_SOURCES = [
     language: 'zh',
     category: 'media',
     requireKeywordFilter: true,
-  },
-  {
-    id: 'latepost-news',
-    name: '晚点LatePost',
-    rsshub: '/latepost/news',
-    tier: 2,
-    language: 'zh',
-    category: 'media',
   },
   {
     id: 'cursor-blog',
