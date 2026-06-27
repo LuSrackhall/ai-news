@@ -1,8 +1,8 @@
 ## 1. RsshubPool 核心模块
 
-- [ ] 1.1 创建 `scripts/infrastructure/rsshub-pool.mjs`：RsshubPool 类（constructor + getInstance + reportSuccess + reportFailure）
-- [ ] 1.2 实现熔断器三态逻辑（CLOSED → OPEN → HALF-OPEN，指数退避 10min × 2^n，上限 2h）
-- [ ] 1.3 实现健康持久化：启动时读取 data/rsshub-health.json，请求结束后写入
+- [x] 1.1 创建 `scripts/infrastructure/rsshub-pool.mjs`：RsshubPool 类（constructor + getInstance + reportSuccess + reportFailure）
+- [x] 1.2 实现熔断器三态逻辑（CLOSED → OPEN → HALF-OPEN，指数退避 10min × 2^n，上限 2h）
+- [x] 1.3 实现健康持久化：启动时读取 data/rsshub-health.json，请求结束后写入
 
 ## 2. 配置
 
