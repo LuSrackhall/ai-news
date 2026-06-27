@@ -26,26 +26,24 @@ try {
   const local = await import('../config.local.mjs')
   PROXY = local.PROXY || null
 } catch {}
-
-// SOCKS5 代理 Agent
 const socksAgent = PROXY ? new SocksProxyAgent(PROXY) : null
 
 /**
  * 带代理的 fetch
- * 有 SOCKS5 代理时用 https 模块，否则用原生 fetch
+ * @param {string} url
+ * @param {object} opts - fetch 选项
+ * @param {boolean} useProxy - 是否走代理（默认 false）
  */
-async function proxyFetch(url, opts = {}) {
-  if (!socksAgent) return fetch(url, opts)
+async function proxyFetch(url, opts = {}, useProxy = false) {
+  if (!useProxy || !socksAgent) return fetch(url, opts)
 
   return new Promise((resolve, reject) => {
-    const urlObj = new URL(url)
-    const mod = urlObj.protocol === 'https:' ? https : http
+    const mod = new URL(url).protocol === 'https:' ? https : http
     const req = mod.get(url, {
       agent: socksAgent,
-      timeout: opts.signal ? undefined : 15000,
+      timeout: 15000,
       headers: opts.headers || {},
     }, (res) => {
-      // 包装成 fetch Response-like 对象
       const chunks = []
       res.on('data', chunk => chunks.push(chunk))
       res.on('end', () => {
@@ -59,9 +57,6 @@ async function proxyFetch(url, opts = {}) {
     })
     req.on('error', reject)
     req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')) })
-    if (opts.signal) {
-      opts.signal.addEventListener('abort', () => { req.destroy(); reject(new Error('Aborted')) })
-    }
   })
 }
 
@@ -273,7 +268,7 @@ async function fetchFeed(source) {
         'User-Agent': 'AiRibao/1.0 (daily-ai-news)',
         Accept: 'application/rss+xml, application/xml, application/atom+xml, text/xml, */*',
       },
-    })
+    }, source.proxy === true)
 
     if (!res.ok) {
       return { source: source.id, status: 'error', error: `HTTP ${res.status}`, items: [] }
@@ -407,7 +402,7 @@ async function verifyPageDates(items, targetDate) {
     try {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 10000)
-      const res = await proxyFetch(item.url, {
+      const res = await fetch(item.url, {
         signal: controller.signal,
         headers: { 'User-Agent': 'AiRibao/1.0 (date-check)' },
       })

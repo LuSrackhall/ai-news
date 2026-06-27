@@ -15,14 +15,14 @@ export const SCHEMA_VERSION = 'v1'
 // RSS 数据源
 // ============================================================
 
-// RSSHub 公共实例连接池（按稳定性排序）
+// RSSHub 公共实例连接池（不区分自建/公共，加 URL 即可）
 export const RSSHUB_INSTANCES = [
-  "https://rsshub.ktachibana.party",
-  "https://rsshub.rssforever.com",
   "https://rsshub.app",
+  "https://rsshub.rssforever.com",
   "https://rsshub.pseudoyu.com",
   "https://rss.fatpandac.com",
   "https://rsshub-instance.zeabur.app",
+  "https://rsshub.ktachibana.party",
   "https://rss.owo.nz",
   "https://rsshub.umzzz.com",
   "https://rsshub.isrss.com",
@@ -57,6 +57,7 @@ export const RSS_SOURCES = [
     tier: 1,
     language: 'en',
     category: 'official',
+    proxy: true,
   },
   {
     id: 'google-research',
@@ -65,6 +66,7 @@ export const RSS_SOURCES = [
     tier: 1,
     language: 'en',
     category: 'official',
+    proxy: true,
   },
   {
     id: 'meta-engineering',
@@ -80,6 +82,9 @@ export const RSS_SOURCES = [
     url: 'https://huggingface.co/blog/feed.xml',
     tier: 1,
     language: 'en',
+    category: 'official',
+    proxy: true,
+  },
     category: 'official',
   },
   {
@@ -155,7 +160,7 @@ export const RSS_SOURCES = [
   {
     id: 'langchain-blog',
     name: 'LangChain Blog',
-    url: 'https://blog.langchain.dev/rss/',
+    url: 'https://blog.langchain.dev/feed',
     tier: 2,
     language: 'en',
     category: 'ecosystem',
@@ -315,7 +320,7 @@ export const RSS_SOURCES = [
   {
     id: 'ollama-blog',
     name: 'Ollama Blog',
-    url: 'https://ollama.com/blog/rss.xml',
+    rsshub: '/ollama/blog',
     tier: 2,
     language: 'en',
     category: 'ecosystem',
@@ -524,8 +529,8 @@ export const WORKFLOW_CONFIG = {
   targetNewsCount: { min: 5, ideal: 10, max: 15 },
   fetchTimeout: 15000,
   fetchInterval: 2000,
-  urlVerifyConcurrency: 20,
-  urlVerifyTimeout: 5000,
+  urlVerifyConcurrency: 5,
+  urlVerifyTimeout: 10000,
   // 默认时间窗口（小时），学术源可在 source 配置中覆盖
   defaultTimeWindowHours: 24,
 }

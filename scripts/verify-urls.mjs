@@ -12,7 +12,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
-import { WORKFLOW_CONFIG, PIPELINE_VERSION } from './config.mjs'
+import { WORKFLOW_CONFIG, PIPELINE_VERSION, RSS_SOURCES } from './config.mjs'
 import { SocksProxyAgent } from 'socks-proxy-agent'
 import https from 'node:https'
 import http from 'node:http'
@@ -25,32 +25,10 @@ try {
 } catch {}
 const socksAgent = PROXY ? new SocksProxyAgent(PROXY) : null
 
-async function proxyFetch(url, opts = {}) {
-  if (!socksAgent) return fetch(url, opts)
-  return new Promise((resolve, reject) => {
-    const mod = new URL(url).protocol === 'https:' ? https : http
-    const req = mod.get(url, {
-      agent: socksAgent,
-      timeout: opts.signal ? undefined : 15000,
-      headers: opts.headers || {},
-    }, (res) => {
-      const chunks = []
-      res.on('data', chunk => chunks.push(chunk))
-      res.on('end', () => {
-        const body = Buffer.concat(chunks).toString('utf-8')
-        resolve({
-          ok: res.statusCode >= 200 && res.statusCode < 400,
-          status: res.statusCode,
-          text: async () => body,
-        })
-      })
-    })
-    req.on('error', reject)
-    req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')) })
-    if (opts.signal) {
-      opts.signal.addEventListener('abort', () => { req.destroy(); reject(new Error('Aborted')) })
-    }
-  })
+// 构建 sourceId → proxy 映射
+const proxyMap = new Map()
+for (const s of RSS_SOURCES) {
+  if (s.proxy === true) proxyMap.set(s.id, true)
 }
 
 const { values: args } = parseArgs({
@@ -63,19 +41,43 @@ const RAW_DIR = join(WORKFLOW_CONFIG.outputDir, DATE, 'raw')
 
 /**
  * 验证单个 URL 是否可访问
- * @returns {{ url: string, status: number|null, ok: boolean, error?: string }}
  */
-async function verifyUrl(url) {
+async function verifyUrl(url, useProxy = false) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), WORKFLOW_CONFIG.urlVerifyTimeout)
 
   try {
-    const res = await proxyFetch(url, {
-      method: 'HEAD',
-      signal: controller.signal,
-      redirect: 'follow',
-      headers: { 'User-Agent': 'AiRibao/1.0 (url-check)' },
-    })
+    let res
+    if (useProxy && socksAgent) {
+      // SOCKS5 代理
+      res = await new Promise((resolve, reject) => {
+        const mod = new URL(url).protocol === 'https:' ? https : http
+        const req = mod.get(url, {
+          agent: socksAgent,
+          timeout: WORKFLOW_CONFIG.urlVerifyTimeout,
+          headers: { 'User-Agent': 'AiRibao/1.0 (url-check)' },
+        }, (r) => {
+          const chunks = []
+          r.on('data', chunk => chunks.push(chunk))
+          r.on('end', () => {
+            resolve({
+              ok: r.statusCode >= 200 && r.statusCode < 400,
+              status: r.statusCode,
+            })
+          })
+        })
+        req.on('error', reject)
+        req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')) })
+        controller.signal.addEventListener('abort', () => { req.destroy(); reject(new Error('Aborted')) })
+      })
+    } else {
+      res = await fetch(url, {
+        method: 'GET',
+        signal: controller.signal,
+        redirect: 'follow',
+        headers: { 'User-Agent': 'AiRibao/1.0 (url-check)' },
+      })
+    }
     return { url, status: res.status, ok: res.status >= 200 && res.status < 400 }
   } catch (err) {
     return { url, status: null, ok: false, error: err.name === 'AbortError' ? 'Timeout' : err.message }
@@ -91,12 +93,22 @@ async function verifyUrls(items) {
   const concurrency = WORKFLOW_CONFIG.urlVerifyConcurrency || 5
   const results = new Map()
 
-  // 按 URL 去重（同一条 URL 只验证一次）
+  // 构建 url → useProxy 映射
+  const urlProxyMap = new Map()
+  for (const item of items) {
+    if (item.url && proxyMap.get(item.sourceId)) {
+      urlProxyMap.set(item.url, true)
+    }
+  }
+
+  // 按 URL 去重
   const uniqueUrls = [...new Set(items.map((item) => item.url).filter(Boolean))]
 
   for (let i = 0; i < uniqueUrls.length; i += concurrency) {
     const batch = uniqueUrls.slice(i, i + concurrency)
-    const batchResults = await Promise.allSettled(batch.map(verifyUrl))
+    const batchResults = await Promise.allSettled(
+      batch.map(url => verifyUrl(url, urlProxyMap.get(url) === true))
+    )
     for (const result of batchResults) {
       const data = result.status === 'fulfilled' ? result.value : { url: 'unknown', status: null, ok: false, error: result.reason?.message }
       results.set(data.url, data)
