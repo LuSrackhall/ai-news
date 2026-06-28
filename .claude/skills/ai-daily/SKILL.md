@@ -230,7 +230,7 @@ output/weekly/2026-06-20_2026-06-26/
 | 1. 读取事件 | count > 0 | 读 SQLite |
 | 2. 选题 | selected 8-15, >= 1 deep, >= 3 sources | 检查 curated.json |
 | 3. 文章 | content 非空, hook 存在, editorial 四段各 >= 30 字 | 检查 article.json |
-| 4. 口播稿 | 总时长 180-300s | 检查 script.json |
+| 4. 播客脚本 | 总时长 180-300s, 对话数组格式 | 检查 script.json |
 | 5. 渲染 | article_chars > 2000 | 检查输出 |
 | 6. 校验 | validation_passed = true | 检查输出 |
 

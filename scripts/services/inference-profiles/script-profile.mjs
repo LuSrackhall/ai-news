@@ -1,5 +1,5 @@
 /**
- * ScriptProfile — 口播稿生成 InferenceProfile
+ * ScriptProfile — 播客脚本生成 InferenceProfile
  */
 
 import { readFileSync } from 'node:fs'

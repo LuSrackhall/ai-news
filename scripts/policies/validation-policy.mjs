@@ -44,7 +44,7 @@ export class ValidationPolicy {
     }
     if (emptyCount > 3) warnings.push({ check: 'empty_expressions', detail: `${emptyCount} 处` })
 
-    // 3. 口播稿时长
+    // 3. 播客脚本时长
     if (scriptContent) {
       const getDur = (s) => s?.durationS || s?.duration_s || 0
       const totalDuration = [

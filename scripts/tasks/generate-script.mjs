@@ -1,5 +1,5 @@
 /**
- * GenerateScript Task — 口播稿生成
+ * GenerateScript Task — 播客脚本生成
  */
 
 import { ExecutionResult } from '../runtime/result.mjs'

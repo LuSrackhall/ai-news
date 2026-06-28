@@ -163,7 +163,7 @@ for (const [url, s] of Object.entries(h)) {
 /daily
 ```
 
-Agent 自动执行 7 步：读取 SQLite → 选题 → 写文章 → 写口播稿 → 渲染 → 校验 → 归档。
+Agent 自动执行 7 步：读取 SQLite → 选题 → 写文章 → 写播客脚本 → 渲染 → 校验 → 归档。
 
 ### 生成周报
 
@@ -178,7 +178,7 @@ node scripts/run-weekly.mjs --week 2026-06-26
 # 日报产出
 ls output/2026-06-26/
 # article.md    — 日报文章
-# script.md     — 口播稿
+# script.md     — 播客脚本
 # curated.json  — 选题结果
 
 # 周报产出

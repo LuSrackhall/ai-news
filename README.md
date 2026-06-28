@@ -1,6 +1,6 @@
 # AI 日报 (ai-ribao)
 
-基于 **Dual Runtime v4.4** 的 AI 内容智能平台。每日从 33 个信源采集、评分、去重、聚类、选题，生成日报文章和视频口播稿。
+基于 **Dual Runtime v4.4** 的 AI 内容智能平台。每日从 89 个信源采集、评分、去重、聚类、选题，生成日报文章和播客脚本。
 
 ## 架构
 
@@ -10,7 +10,7 @@ Ingestion（纯 Node.js，无需 LLM）
   输出 → SQLite (data/events.db)
 
 Editorial（Agent 驱动，/daily）
-  Agent 读取 SQLite → 选题 → 写文章 → 写口播稿 → 渲染/校验/归档
+  Agent 读取 SQLite → 选题 → 写文章 → 写播客脚本 → 渲染/校验/归档
   输出 → output/<date>/
 
 Weekly（纯 Node.js + 可选 LLM，/weekly）
@@ -35,7 +35,7 @@ Weekly（纯 Node.js + 可选 LLM，/weekly）
 node scripts/run-ingestion.mjs
 
 # 2. 生成日报（对 Agent 说 /daily）
-#    Agent 读取 SQLite → 选题 → 写文章 → 写口播稿 → 渲染 → 归档
+#    Agent 读取 SQLite → 选题 → 写文章 → 写播客脚本 → 渲染 → 归档
 
 # 3. 生成周报
 node scripts/run-weekly.mjs
