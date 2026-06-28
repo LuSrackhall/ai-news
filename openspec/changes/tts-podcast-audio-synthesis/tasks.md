@@ -1,10 +1,10 @@
 ## 1. TTS 核心架构
 
-- [ ] 1.1 创建 `scripts/tts/providers/README.md`：三函数契约说明
-- [ ] 1.2 创建 `scripts/tts/providers/edge-tts.sh`：默认 provider（pip install edge-tts，男声 YunxiNeural / 女声 XiaoxiaoNeural）
-- [ ] 1.3 创建 `scripts/tts/providers/openai.sh`：OpenAI TTS provider（需 OPENAI_API_KEY）
-- [ ] 1.4 创建 `scripts/tts/providers/minimax.sh`：MiniMax TTS provider（需 MINIMAX_API_KEY）
-- [ ] 1.5 创建 `scripts/tts/synthesize.sh`：runner 脚本（读 script.json → 展开对话为 segments → 逐段合成 → ffmpeg 合并）
+- [x] 1.1 创建 `scripts/tts/providers/README.md`：三函数契约说明
+- [x] 1.2 创建 `scripts/tts/providers/edge-tts.sh`：默认 provider（pip install edge-tts，男声 YunxiNeural / 女声 XiaoxiaoNeural）
+- [x] 1.3 创建 `scripts/tts/providers/openai.sh`：OpenAI TTS provider（需 OPENAI_API_KEY）
+- [x] 1.4 创建 `scripts/tts/providers/minimax.sh`：MiniMax TTS provider（需 MINIMAX_API_KEY）
+- [x] 1.5 创建 `scripts/tts/synthesize.sh`：runner 脚本（读 script.json → 展开对话为 segments → 逐段合成 → ffmpeg 合并）
 
 ## 2. 技能集成
 
