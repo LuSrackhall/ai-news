@@ -157,6 +157,25 @@ export const RSS_SOURCES = [
     proxy: true,
   },
   {
+    id: 'axios',
+    name: 'Axios',
+    url: 'https://openrss.org/feed/www.axios.com',
+    tier: 2,
+    language: 'en',
+    category: 'media',
+    requireKeywordFilter: true,
+  },
+  {
+    id: 'semafor',
+    name: 'Semafor',
+    url: 'https://www.semafor.com/rss.xml',
+    tier: 2,
+    language: 'en',
+    category: 'media',
+    requireKeywordFilter: true,
+    proxy: true,
+  },
+  {
     id: 'tldr-ai',
     name: 'TLDR AI',
     url: 'https://tldr.tech/api/rss/ai',
@@ -294,14 +313,6 @@ export const RSS_SOURCES = [
     category: 'official',
   },
   {
-    id: 'deepseek-news',
-    name: 'DeepSeek',
-    rsshub: '/deepseek/news',
-    tier: 1,
-    language: 'zh',
-    category: 'official',
-  },
-  {
     id: 'huxiu-article',
     name: '虎嗅',
     rsshub: '/huxiu/article',
@@ -334,6 +345,14 @@ export const RSS_SOURCES = [
     language: 'en',
     category: 'community',
     requireKeywordFilter: true,
+  },
+  {
+    id: 'deepseek-github',
+    name: 'DeepSeek GitHub',
+    rsshub: '/github/repos/deepseek-ai',
+    tier: 2,
+    language: 'en',
+    category: 'ecosystem',
   },
 ]
 
