@@ -47,12 +47,17 @@ export class ValidationPolicy {
     // 3. 播客脚本时长
     if (scriptContent) {
       const getDur = (s) => s?.durationS || s?.duration_s || 0
-      const totalDuration = [
-        getDur(scriptContent.hook), getDur(scriptContent.overview),
-        ...(scriptContent.deepItems || scriptContent.deep_items || []).map(getDur),
-        ...(scriptContent.quickItems || scriptContent.quick_items || []).map(getDur),
-        getDur(scriptContent.closing),
-      ].reduce((a, b) => a + b, 0)
+      const isDialogue = (item) => Array.isArray(item)
+      const dialogueDur = (lines) => Array.isArray(lines) ? lines.reduce((s, l) => s + getDur(l), 0) : 0
+      const itemDur = (item) => item.dialogue ? dialogueDur(item.dialogue) : getDur(item)
+
+      const allDurations = []
+      if (scriptContent.hook) allDurations.push(isDialogue(scriptContent.hook) ? dialogueDur(scriptContent.hook) : getDur(scriptContent.hook))
+      if (scriptContent.overview) allDurations.push(isDialogue(scriptContent.overview) ? dialogueDur(scriptContent.overview) : getDur(scriptContent.overview))
+      for (const i of (scriptContent.deepItems || scriptContent.deep_items || [])) allDurations.push(itemDur(i))
+      for (const i of (scriptContent.quickItems || scriptContent.quick_items || [])) allDurations.push(itemDur(i))
+      if (scriptContent.closing) allDurations.push(isDialogue(scriptContent.closing) ? dialogueDur(scriptContent.closing) : getDur(scriptContent.closing))
+      const totalDuration = allDurations.reduce((a, b) => a + b, 0)
       if (totalDuration < 180 || totalDuration > 300) {
         warnings.push({ check: 'script_duration', detail: `${totalDuration}s` })
       }

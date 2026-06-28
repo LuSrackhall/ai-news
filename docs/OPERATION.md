@@ -180,6 +180,16 @@ ls output/2026-06-26/
 # article.md    — 日报文章
 # script.md     — 播客脚本
 # curated.json  — 选题结果
+# audio/         — 播客音频（如果合成了）
+#   segments/    — 分段音频
+#   podcast.mp3  — 完整播客
+
+# 播客音频合成（可选）
+bash scripts/tts/synthesize.sh output/2026-06-26/script.json
+# 默认使用 edge-tts（免费，pip install edge-tts）
+# 换 provider:
+TTS_PROVIDER=openai OPENAI_API_KEY=sk-... bash scripts/tts/synthesize.sh output/2026-06-26/script.json
+TTS_PROVIDER=minimax MINIMAX_API_KEY=... bash scripts/tts/synthesize.sh output/2026-06-26/script.json
 
 # 周报产出
 ls output/weekly/2026-06-20_2026-06-26/
