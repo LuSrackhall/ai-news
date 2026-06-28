@@ -15,7 +15,7 @@ export class GenerateArticle {
     const profile = ctx.scope.inference.getProfile('article')
     const editorialExamples = (profile?.examples || []).length > 0
       ? '\n\n## 优秀 Editorial 示例\n' + profile.examples.map(e =>
-        `- 观察：${e.observation}\n  证据：${e.evidence}\n  判断：${e.judgment}\n  预测：${e.prediction}`
+        `- 观察：${e.observation}\n  证据：${e.evidence}\n  判断：${e.judgment}`
       ).join('\n')
       : ''
 

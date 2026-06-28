@@ -68,7 +68,7 @@ db.close()
 
 ### Step 2: 选题（Agent 执行）
 
-从 Step 1 的事件中，选出 8-15 条最重要的新闻。
+从 Step 1 的事件中，选出 15-20 条最重要的新闻。
 
 **选题规则：**
 - 优先选择有具体数据、官方来源、影响范围大的新闻
@@ -78,7 +78,7 @@ db.close()
 - **URL 规则：** 每条 selected item 的 `url`、`source_name`、`summary` 字段必须原样复制自 Step 1 查询结果，禁止编造或修改。如果某条事件没有 `url`，设为 `null`，不得自行构造
 
 **检查点：**
-- [ ] selected 在 8-15 之间
+- [ ] selected 在 15-20 之间
 - [ ] 至少 1 条 deep
 - [ ] 来源多样性 >= 3
 - [ ] 每条 selected item 的 url 与 Step 1 查询结果中的 url 完全一致
@@ -92,7 +92,7 @@ db.close()
 **要求：**
 - 输出 JSON 结构：hook / summary_items / deep_items / important_items / brief_items / editorial
 - 每条 deep item 必须有具体数字
-- editorial 四段结构：观察 / 证据 / 判断 / 预测（每段 >= 30 字）
+- editorial 三段结构：观察 / 证据 / 判断（每段 >= 30 字）
 - 不编造数据，不编造 URL
 
 将文章 JSON 写入 `output/<date>/article.json`。
@@ -259,11 +259,13 @@ output/weekly/2026-06-20_2026-06-26/
 | Step | 检查项 | 方式 |
 |------|--------|------|
 | 1. 读取事件 | count > 0 | 读 SQLite |
-| 2. 选题 | selected 8-15, >= 1 deep, >= 3 sources | 检查 curated.json |
-| 3. 文章 | content 非空, hook 存在, editorial 四段各 >= 30 字 | 检查 article.json |
+| 2. 选题 | selected 15-20, >= 1 deep, >= 3 sources, 含 category 标签 | 检查 curated.json |
+| 3. 文章 | content 非空, hook 存在, editorial 三段各 >= 30 字 | 检查 article.json |
 | 4. 播客脚本 | 总时长 180-300s, 对话数组格式 | 检查 script.json |
 | 5. 渲染 | article_chars > 2000 | 检查输出 |
 | 6. 校验 | validation_passed = true | 检查输出 |
+| 7. 音频合成 | podcast.mp3 存在（如果选择了合成） | 检查 audio/ |
+| 8. 归档 | execution.json 写入成功 | 检查输出 |
 
 ## 参考文档
 
