@@ -8,8 +8,8 @@
 
 ## 2. 技能集成
 
-- [ ] 2.1 更新 `.claude/skills/ai-daily/SKILL.md`：新增 Step 7 音频合成（agent 询问用户）
-- [ ] 2.2 更新 `docs/OPERATION.md`：新增 TTS 使用说明
+- [x] 2.1 更新 `.claude/skills/ai-daily/SKILL.md`：新增 Step 7 音频合成（agent 询问用户）
+- [x] 2.2 更新 `docs/OPERATION.md`：新增 TTS 使用说明
 
 ## 3. 测试
 

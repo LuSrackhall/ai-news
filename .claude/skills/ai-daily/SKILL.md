@@ -161,7 +161,38 @@ console.log(JSON.stringify(r))
 **检查点：**
 - [ ] validation_passed = true
 
-### Step 7: 归档（调用代码）
+### Step 7: 音频合成（询问用户）
+
+校验通过后，询问用户是否合成播客音频：
+
+> 日报已生成，校验通过。要不要合成播客音频？
+>   ✓ 合成 → 调用 TTS 合成 podcast.mp3
+>   ✗ 跳过 → 直接归档
+
+**如果用户选择"合成"：**
+
+```bash
+bash scripts/tts/synthesize.sh output/{{date}}/script.json
+```
+
+**如果用户选择"跳过"：** 直接进 Step 8。
+
+**TTS Provider 切换：**
+```bash
+# 默认 edge-tts（免费）
+bash scripts/tts/synthesize.sh output/{{date}}/script.json
+
+# OpenAI TTS
+TTS_PROVIDER=openai OPENAI_API_KEY=sk-... bash scripts/tts/synthesize.sh output/{{date}}/script.json
+
+# MiniMax TTS
+TTS_PROVIDER=minimax MINIMAX_API_KEY=... bash scripts/tts/synthesize.sh output/{{date}}/script.json
+```
+
+**检查点：**
+- [ ] audio/podcast.mp3 存在（如果选择了合成）
+
+### Step 8: 归档（调用代码）
 
 ```bash
 node -e "
