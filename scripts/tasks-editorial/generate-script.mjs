@@ -30,12 +30,17 @@ export class GenerateScript {
     if (!content) return ExecutionResult.fatal('script_generation_failed')
 
     const getDur = (s) => s?.durationS || s?.duration_s || 0
-    const totalDuration = [
-      getDur(content.hook), getDur(content.overview),
-      ...(content.deepItems || content.deep_items || []).map(getDur),
-      ...(content.quickItems || content.quick_items || []).map(getDur),
-      getDur(content.closing),
-    ].reduce((a, b) => a + b, 0)
+    const isDialogue = (item) => Array.isArray(item)
+    const dialogueDur = (lines) => Array.isArray(lines) ? lines.reduce((s, l) => s + getDur(l), 0) : 0
+    const itemDur = (item) => item.dialogue ? dialogueDur(item.dialogue) : getDur(item)
+
+    const allDurations = []
+    if (content.hook) allDurations.push(isDialogue(content.hook) ? dialogueDur(content.hook) : getDur(content.hook))
+    if (content.overview) allDurations.push(isDialogue(content.overview) ? dialogueDur(content.overview) : getDur(content.overview))
+    for (const i of (content.deepItems || content.deep_items || [])) allDurations.push(itemDur(i))
+    for (const i of (content.quickItems || content.quick_items || [])) allDurations.push(itemDur(i))
+    if (content.closing) allDurations.push(isDialogue(content.closing) ? dialogueDur(content.closing) : getDur(content.closing))
+    const totalDuration = allDurations.reduce((a, b) => a + b, 0)
 
     ctx._scriptContent = content
     ctx._scriptMeta = {
