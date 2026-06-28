@@ -148,6 +148,15 @@ export const RSS_SOURCES = [
     category: 'media',
   },
   {
+    id: 'wired-ai',
+    name: 'Wired AI',
+    url: 'https://www.wired.com/feed/tag/ai/latest/rss',
+    tier: 2,
+    language: 'en',
+    category: 'media',
+    proxy: true,
+  },
+  {
     id: 'tldr-ai',
     name: 'TLDR AI',
     url: 'https://tldr.tech/api/rss/ai',
@@ -316,6 +325,15 @@ export const RSS_SOURCES = [
     tier: 2,
     language: 'en',
     category: 'ecosystem',
+  },
+  {
+    id: 'github-trending',
+    name: 'GitHub Trending',
+    rsshub: '/github/trending/daily/any',
+    tier: 3,
+    language: 'en',
+    category: 'community',
+    requireKeywordFilter: true,
   },
 ]
 
