@@ -41,6 +41,22 @@
 # ────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
+# Load .env: walk up from presentation/ to project root, first match with
+# actual content wins. This lets a single root-level .env share keys
+# across all daily reports, while per-report .env can override.
+load_env() {
+  local dir
+  dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+  while [[ "$dir" != "/" ]]; do
+    if [[ -f "$dir/.env" ]] && [[ -s "$dir/.env" ]]; then
+      set -a; source "$dir/.env"; set +a
+      return
+    fi
+    dir="$(dirname "$dir")"
+  done
+}
+load_env
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 SEGMENTS="$ROOT/audio-segments.json"
