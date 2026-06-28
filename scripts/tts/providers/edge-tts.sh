@@ -39,7 +39,11 @@ tts_synthesize() {
   local text="$1"
   local out="$2"
   local voice="${3:-}"
-  [[ -z "$voice" ]] && voice="zh-CN-YunxiNeural"
+  # 支持 M/F 作为性别标识，映射到默认音色
+  case "$voice" in
+    M|"") voice="zh-CN-YunxiNeural" ;;
+    F)    voice="zh-CN-XiaoxiaoNeural" ;;
+  esac
 
   local tmp="${out%.mp3}.tmp.mp3"
 

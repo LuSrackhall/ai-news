@@ -36,7 +36,10 @@ tts_synthesize() {
   local text="$1"
   local out="$2"
   local voice="${3:-}"
-  [[ -z "$voice" ]] && voice="alloy"
+  case "$voice" in
+    M|"") voice="onyx" ;;
+    F)    voice="nova" ;;
+  esac
 
   local base="${OPENAI_BASE_URL:-https://api.openai.com/v1}"
   local model="${OPENAI_TTS_MODEL:-tts-1}"

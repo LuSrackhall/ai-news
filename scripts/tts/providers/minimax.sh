@@ -34,7 +34,10 @@ tts_synthesize() {
   local text="$1"
   local out="$2"
   local voice="${3:-}"
-  [[ -z "$voice" ]] && voice="male-cn"
+  case "$voice" in
+    M|"") voice="male-cn" ;;
+    F)    voice="female-cn" ;;
+  esac
 
   mmx tts --text "$text" --voice "$voice" --output "$out" 2>/dev/null
 }

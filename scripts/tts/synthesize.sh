@@ -64,13 +64,13 @@ if type tts_check >/dev/null 2>&1; then
   fi
 fi
 
-# 确定音色
+# 确定音色（无自定义时传 speaker 标识，由 provider 决定默认音色）
 get_voice() {
   local speaker="$1"
   if [[ "$speaker" == "M" ]]; then
-    echo "${MALE_VOICE:-}"
+    echo "${MALE_VOICE:-M}"
   else
-    echo "${FEMALE_VOICE:-}"
+    echo "${FEMALE_VOICE:-F}"
   fi
 }
 
