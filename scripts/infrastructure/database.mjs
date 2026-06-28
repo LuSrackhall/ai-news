@@ -126,6 +126,21 @@ export function createSqliteDatabase(dbPath = null) {
     CREATE INDEX IF NOT EXISTS idx_feedback_cluster ON feedback(cluster_id);
     CREATE INDEX IF NOT EXISTS idx_feedback_type ON feedback(type);
     CREATE INDEX IF NOT EXISTS idx_feedback_created ON feedback(created_at);
+
+    -- v5.0: 隔离池（GitHub 噪音过滤被拦截的事件）
+    CREATE TABLE IF NOT EXISTS quarantine (
+      id              TEXT PRIMARY KEY,
+      event_id        TEXT NOT NULL,
+      source_id       TEXT,
+      title           TEXT,
+      url             TEXT,
+      reason          TEXT,
+      quarantined_at  TEXT NOT NULL,
+      expires_at      TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_quarantine_source ON quarantine(source_id);
+    CREATE INDEX IF NOT EXISTS idx_quarantine_expires ON quarantine(expires_at);
   `)
 
   return db

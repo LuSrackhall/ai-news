@@ -7,6 +7,7 @@ export const ingestionPipeline = {
   steps: [
     { taskId: 'CollectAssets', name: '采集', retry: 2 },
     { taskId: 'NormalizeAssets', name: '归一化' },
+    { taskId: 'FilterGitHubNoise', name: '噪音过滤' },
     { taskId: 'VerifyAssets', name: '验证' },
     { taskId: 'ExtractEntities', name: '实体提取' },
     { taskId: 'ClusterEvents', name: '聚类' },

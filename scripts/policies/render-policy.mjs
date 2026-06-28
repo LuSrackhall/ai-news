@@ -44,7 +44,8 @@ export class RenderPolicy {
     if (importantItems.length > 0) {
       sections.push('## 重要动态\n')
       for (const item of importantItems) {
-        sections.push(`### ${this.fmt(item.title)}\n`)
+        const tag = item.category ? `**[${this.fmt(item.category)}]** ` : ''
+        sections.push(`### ${tag}${this.fmt(item.title)}\n`)
         if (item.keyPoint || item.key_point) sections.push(`**要点**：${this.fmt(item.keyPoint || item.key_point)}\n`)
         if (item.analysis) sections.push(`${this.fmt(item.analysis)}\n`)
         if (item.source) sections.push(`> 来源：${typeof item.source === 'object' ? `[${item.source.name}](${this.url(item.source.url)})` : item.source}\n`)
@@ -63,7 +64,7 @@ export class RenderPolicy {
     if (content.editorial) {
       sections.push('## 编辑观点\n')
       const ed = content.editorial
-      const parts = [ed.observation, ed.evidence, ed.judgment, ed.prediction].filter(Boolean).map(this.fmt)
+      const parts = [ed.observation, ed.evidence, ed.judgment].filter(Boolean).map(this.fmt)
       sections.push(parts.join('\n\n'))
       sections.push('')
     }

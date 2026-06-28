@@ -61,7 +61,7 @@ export class ValidationPolicy {
     // 4. editorial 长度
     const editorial = articleContent?.editorial
     if (editorial) {
-      for (const field of ['observation', 'evidence', 'judgment', 'prediction']) {
+      for (const field of ['observation', 'evidence', 'judgment']) {
         if (editorial[field] && editorial[field].length < 30) {
           warnings.push({ check: 'editorial_too_short', detail: `${field}: ${editorial[field].length} 字` })
         }
