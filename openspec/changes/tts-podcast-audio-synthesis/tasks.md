@@ -5,6 +5,7 @@
 - [x] 1.3 创建 `scripts/tts/providers/openai.sh`：OpenAI TTS provider（需 OPENAI_API_KEY）
 - [x] 1.4 创建 `scripts/tts/providers/minimax.sh`：MiniMax TTS provider（需 MINIMAX_API_KEY）
 - [x] 1.5 创建 `scripts/tts/synthesize.sh`：runner 脚本（读 script.json → 展开对话为 segments → 逐段合成 → ffmpeg 合并）
+- [x] 1.6 修复男女音色切换：M/F 标识映射到 provider 默认音色（edge-tts/openai/minimax）+ validation-policy 适配对话格式时长
 
 ## 2. 技能集成
 

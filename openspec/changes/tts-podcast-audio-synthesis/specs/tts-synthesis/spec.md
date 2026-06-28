@@ -31,6 +31,18 @@
 - **WHEN** 选择的 provider 的 `tts_check` 返回非零
 - **THEN** 打印 `tts_install_help` 的内容并退出
 
+### Requirement: 男女音色分配
+
+双人对话中 M/F speaker 映射到不同音色。
+
+#### Scenario: 默认音色映射
+- **WHEN** 未设置 TTS_MALE_VOICE / TTS_FEMALE_VOICE 环境变量
+- **THEN** edge-tts: M→YunxiNeural, F→XiaoxiaoNeural; OpenAI: M→onyx, F→nova; MiniMax: M→male-cn, F→female-cn
+
+#### Scenario: 自定义音色
+- **WHEN** 设置 `TTS_MALE_VOICE=zh-CN-YunjianNeural`
+- **THEN** 所有 M speaker 的段使用 YunjianNeural 音色
+
 ### Requirement: 增量合成
 
 已存在的分段文件不重复合成。

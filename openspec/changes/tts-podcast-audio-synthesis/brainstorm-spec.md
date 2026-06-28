@@ -44,8 +44,10 @@ scripts/tts/
 ### D2: 默认 provider = edge-tts
 
 - 免费，`pip install edge-tts` 即可
-- 男声默认 `zh-CN-YunxiNeural`，女声默认 `zh-CN-XiaoxiaoNeural`
-- 可通过环境变量覆盖：`TTS_PROVIDER`、`TTS_MALE_VOICE`、`TTS_FEMALE_VOICE`
+- runner 将 speaker 标识（M/F）传给 provider，provider 内部映射到默认音色
+- edge-tts: M→`zh-CN-YunxiNeural`, F→`zh-CN-XiaoxiaoNeural`
+- OpenAI: M→`onyx`, F→`nova`; MiniMax: M→`male-cn`, F→`female-cn`
+- 可通过 `TTS_MALE_VOICE` / `TTS_FEMALE_VOICE` 环境变量覆盖
 
 ### D3: 输出结构
 
