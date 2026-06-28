@@ -97,7 +97,15 @@ db.close()
 
 将文章 JSON 写入 `output/<date>/article.json`。
 
-### Step 4: 生成播客脚本（Agent 执行）
+### Step 4: 生成播客脚本（询问用户）
+
+文章生成后，先询问用户是否需要播客脚本：
+
+> 文章已生成。是否生成播客脚本？
+>   ✓ 生成 → 按 `prompts/v1/script.md` 生成双人对话脚本
+>   ✗ 跳过 → 直接进 Step 5 渲染
+
+**如果用户选择"生成"：**
 
 按 `prompts/v1/script.md` 的播客脚本结构，基于文章内容生成双人对话脚本。
 
@@ -106,13 +114,14 @@ db.close()
 - 每段对话包含 speaker（"M" 男主播 / "F" 女主播）和 text
 - 总时长 180-300 秒
 - 口语化、短句为主、TTS 友好（无括号注释、无表情符号、无舞台指示）
-- 环境变量 `GENERATE_SCRIPT=false` 可跳过此步骤
 
 将播客脚本 JSON 写入 `output/<date>/script.json`。
 
 **检查点：**
 - [ ] 脚本总时长 180-300s
 - [ ] 每段均为对话数组格式（非单人文本）
+
+**如果用户选择"跳过"：** 直接进 Step 5，渲染时跳过 script 相关输出。
 
 ### Step 5: 渲染（调用代码）
 
@@ -166,20 +175,22 @@ console.log(JSON.stringify(r))
 校验通过后，询问用户是否合成播客音频：
 
 > 日报已生成，校验通过。要不要合成播客音频？
->   ✓ 合成 → 调用 TTS 合成 podcast.mp3
+>   ✓ 合成 → 选择 TTS Provider
 >   ✗ 跳过 → 直接归档
 
-**如果用户选择"合成"：**
+**如果用户选择"合成"，再询问 TTS Provider：**
 
-```bash
-bash scripts/tts/synthesize.sh output/{{date}}/script.json
-```
+> 选择 TTS Provider：
+>   1. edge-tts（免费，默认）
+>   2. OpenAI TTS（需 OPENAI_API_KEY）
+>   3. MiniMax TTS（需 MINIMAX_API_KEY）
 
 **如果用户选择"跳过"：** 直接进 Step 8。
 
-**TTS Provider 切换：**
+**根据用户选择执行：**
+
 ```bash
-# 默认 edge-tts（免费）
+# edge-tts（免费）
 bash scripts/tts/synthesize.sh output/{{date}}/script.json
 
 # OpenAI TTS
