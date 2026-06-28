@@ -507,6 +507,32 @@ export const RSS_SOURCES = [
 ]
 
 // ============================================================
+// GitHub/Atom 源噪音过滤规则
+// ============================================================
+export const GITHUB_NOISE_RULES = {
+  enabled: true,
+  quarantineDays: 3,
+  // URL 路径匹配 — 命中则丢弃
+  dropUrlPatterns: [
+    /\/issues\/\d+/,
+    /\/pull\/\d+/,
+    /\/commit\/[a-f0-9]+/,
+    /\/actions\//,
+  ],
+  // 标题匹配 — 命中则丢弃（低价值 commit）
+  dropTitlePatterns: [
+    /^(fix|chore|ci|docs|build|test|refactor)(\(|:)/i,
+    /^Merge pull request/,
+    /^Bump /,
+  ],
+  // 标题匹配 — 命中则保留（高价值事件）
+  keepTitlePatterns: [
+    /^(feat|release|breaking)(\(|:)/i,
+    /v\d+\.\d+/,
+  ],
+}
+
+// ============================================================
 // AI 关键词过滤（用于 Tier 3 + requireKeywordFilter 源）
 // ============================================================
 export const AI_KEYWORDS = [

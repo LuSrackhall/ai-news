@@ -8,11 +8,11 @@
 
 ## 2. 子设计 B：GitHub 噪音过滤 + 隔离池
 
-- [ ] 2.1 在 `scripts/config.mjs` 中新增 `GITHUB_NOISE_RULES` 配置块（enabled、quarantineDays、dropPatterns、keepTitlePatterns）
-- [ ] 2.2 新建 `scripts/rules/github-noise-rule.mjs`：实现正则过滤逻辑（URL 路径匹配 + 标题匹配）
-- [ ] 2.3 更新 `scripts/infrastructure/database.mjs`：新增 quarantine 表（id、event_id、source_id、title、url、reason、quarantined_at、expires_at）
-- [ ] 2.4 在 ingestion pipeline 中插入噪音过滤步骤：在 normalize-assets 之后、score-events 之前调用 github-noise-rule
-- [ ] 2.5 实现隔离池自动清理：ingestion 启动时执行 `DELETE FROM quarantine WHERE expires_at < now`
+- [x] 2.1 在 `scripts/config.mjs` 中新增 `GITHUB_NOISE_RULES` 配置块（enabled、quarantineDays、dropPatterns、keepTitlePatterns）
+- [x] 2.2 新建 `scripts/rules/github-noise-rule.mjs`：实现正则过滤逻辑（URL 路径匹配 + 标题匹配）
+- [x] 2.3 更新 `scripts/infrastructure/database.mjs`：新增 quarantine 表（id、event_id、source_id、title、url、reason、quarantined_at、expires_at）
+- [x] 2.4 在 ingestion pipeline 中插入噪音过滤步骤：在 normalize-assets 之后、score-events 之前调用 github-noise-rule
+- [x] 2.5 实现隔离池自动清理：ingestion 启动时执行 `DELETE FROM quarantine WHERE expires_at < now`
 
 ## 3. 测试与验证
 
