@@ -1,5 +1,6 @@
 /**
- * GenerateScript Task — LLM 口播稿生成
+ * GenerateScript Task — LLM 口播稿生成（面向播客）
+ * 环境变量 GENERATE_SCRIPT=false 可禁用
  */
 
 import { ExecutionResult } from '../runtime/result.mjs'
@@ -9,6 +10,13 @@ export class GenerateScript {
   constructor(ctx) { this.ctx = ctx }
 
   async execute(ctx) {
+    // 环境变量控制：GENERATE_SCRIPT=false 跳过口播稿生成
+    if (process.env.GENERATE_SCRIPT === 'false') {
+      ctx._scriptContent = {}
+      ctx._scriptMeta = { skipped: true, reason: 'GENERATE_SCRIPT=false' }
+      return ExecutionResult.ok({ script_skipped: true }, { total_duration_s: 0 })
+    }
+
     const curatedEvents = ctx._curatedEvents || []
     const eventsJson = JSON.stringify(curatedEvents, null, 2)
     const articleContent = ctx._articleContent || {}
