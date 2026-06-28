@@ -1,6 +1,6 @@
 ## Context
 
-AI 日报项目通过 RSS 采集 → SQLite → Agent 编辑 → 代码渲染的 pipeline 自动生成日报。当前 54 个 RSS/Atom 源，其中约 20 个是 GitHub Atom 源。现有日报格式为：今日速览 → 重磅深度 → 重要动态 → 快讯 → 编辑观点（4段）。
+AI 日报项目通过 RSS 采集 → SQLite → Agent 编辑 → 代码渲染的 pipeline 自动生成日报。当前 89 个 RSS/Atom 源，其中 47 个是 GitHub Atom 源。现有日报格式为：今日速览 → 重磅深度 → 重要动态 → 快讯 → 编辑观点（4段）。
 
 ## Goals / Non-Goals
 

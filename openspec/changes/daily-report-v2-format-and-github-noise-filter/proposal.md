@@ -1,6 +1,6 @@
 ## Why
 
-AI 日报项目近期新增了 14 个 RSS/Atom 源（含 GitHub Trending、5 个模型厂商 GitHub org、Wired AI、Axios、Semafor 等），总源数从 32 增至 54。GitHub Atom 源会带来大量 commit/issue/PR 噪音，需要在 ingestion pipeline 中前置过滤。同时日报章节结构需要优化——增加类别标签、精简编辑观点段落，以提升扫读体验和 Agent 选题效率。
+AI 日报项目近期新增了 49 个 RSS/Atom 源（含 GitHub Trending、40 个厂商 GitHub org、Wired AI、Axios、Semafor、Apple ML、AWS ML、Databricks 等），总源数从 32 增至 89。GitHub Atom 源会带来大量 commit/issue/PR 噪音，需要在 ingestion pipeline 中前置过滤。同时日报章节结构需要优化——增加类别标签、精简编辑观点段落，以提升扫读体验和 Agent 选题效率。
 
 ## What Changes
 

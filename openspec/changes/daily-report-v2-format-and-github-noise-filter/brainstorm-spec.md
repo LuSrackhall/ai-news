@@ -2,7 +2,7 @@
 
 AI 日报项目（Ai-ribao）通过 RSS 采集 → SQLite → Agent 编辑 → 代码渲染的 pipeline 自动生成每日 AI 新闻日报。
 
-当前日报格式为：今日速览 → 重磅深度 → 重要动态 → 快讯 → 编辑观点（4段）。近期新增了 14 个 RSS/Atom 源（含 Wired AI、Axios、Semafor、GitHub Trending、5 个模型厂商 GitHub org、Apple ML、AWS ML、Databricks 等），总源数从 32 增至 54。
+当前日报格式为：今日速览 → 重磅深度 → 重要动态 → 快讯 → 编辑观点（4段）。近期新增了 49 个 RSS/Atom 源（含 Wired AI、Axios、Semafor、GitHub Trending、5 个模型厂商 GitHub org、Apple ML、AWS ML、Databricks、35 个厂商 GitHub org 等），总源数从 32 增至 89。
 
 GitHub Atom 源会带来大量 commit 噪音（issues、PR、CI、文档更新等），需要在 ingestion pipeline 中前置过滤，并建立隔离池用于调试。
 
