@@ -40,6 +40,7 @@
   }],
   "important_items": [{
     "title": "...",
+    "category": "从枚举中选取：模型发布/AI政策/产品应用/开源项目/融资收购/研究论文/开发者工具/AI安全",
     "key_point": "一句话核心事实",
     "analysis": "为什么值得关注，80-150字，必须含数字或对比",
     "source": { "name": "...", "url": "..." }
@@ -48,7 +49,6 @@
   "editorial": {
     "observation": "今天新闻中的模式或矛盾",
     "evidence": "引用具体新闻事实",
-    "judgment": "一个明确的、可被反驳的立场",
-    "prediction": "未来 3-6 个月可能发生什么"
+    "judgment": "一个明确的、可被反驳的立场（含趋势预判）"
   }
 }
