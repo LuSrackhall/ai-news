@@ -354,6 +354,38 @@ export const RSS_SOURCES = [
     language: 'en',
     category: 'ecosystem',
   },
+  {
+    id: 'meta-github',
+    name: 'Meta FAIR GitHub',
+    url: 'https://github.com/facebookresearch.atom',
+    tier: 2,
+    language: 'en',
+    category: 'ecosystem',
+  },
+  {
+    id: 'qwen-github',
+    name: 'Qwen GitHub',
+    url: 'https://github.com/QwenLM.atom',
+    tier: 2,
+    language: 'en',
+    category: 'ecosystem',
+  },
+  {
+    id: 'mistral-github',
+    name: 'Mistral GitHub',
+    url: 'https://github.com/mistralai.atom',
+    tier: 2,
+    language: 'en',
+    category: 'ecosystem',
+  },
+  {
+    id: 'deepmind-github',
+    name: 'Google DeepMind GitHub',
+    url: 'https://github.com/google-deepmind.atom',
+    tier: 2,
+    language: 'en',
+    category: 'ecosystem',
+  },
 ]
 
 // ============================================================
