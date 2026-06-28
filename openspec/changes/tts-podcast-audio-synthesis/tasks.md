@@ -13,6 +13,6 @@
 
 ## 3. 测试
 
-- [ ] 3.1 用 6 月 28 日 script.json 测试 edge-tts 合成
-- [ ] 3.2 验证分段文件和 podcast.mp3 生成正确
-- [ ] 3.3 验证 --force 和增量合成逻辑
+- [x] 3.1 用 6 月 28 日 script.json 测试 edge-tts 合成
+- [x] 3.2 验证分段文件和 podcast.mp3 生成正确
+- [x] 3.3 验证 --force 和增量合成逻辑

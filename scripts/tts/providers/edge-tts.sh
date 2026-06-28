@@ -9,12 +9,14 @@
 # ────────────────────────────────────────────────────────────────────
 
 tts_check() {
-  if ! command -v edge-tts >/dev/null 2>&1; then
-    if ! python3 -c "import edge_tts" 2>/dev/null; then
-      echo "✗ edge-tts not found." >&2
-      return 1
-    fi
+  if command -v edge-tts >/dev/null 2>&1; then
+    return 0
   fi
+  if python3 -c "import edge_tts" 2>/dev/null; then
+    return 0
+  fi
+  echo "✗ edge-tts not found." >&2
+  return 1
 }
 
 tts_install_help() {
@@ -41,8 +43,12 @@ tts_synthesize() {
 
   local tmp="${out%.mp3}.tmp.mp3"
 
-  # edge-tts 通过 stdin 或 --text 传文本
-  edge-tts --voice "$voice" --text "$text" --write-media "$tmp" 2>/dev/null
+  # 优先用 CLI，不存在则用 python3 -m
+  if command -v edge-tts >/dev/null 2>&1; then
+    edge-tts --voice "$voice" --text "$text" --write-media "$tmp" 2>/dev/null
+  else
+    python3 -m edge_tts --voice "$voice" --text "$text" --write-media "$tmp" 2>/dev/null
+  fi
 
   if [[ -f "$tmp" ]]; then
     mv "$tmp" "$out"
