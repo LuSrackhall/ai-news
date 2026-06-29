@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 # ────────────────────────────────────────────────────────────────────
 # Mimo TTS provider — Xiaomi Mimo Token Plan
+# Podcast audio synthesis with male/female host voice support
 #
-# Env:     MIMO_API_KEY            required
-#          MIMO_BASE_URL           optional (default: https://token-plan-cn.xiaomimimo.com/v1)
-#          MIMO_TTS_MODEL          optional (default: mimo-v2.5-tts)
-#          MIMO_TTS_VOICE          optional (default: 苏打)
-#          MIMO_TTS_MALE_VOICE     optional (default: Dean)
-#          MIMO_TTS_FEMALE_VOICE   optional (default: 苏打)
+# Env:     MIMO_API_KEY                required (shared with video skill)
+#          MIMO_BASE_URL               optional (default: https://token-plan-cn.xiaomimimo.com/v1)
+#          MIMO_TTS_MODEL              optional (default: mimo-v2.5-tts)
+#
+# Podcast-specific voice config (prefix: PODCAST_):
+#          PODCAST_MIMO_TTS_VOICE      optional (default: 苏打)
+#          PODCAST_MIMO_TTS_MALE_VOICE optional (default: Dean)
+#          PODCAST_MIMO_TTS_FEMALE_VOICE optional (default: 苏打)
+#          PODCAST_MIMO_TTS_STYLE      optional (default: 新闻播报风格，语速适中，沉稳大气)
+#
 # Voices:  苏打 / 冰糖 / 茉莉 / 白桦 / Mia / Chloe / Milo / Dean / mimo_default
 # ────────────────────────────────────────────────────────────────────
 
@@ -24,24 +29,32 @@ tts_check() {
 
 tts_install_help() {
   cat <<'EOF' >&2
-To use Mimo TTS (Xiaomi Token Plan):
+To use Mimo TTS (Xiaomi Token Plan) for Podcast:
 
   export MIMO_API_KEY=your-mimo-api-key
   (get one at https://token-plan-cn.xiaomimimo.com)
 
-Optional:
+Required:
+  export MIMO_API_KEY=tp-... or sk-...
+
+Optional (podcast-specific):
+  export PODCAST_MIMO_TTS_VOICE=苏打           # default voice
+  export PODCAST_MIMO_TTS_MALE_VOICE=Dean      # male host voice (M)
+  export PODCAST_MIMO_TTS_FEMALE_VOICE=苏打    # female host voice (F)
+  export PODCAST_MIMO_TTS_STYLE="新闻播报风格，语速适中，沉稳大气"
+
+Optional (general):
   export MIMO_BASE_URL=https://token-plan-cn.xiaomimimo.com/v1
   export MIMO_TTS_MODEL=mimo-v2.5-tts
-  export MIMO_TTS_VOICE=苏打           # default voice
-  export MIMO_TTS_MALE_VOICE=Dean      # male host voice (M)
-  export MIMO_TTS_FEMALE_VOICE=苏打    # female host voice (F)
 
 Available voices:
   苏打, 冰糖, 茉莉, 白桦, Mia, Chloe, Milo, Dean, mimo_default
 
 Voice mapping for podcast:
-  M (male host)   -> Dean
-  F (female host) -> 苏打
+  M (male host)   -> PODCAST_MIMO_TTS_MALE_VOICE (default: Dean)
+  F (female host) -> PODCAST_MIMO_TTS_FEMALE_VOICE (default: 苏打)
+
+Note: Uses PODCAST_ prefix to avoid conflict with video skill's MIMO_TTS_* config
 EOF
 }
 
@@ -53,18 +66,17 @@ tts_synthesize() {
   local base="${MIMO_BASE_URL:-https://token-plan-cn.xiaomimimo.com/v1}"
   local model="${MIMO_TTS_MODEL:-mimo-v2.5-tts}"
 
-  # Use environment variable for default voice, fallback to 苏打
-  local default_voice="${MIMO_TTS_VOICE:-苏打}"
+  # Use podcast-specific env vars, fallback to generic or default
+  local default_voice="${PODCAST_MIMO_TTS_VOICE:-苏打}"
+  local male_voice="${PODCAST_MIMO_TTS_MALE_VOICE:-Dean}"
+  local female_voice="${PODCAST_MIMO_TTS_FEMALE_VOICE:-苏打}"
 
-  # Default voice from env
+  # Default voice from podcast config
   if [[ -z "$voice" ]]; then
     voice="$default_voice"
   fi
 
-  # Map M/F to voices (can be overridden by env vars)
-  local male_voice="${MIMO_TTS_MALE_VOICE:-Dean}"
-  local female_voice="${MIMO_TTS_FEMALE_VOICE:-苏打}"
-
+  # Map M/F to podcast voices
   case "$voice" in
     M) voice="$male_voice" ;;
     F) voice="$female_voice" ;;
@@ -73,13 +85,16 @@ tts_synthesize() {
   local escaped_text
   escaped_text=$(echo "$text" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
 
+  # Get podcast style instruction
+  local style="${PODCAST_MIMO_TTS_STYLE:-新闻播报风格，语速适中，沉稳大气}"
+
   local payload
   payload=$(cat <<EOF
 {
   "model": "$model",
   "messages": [
-    {"role": "user", "content": "请用语音说：$escaped_text"},
-    {"role": "assistant", "content": ""}
+    {"role": "user", "content": "$style"},
+    {"role": "assistant", "content": "$escaped_text"}
   ],
   "modalities": ["text", "audio"],
   "audio": {

@@ -1,5 +1,6 @@
 # ────────────────────────────────────────────────────────────────────
 # Xiaomi MiMo TTS provider — uses MiMo-V2.5-TTS chat completions API.
+# Video presentation audio synthesis
 #
 # Supports both Pay-as-you-go and Token Plan:
 #   - Pay-as-you-go: MIMO_API_KEY starts with sk- (default base URL)
@@ -8,15 +9,18 @@
 #
 # Docs:    https://mimo.mi.com/docs/zh-CN/quick-start/usage-guide/audio/speech-synthesis-v2.5
 # Token:   https://mimo.mi.com/docs/zh-CN/tokenplan/Token Plan/quick-access
-# Env:     MIMO_API_KEY=...         required (sk- or tp- prefix)
-#          MIMO_BASE_URL=...        optional — overrides auto-detection
-#          MIMO_TTS_STYLE=...       optional — default style instruction for all segments
-#          MIMO_TTS_VOICE=...       optional — default voice (冰糖 / 茉莉 / 苏打 / 白桦)
+#
+# Env:     MIMO_API_KEY=...              required (sk- or tp- prefix, shared with podcast)
+#          MIMO_BASE_URL=...             optional — overrides auto-detection
+#
+# Video-specific config (prefix: VIDEO_):
+#          VIDEO_MIMO_TTS_STYLE=...      optional — default style instruction for video
+#          VIDEO_MIMO_TTS_VOICE=...      optional — default voice for video (default: 冰糖)
+#
 # Voices:  冰糖 (female, default) / 茉莉 (female) / 苏打 (male) / 白桦 (male)
 # Output:  API returns base64-encoded WAV; ffmpeg converts to mp3.
 #
-# Style control: put natural-language style instructions in the `user` role.
-#   e.g. "新闻主播风格，语速适中，沉稳大气"
+# Note: Uses VIDEO_ prefix to avoid conflict with podcast's PODCAST_MIMO_TTS_* config
 # ────────────────────────────────────────────────────────────────────
 
 tts_check() {
@@ -40,7 +44,7 @@ tts_check() {
 
 tts_install_help() {
   cat <<'EOF' >&2
-To use the Xiaomi MiMo TTS provider:
+To use the Xiaomi MiMo TTS provider for Video:
 
   Pay-as-you-go (sk-xxxxx):
     export MIMO_API_KEY=sk-...
@@ -51,10 +55,12 @@ To use the Xiaomi MiMo TTS provider:
     (get one at https://mimo.mi.com → Token Plan → Console)
     Base URL auto-detected from key prefix (China cluster default).
 
-  Optional:
+  Optional (video-specific):
+    export VIDEO_MIMO_TTS_VOICE=冰糖        # default: 冰糖
+    export VIDEO_MIMO_TTS_STYLE="专业讲解风格，清晰流畅"
+
+  Optional (general):
     export MIMO_BASE_URL=https://token-plan-cn.xiaomimimo.com/v1  # override
-    export MIMO_TTS_VOICE=苏打        # default: 冰糖
-    export MIMO_TTS_STYLE="新闻主播风格，沉稳大气"
 
 Install deps (only if missing):
   curl    — brew install curl
@@ -86,9 +92,11 @@ tts_synthesize() {
   local text="$1"
   local out="$2"
   local voice="${3:-}"
-  [[ -z "$voice" ]] && voice="${MIMO_TTS_VOICE:-冰糖}"
 
-  local style="${MIMO_TTS_STYLE:-}"
+  # Use VIDEO_ prefix for video-specific config, fallback to generic or default
+  [[ -z "$voice" ]] && voice="${VIDEO_MIMO_TTS_VOICE:-冰糖}"
+
+  local style="${VIDEO_MIMO_TTS_STYLE:-}"
   local base
   base="$(_mimo_base_url)"
 
