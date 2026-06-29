@@ -1,27 +1,76 @@
 #!/usr/bin/env bash
 # ────────────────────────────────────────────────────────────────────
 # Mimo TTS provider — Xiaomi MiMo Token Plan
-# Podcast audio synthesis with custom voice design support
+# With API Key Pool support for automatic rotation and rate limit handling
 #
-# Env:     MIMO_API_KEY                    required (shared with video skill)
-#          MIMO_BASE_URL                   optional (default: auto-detect from key prefix)
+# Features:
+#   - Multiple API keys (comma-separated pool)
+#   - Automatic key rotation on 429 rate limit
+#   - Retry mechanism with different keys
+#   - Voice design mode for custom voices
+#
+# Env:     MIMO_API_KEY_POOL              required (comma-separated keys)
+#          MIMO_BASE_URL                   optional (default: auto-detect)
 #
 # Podcast config (prefix: PODCAST_):
 #          PODCAST_MIMO_TTS_MODEL          optional (default: mimo-v2.5-tts-voicedesign)
-#            - mimo-v2.5-tts               : preset voices (冰糖/茉莉/苏打/白桦)
-#            - mimo-v2.5-tts-voicedesign   : custom voice design (recommended)
-#
-# Preset voice mode (MODEL=mimo-v2.5-tts):
-#          PODCAST_MIMO_TTS_VOICE           optional (default: 冰糖)
-#          PODCAST_MIMO_TTS_MALE_VOICE      optional (default: 白桦)
-#          PODCAST_MIMO_TTS_FEMALE_VOICE    optional (default: 冰糖)
-#
-# Voice design mode (MODEL=mimo-v2.5-tts-voicedesign):
-#          PODCAST_MIMO_TTS_MALE_VOICE_DESC    optional (natural language description)
-#          PODCAST_MIMO_TTS_FEMALE_VOICE_DESC  optional (natural language description)
-#
-# Voices (preset): 冰糖 / 茉莉 / 苏打 / 白桦 / Mia / Chloe / Milo / Dean / mimo_default
+#          PODCAST_MIMO_TTS_FEMALE_VOICE_DESC  optional (voice design description)
+#          PODCAST_MIMO_TTS_MALE_VOICE_DESC    optional (voice design description)
+#          PODCAST_MIMO_TTS_VOICE          optional (preset voice, default: 冰糖)
+#          PODCAST_MIMO_TTS_MALE_VOICE     optional (preset male voice, default: 白桦)
+#          PODCAST_MIMO_TTS_FEMALE_VOICE   optional (preset female voice, default: 冰糖)
 # ────────────────────────────────────────────────────────────────────
+
+# Global variables for key pool management
+KEY_POOL=()
+CURRENT_KEY_INDEX=0
+TOTAL_KEYS=0
+
+# Initialize key pool from environment
+_init_key_pool() {
+  local pool="${MIMO_API_KEY_POOL:-}"
+
+  if [[ -z "$pool" ]]; then
+    echo "✗ MIMO_API_KEY_POOL is not set." >&2
+    return 1
+  fi
+
+  # Split comma-separated keys into array (compatible with bash and zsh)
+  KEY_POOL=()
+  local old_ifs="$IFS"
+  IFS=','
+  for key in $pool; do
+    KEY_POOL+=("$key")
+  done
+  IFS="$old_ifs"
+
+  TOTAL_KEYS=${#KEY_POOL[@]}
+
+  if [[ $TOTAL_KEYS -eq 0 ]]; then
+    echo "✗ No API keys in pool." >&2
+    return 1
+  fi
+
+  CURRENT_KEY_INDEX=0
+  return 0
+}
+
+# Get next available key (round-robin)
+_get_next_key() {
+  if [[ $TOTAL_KEYS -eq 0 ]]; then
+    _init_key_pool || return 1
+  fi
+
+  local key="${KEY_POOL[$CURRENT_KEY_INDEX]}"
+  CURRENT_KEY_INDEX=$(( (CURRENT_KEY_INDEX + 1) % TOTAL_KEYS ))
+
+  echo "$key"
+}
+
+# Reset key index (start from beginning)
+_reset_key_pool() {
+  CURRENT_KEY_INDEX=0
+}
 
 tts_check() {
   if ! command -v curl >/dev/null; then
@@ -32,18 +81,41 @@ tts_check() {
     echo "✗ jq is required to parse the API response." >&2
     return 1
   fi
-  if [[ -z "${MIMO_API_KEY:-}" ]]; then
-    echo "✗ MIMO_API_KEY is not set." >&2
+
+  # Initialize key pool
+  _init_key_pool || return 1
+
+  # Test first key
+  local test_key="${KEY_POOL[0]}"
+  local base="${MIMO_BASE_URL:-https://token-plan-cn.xiaomimimo.com/v1}"
+
+  local resp
+  resp=$(curl -s -w "\n%{http_code}" -X POST "$base/models" \
+    -H "Authorization: Bearer $test_key" 2>/dev/null)
+
+  local http_code
+  http_code=$(echo "$resp" | tail -1)
+
+  if [[ "$http_code" == "401" ]]; then
+    echo "✗ Invalid API Key: ${test_key:0:15}..." >&2
     return 1
   fi
+
+  echo "✓ API Key pool initialized: $TOTAL_KEYS key(s) available" >&2
+  return 0
 }
 
 tts_install_help() {
   cat <<'EOF' >&2
 To use Mimo TTS (Xiaomi Token Plan) for Podcast:
 
-  export MIMO_API_KEY=your-mimo-api-key
-  (get one at https://mimo.mi.com)
+  export MIMO_API_KEY_POOL=key1,key2,key3
+  (get keys at https://mimo.mi.com → Token Plan → Console)
+
+Features:
+  ✓ Multiple API keys for automatic rotation
+  ✓ Handles 429 rate limits automatically
+  ✓ Voice design mode for custom voices
 
 Two modes available:
 
@@ -54,13 +126,11 @@ Two modes available:
 
 2. Voice Design Mode (mimo-v2.5-tts-voicedesign) - Recommended:
    export PODCAST_MIMO_TTS_MODEL=mimo-v2.5-tts-voicedesign
-   export PODCAST_MIMO_TTS_MALE_VOICE_DESC="一个30岁的男性，声音温润磁性，像大提琴般醇厚"
-   export PODCAST_MIMO_TTS_FEMALE_VOICE_DESC="一个28岁的知性女性，声音温柔如水，清澈悦耳"
+   export PODCAST_MIMO_TTS_MALE_VOICE_DESC="一个30岁的男性，声音温润磁性"
+   export PODCAST_MIMO_TTS_FEMALE_VOICE_DESC="一个28岁的知性女性，声音温柔如水"
 
 Available preset voices:
   冰糖, 茉莉, 苏打, 白桦, Mia, Chloe, Milo, Dean, mimo_default
-
-Note: Voice design mode creates custom voices from natural language descriptions
 EOF
 }
 
@@ -72,14 +142,14 @@ tts_synthesize() {
   local base="${MIMO_BASE_URL:-https://token-plan-cn.xiaomimimo.com/v1}"
   local model="${PODCAST_MIMO_TTS_MODEL:-mimo-v2.5-tts-voicedesign}"
 
-  # Escape text for JSON: escape double quotes and newlines
+  # Escape text for JSON
   local escaped_text
   escaped_text=$(echo "$text" | sed 's/"/\\"/g' | tr '\n' ' ' | sed 's/  */ /g')
 
   local payload=""
 
   if [[ "$model" == *"voicedesign"* ]]; then
-    # Voice design mode: use natural language descriptions
+    # Voice design mode
     local voice_desc=""
 
     if [[ "$voice" == "M" ]]; then
@@ -87,7 +157,6 @@ tts_synthesize() {
     elif [[ "$voice" == "F" ]]; then
       voice_desc="${PODCAST_MIMO_TTS_FEMALE_VOICE_DESC:-一个28岁的知性女性，声音温柔如水，清澈悦耳，像春风拂面般舒适}"
     else
-      # Default to female voice
       voice_desc="${PODCAST_MIMO_TTS_FEMALE_VOICE_DESC:-一个28岁的知性女性，声音温柔如水，清澈悦耳，像春风拂面般舒适}"
     fi
 
@@ -105,17 +174,15 @@ tts_synthesize() {
 EOF
 )
   else
-    # Preset voice mode: use predefined voice names
+    # Preset voice mode
     local default_voice="${PODCAST_MIMO_TTS_VOICE:-冰糖}"
     local male_voice="${PODCAST_MIMO_TTS_MALE_VOICE:-白桦}"
     local female_voice="${PODCAST_MIMO_TTS_FEMALE_VOICE:-冰糖}"
 
-    # Default voice from podcast config
     if [[ -z "$voice" ]]; then
       voice="$default_voice"
     fi
 
-    # Map M/F to podcast voices
     case "$voice" in
       M) voice="$male_voice" ;;
       F) voice="$female_voice" ;;
@@ -157,21 +224,55 @@ EOF
     fi
   fi
 
-  # curl the API; response JSON has choices[0].message.audio.data (base64 mp3)
-  local resp
-  resp=$(curl -fsS -X POST "$base/chat/completions" \
-    -H "Authorization: Bearer $MIMO_API_KEY" \
-    -H "Content-Type: application/json" \
-    -d "$payload" 2>/dev/null) || return 1
+  # Try with key pool rotation on rate limits
+  local max_retries=$TOTAL_KEYS
+  local retry=0
 
-  # Extract base64 audio data and decode to mp3
-  local audio_b64
-  audio_b64=$(echo "$resp" | jq -r '.choices[0].message.audio.data // empty') || return 1
+  while [[ $retry -lt $max_retries ]]; do
+    local current_key
+    current_key=$(_get_next_key)
 
-  if [[ -z "$audio_b64" ]]; then
-    echo "✗ MiMo API returned no audio data." >&2
+    local resp
+    resp=$(curl -s -w "\n%{http_code}" -X POST "$base/chat/completions" \
+      -H "Authorization: Bearer $current_key" \
+      -H "Content-Type: application/json" \
+      -d "$payload" 2>/dev/null)
+
+    local http_code
+    http_code=$(echo "$resp" | tail -1)
+    local body
+    body=$(echo "$resp" | sed '$d')
+
+    # Success
+    if [[ "$http_code" == "200" ]]; then
+      local audio_b64
+      audio_b64=$(echo "$body" | jq -r '.choices[0].message.audio.data // empty') || return 1
+
+      if [[ -n "$audio_b64" ]]; then
+        echo "$audio_b64" | base64 -d > "$out" || return 1
+        return 0
+      fi
+    fi
+
+    # Rate limited (429), try next key
+    if [[ "$http_code" == "429" ]]; then
+      retry=$((retry + 1))
+      if [[ $retry -lt $max_retries ]]; then
+        # Silently retry with next key
+        continue
+      else
+        echo "✗ All keys rate limited. Waiting 60s..." >&2
+        sleep 60
+        _reset_key_pool
+        retry=0
+        continue
+      fi
+    fi
+
+    # Other errors
+    echo "✗ API error (HTTP $http_code): $(echo "$body" | jq -r '.error.message // "Unknown error"')" >&2
     return 1
-  fi
+  done
 
-  echo "$audio_b64" | base64 -d > "$out" || return 1
+  return 1
 }
