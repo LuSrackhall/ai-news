@@ -21,6 +21,10 @@ tts_check() {
     echo "✗ curl not found." >&2
     return 1
   fi
+  if ! command -v jq >/dev/null; then
+    echo "✗ jq is required to parse the API response." >&2
+    return 1
+  fi
   if [[ -z "${MIMO_API_KEY:-}" ]]; then
     echo "✗ MIMO_API_KEY is not set." >&2
     return 1
@@ -82,8 +86,9 @@ tts_synthesize() {
     F) voice="$female_voice" ;;
   esac
 
+  # Escape text for JSON: escape double quotes and newlines
   local escaped_text
-  escaped_text=$(echo "$text" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+  escaped_text=$(echo "$text" | sed 's/"/\\"/g' | tr '\n' ' ' | sed 's/  */ /g')
 
   # Get podcast style instruction
   local style="${PODCAST_MIMO_TTS_STYLE:-新闻播报风格，语速适中，沉稳大气}"
@@ -105,8 +110,25 @@ tts_synthesize() {
 EOF
 )
 
-  curl -fsS -o "$out" -X POST "$base/chat/completions" \
+  local tmpwav
+  tmpwav=$(mktemp -t mimo_tts).wav
+
+  # curl the API; response JSON has choices[0].message.audio.data (base64 mp3)
+  local resp
+  resp=$(curl -fsS -X POST "$base/chat/completions" \
     -H "Authorization: Bearer $MIMO_API_KEY" \
     -H "Content-Type: application/json" \
-    -d "$payload" 2>/dev/null
+    -d "$payload" 2>/dev/null) || return 1
+
+  # Extract base64 audio data and decode to mp3
+  local audio_b64
+  audio_b64=$(echo "$resp" | jq -r '.choices[0].message.audio.data // empty') || return 1
+
+  if [[ -z "$audio_b64" ]]; then
+    echo "✗ MiMo API returned no audio data." >&2
+    rm -f "$tmpwav"
+    return 1
+  fi
+
+  echo "$audio_b64" | base64 -d > "$out" || return 1
 }
