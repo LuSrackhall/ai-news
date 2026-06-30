@@ -64,15 +64,16 @@ export function createSqliteEventRepository(db) {
     store(event) {
       const row = toRow(event)
       const result = insertStmt.run(row)
-      // 写入实体关系表
-      const entities = event.entities || []
-      for (const entity of entities) {
-        insertEntityStmt.run(event.id, entity)
-      }
-      // 写入主题关系表
-      const topics = event.topics || []
-      for (const topic of topics) {
-        insertTopicStmt.run(event.id, topic)
+      // 只有确实插入时才写 entity/topic（INSERT OR IGNORE 可能跳过 content_hash 重复的行）
+      if (result.changes > 0) {
+        const entities = event.entities || []
+        for (const entity of entities) {
+          insertEntityStmt.run(event.id, entity)
+        }
+        const topics = event.topics || []
+        for (const topic of topics) {
+          insertTopicStmt.run(event.id, topic)
+        }
       }
       return result.changes
     },
