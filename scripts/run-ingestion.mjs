@@ -26,6 +26,76 @@ import { ScoreEvents } from './tasks-ingestion/score-events.mjs'
 import { DedupEvents } from './tasks-ingestion/dedup-events.mjs'
 import { StoreEvents } from './tasks-ingestion/store-events.mjs'
 
+import { readFileSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+
+/**
+ * 读取 cron.log，解析所有 JSON 条目，加上当前 result，重写 data/runs.md
+ */
+function extractJsonObjects(text) {
+  const objects = []
+  let depth = 0, start = -1
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === '{') { if (depth === 0) start = i; depth++ }
+    else if (text[i] === '}') {
+      depth--
+      if (depth === 0 && start >= 0) {
+        try { const obj = JSON.parse(text.slice(start, i + 1)); if (obj.runId) objects.push(obj) } catch {}
+        start = -1
+      }
+    }
+  }
+  return objects
+}
+
+function updateRunsMd(currentResult) {
+  try {
+    const logPath = join('.', 'data', 'cron.log')
+    const runsPath = join('.', 'data', 'runs.md')
+
+    // 解析历史记录
+    let rawLog = ''
+    try { rawLog = readFileSync(logPath, 'utf-8') } catch {}
+    const runs = extractJsonObjects(rawLog)
+
+    // 追加本次运行（cron.log 此时还未写入当前 JSON）
+    runs.push(currentResult)
+
+    // 构建表格
+    const pad = (n) => String(n).padStart(2, '0')
+
+    let md = '# 后台运行记录\n\n'
+    md += '| # | CST 时间 | 状态 | 耗时 | 采集 | 过滤 | 验证 | 实体 | 入库 |\n'
+    md += '|---|---------|------|------|------|------|------|------|------|\n'
+
+    let count = 0
+    for (const run of runs) {
+      count++
+      const dt = new Date(run.startedAt)
+      const ts = `${pad(dt.getMonth() + 1)}-${pad(dt.getDate())} ${pad(dt.getHours())}:${pad(dt.getMinutes())}`
+      const status = run.status === 'success' ? '✅' : '❌'
+      const dur = `${Math.round(run.duration / 1000)}s`
+
+      const m = {}
+      for (const s of (run.stepResults || [])) {
+        const outputs = s.outputs || {}
+        const name = s.stepName
+        if (name === '采集') m.collect = `${outputs.assets_count ?? '-'}/${s.metrics?.raw_count ?? '-'}`
+        else if (name === '噪音过滤') m.filter = outputs.filtered ?? '-'
+        else if (name === '验证') m.verify = outputs.valid ?? '-'
+        else if (name === '实体提取') m.entity = outputs.extracted ?? '-'
+        else if (name === '入库') m.store = outputs.stored ?? '-'
+      }
+
+      md += `| ${count} | ${ts} | ${status} | ${dur} | ${m.collect || '-'} | ${m.filter || '-'} | ${m.verify || '-'} | ${m.entity || '-'} | ${m.store || '-'} |\n`
+    }
+
+    writeFileSync(runsPath, md, 'utf-8')
+  } catch (err) {
+    console.error(`[runs.md] 写入失败: ${err.message}`)
+  }
+}
+
 const args = process.argv.slice(2)
 const dateArg = args.indexOf('--date')
 const date = dateArg >= 0 ? args[dateArg + 1] : new Date().toISOString().slice(0, 10)
@@ -79,5 +149,8 @@ const result = session.toResult()
 console.log(`\nResult: ${result.status}`)
 console.log(`Steps: ${result.stepResults.length}`)
 console.log(JSON.stringify(result, null, 2))
+
+// 更新运行状态表格
+updateRunsMd(result)
 
 db.close()
