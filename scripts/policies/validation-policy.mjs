@@ -35,6 +35,23 @@ export class ValidationPolicy {
       warnings.push({ check: 'hallucinated_urls', detail: `${hallucinatedUrls.length} 个编造 URL` })
     }
 
+    // 1b. 缺少来源链接
+    let missingUrlCount = 0
+    const itemsToCheck = [
+      ...(articleContent?.deepItems || articleContent?.deep_items || []),
+      ...(articleContent?.importantItems || articleContent?.important_items || []),
+      ...(articleContent?.briefItems || articleContent?.brief_items || []),
+      ...(articleContent?.summaryItems || articleContent?.summary_items || []),
+    ]
+    for (const item of itemsToCheck) {
+      const hasUrl = (item.sources?.length > 0 && item.sources.some(s => s.url)) ||
+                     (item.source?.url)
+      if (!hasUrl) missingUrlCount++
+    }
+    if (missingUrlCount > 0) {
+      warnings.push({ check: 'missing_source_urls', detail: `${missingUrlCount} 条新闻缺少来源链接` })
+    }
+
     // 2. 空洞表述
     let emptyCount = 0
     const text = `${articleMd || ''} ${scriptMd || ''}`
@@ -82,7 +99,7 @@ export class ValidationPolicy {
     }
 
     const critical = warnings.filter((w) =>
-      ['hallucinated_urls', 'empty_expressions', 'editorial_too_short'].includes(w.check)
+      ['hallucinated_urls', 'missing_source_urls', 'empty_expressions', 'editorial_too_short'].includes(w.check)
     )
     return { passed: critical.length === 0, warnings }
   }

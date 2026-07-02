@@ -15,6 +15,9 @@ export function createArticleProfile(workspace = '.') {
       properties: {
         hook: { type: 'string' },
         summary_items: { type: 'array', items: { type: 'object' } },
+        deep_items: { type: 'array', items: { type: 'object' } },
+        important_items: { type: 'array', items: { type: 'object' } },
+        brief_items: { type: 'array', items: { type: 'object' } },
         editorial: { type: 'object' },
       },
       required: ['hook', 'summary_items', 'editorial'],

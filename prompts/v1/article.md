@@ -21,15 +21,16 @@
 ## 写作硬约束
 1. 禁止编造：输入数据中没有的数字、公司名、人名、事件不得出现
 2. 数据锚定：deep_items 和 important_items 必须包含至少 1 个具体数字
-3. 来源实名：sources 中的 name 必须是输入数据中实际存在的 source_name
+3. 来源实名：sources/source 中的 name 必须是输入数据中实际存在的 source_name
 4. 字数约束：deep_items details 200-400 字, important_items analysis 80-150 字, brief_items fact 30-50 字
+5. **URL 强制**：每个 summary_item、deep_item、important_item、brief_item 都必须携带来源链接。从输入数据的 url 字段原样复制，禁止编造 URL。如果输入数据中某条事件没有 url，设为 null，不得自行构造
 
 {{editorial_examples}}
 
 ## 输出 JSON 结构
 {
   "hook": "一句话钩子，必须包含对比或冲突",
-  "summary_items": [{ "title": "...", "one_liner": "25字以内摘要" }],
+  "summary_items": [{ "title": "...", "one_liner": "25字以内摘要", "source": { "name": "...", "url": "..." } }],
   "deep_items": [{
     "title": "...",
     "what_happened": "1-2句话事实陈述",
@@ -45,7 +46,7 @@
     "analysis": "为什么值得关注，80-150字，必须含数字或对比",
     "source": { "name": "...", "url": "..." }
   }],
-  "brief_items": [{ "title": "...", "fact": "一句话纯事实，30-50字", "source": "..." }],
+  "brief_items": [{ "title": "...", "fact": "一句话纯事实，30-50字", "sources": [{ "name": "...", "url": "..." }] }],
   "editorial": {
     "observation": "今天新闻中的模式或矛盾",
     "evidence": "引用具体新闻事实",

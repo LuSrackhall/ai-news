@@ -21,6 +21,8 @@ export class RenderPolicy {
       sections.push('## 今日速览\n')
       for (const item of summaryItems) {
         sections.push(`- **${this.fmt(item.title)}**：${this.fmt(item.oneLiner || item.one_liner || '')}`)
+        const src = item.source || (item.sources?.[0])
+        if (src?.url) sections.push(`  > 来源：[${src.name || '原文'}](${this.url(src.url)})`)
       }
       sections.push('')
     }
@@ -48,7 +50,8 @@ export class RenderPolicy {
         sections.push(`### ${tag}${this.fmt(item.title)}\n`)
         if (item.keyPoint || item.key_point) sections.push(`**要点**：${this.fmt(item.keyPoint || item.key_point)}\n`)
         if (item.analysis) sections.push(`${this.fmt(item.analysis)}\n`)
-        if (item.source) sections.push(`> 来源：${typeof item.source === 'object' ? `[${item.source.name}](${this.url(item.source.url)})` : item.source}\n`)
+        const impSrc = item.source || (item.sources?.[0])
+        if (impSrc?.url) sections.push(`> 来源：[${impSrc.name || '原文'}](${this.url(impSrc.url)})\n`)
       }
     }
 
@@ -57,6 +60,8 @@ export class RenderPolicy {
       sections.push('## 快讯\n')
       for (const item of briefItems) {
         sections.push(`- **${this.fmt(item.title)}**：${this.fmt(item.fact)}`)
+        const src = item.source || (item.sources?.[0])
+        if (src?.url) sections.push(`  > 来源：[${src.name || '原文'}](${this.url(src.url)})`)
       }
       sections.push('')
     }

@@ -94,6 +94,14 @@ db.close()
 - 每条 deep item 必须有具体数字
 - editorial 三段结构：观察 / 证据 / 判断（每段 >= 30 字）
 - 不编造数据，不编造 URL
+- **URL 规则**：每条 summary_item、deep_item、important_item、brief_item 都必须从 `curated.json` 中复制对应的 `url` 和 `source_name`，写入 `source`/`sources` 字段。禁止跳过或遗漏。如果某条事件没有 url，设为 `null`
+
+**检查点：**
+- [ ] 每条 summary_item 含 `source: { name, url }`
+- [ ] 每条 deep_item 含 `sources: [{ name, url }]`
+- [ ] 每条 important_item 含 `source: { name, url }`
+- [ ] 每条 brief_item 含 `sources: [{ name, url }]`
+- [ ] 所有 URL 与 `curated.json` 完全一致
 
 将文章 JSON 写入 `output/<date>/article.json`。
 
