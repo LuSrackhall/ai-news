@@ -18,3 +18,4 @@ config.local.mjs.claude/worktrees/
 # API keys
 .env
 .claude/worktrees/
+.worktrees/
