@@ -4,13 +4,13 @@
 
 ## Context
 
-553 条 Event 中，365 条为 arXiv 论文，132 条为行业新闻，其余为政策/其他。在统一排序空间中，arXiv 论文的评分优势（tier 1 权威分 + 学术加分）压倒所有行业新闻，导致候选池 90% 为论文。这不是评分错误，而是异构信息进入同一排序空间的必然结果。
+Editorial Pipeline 将所有 Event 在同一个编辑空间中排序和筛选。当 Event 来源多样化（学术论文、行业新闻、政策公告等）时，异构信息的价值无法在单一排序空间中公平比较。不同领域的信息需要独立的评价空间。
 
 ## Decision
 
 引入 **Lane（编辑轨道）** 作为一级抽象。Event 根据 `editorialDomain` 字段归属一个主 Lane；各 Lane 独立构建候选；Editorial Merge 跨 Lane 合并。
 
-Runtime 不认识任何具体 Lane 类型（不认识 ResearchLane、IndustryLane 等）。Lane 是接口级别的抽象——具体有哪些 Lane 由 Publication 的 EditorialStrategy 配置决定，不在 Runtime 核心代码中硬编码。
+Runtime 不认识任何具体 Lane 类型。Lane 是接口级别的抽象——具体有哪些 Lane 由 Publication 的 EditorialStrategy 配置决定，不在 Runtime 核心代码中硬编码。Lane ID 是稳定字符串，Runtime 不对其取值做内建假设。
 
 ### Lane 原则
 
@@ -27,7 +27,7 @@ Runtime 不认识任何具体 Lane 类型（不认识 ResearchLane、IndustryLan
 
 - 各 Lane 内部可以使用现有的 CandidateBuilder + Rule Pipeline
 - 各 Lane 可独立调优规则，不影响其他 Lane
-- 未来新增 Lane（如 OpenSource Lane、Competitor Lane）不需要改 Runtime 核心
+- 新增 Lane 只需要新增配置 + 对应规则集，不改 Runtime 核心
 - 需要为 editorialDomain 字段设计判定逻辑（当前可从 EventType + entities 推导）
 
 ## Alternatives Considered

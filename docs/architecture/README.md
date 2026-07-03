@@ -5,18 +5,19 @@
 ## 阅读顺序
 
 ```text
-1. constitution.md          ← 必须先读（项目最高层宪法）
-2. runtimes/                ← 理解三个 Runtime
-   ├── ingestion.md         ← 事实获取
-   ├── editorial.md         ← 编辑编排 (Lane + Merge + Candidate Builder)
-   └── execution.md         ← Pipeline 执行引擎
-3. adrs/                    ← 理解为什么这样设计
-   └── ADR-0*.md
-4. domains/                 ← 核心数据模型
+0. glossary.md               ← 先读术语表（理解统一语言）
+1. constitution.md            ← 项目最高层宪法（6 条不变量）
+2. runtimes/                  ← 理解三个 Runtime
+   ├── ingestion.md           ← 事实获取
+   ├── editorial.md           ← 编辑编排 (Lane + Merge + Candidate Builder)
+   └── execution.md           ← Pipeline 执行引擎
+3. domains/                   ← 核心数据模型
    ├── event.md
    ├── candidate.md
    ├── publication.md
    └── lane.md
+4. adrs/                      ← 理解为什么这样设计
+   └── ADR-0*.md
 ```
 
 ## ADR Status
@@ -34,7 +35,8 @@ ADR 使用以下状态标识生命周期：
 
 | 文档 | 内容 | 必读 |
 |------|------|------|
-| `constitution.md` | Layer Model、Runtime Boundary、LLM Boundary、Data Flow | ✅ |
+| `glossary.md` | 统一术语表 | ✅ |
+| `constitution.md` | 6 条不变量 | ✅ |
 | `runtimes/editorial.md` | Lane 模型、Merge Policy、Runtime Model 图 | ✅ |
 | `runtimes/ingestion.md` | Ingestion 流水线、Event 产出 | |
 | `runtimes/execution.md` | Task Registry、Pipeline 编译、Session 管理 | |
