@@ -6,6 +6,7 @@ export const editorialPipeline = {
   name: 'editorial',
   steps: [
     { taskId: 'SelectEditorialWindow', name: '选择窗口' },
+    { taskId: 'BuildCandidates', name: '构建候选池' },
     { taskId: 'CurateEvents', name: '选题', retry: 1 },
     { taskId: 'GenerateArticle', name: '文章生成', retry: 1 },
     { taskId: 'GenerateScript', name: '播客脚本生成', retry: 1 },

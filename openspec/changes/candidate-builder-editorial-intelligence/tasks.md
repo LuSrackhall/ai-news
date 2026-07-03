@@ -31,9 +31,9 @@
 
 ## 6. Pipeline 集成
 
-- [ ] 6.1 修改 `scripts/pipelines/editorial.mjs`：在 SelectEditorialWindow 之后插入 `{ taskId: 'BuildCandidates', name: '构建候选池' }` step
-- [ ] 6.2 修改 `scripts/tasks-editorial/curate-events.mjs`：输入来源从 ctx._events 切换为 ctx._candidates；ctx._candidates 为空时回退到 ctx._events
-- [ ] 6.3 修改 CurateEvents 的 LLM prompt 适配 Candidate 格式：在输入 JSON 中包含 contextHints 字段
+- [x] 6.1 修改 `scripts/pipelines/editorial.mjs`：在 SelectEditorialWindow 之后插入 `{ taskId: 'BuildCandidates', name: '构建候选池' }` step
+- [x] 6.2 修改 `scripts/tasks-editorial/curate-events.mjs`：输入来源从 ctx._events 切换为 ctx._candidates；ctx._candidates 为空时回退到 ctx._events
+- [x] 6.3 修改 CurateEvents 的 LLM prompt 适配 Candidate 格式：在输入 JSON 中包含 contextHints 字段
 
 ## 7. 测试
 

@@ -48,6 +48,10 @@
 {{input_data}}
 ```
 
+输入数据中每条新闻可能包含 `_contextHints`（编辑系统标注）和 `_finalRank`（编辑排序权重）字段。`_contextHints` 提供跨天记忆等上下文提示供你参考，`_finalRank` 是编辑系统的综合排序供你参考。两者均为辅助信息，你仍独立做最终判断。
+- `_contextHints` 中若提示"已在最近 N 天持续报道"，应考虑降低该新闻的 importance（如从 deep 降为 important，或只做一句话更新），避免日报重复。
+- `_finalRank` 较高的新闻通常更值得关注，但不必严格遵守排序。
+
 ## 输出格式（严格 JSON，第一个字符必须是 {）
 {
   "selected_items": [
