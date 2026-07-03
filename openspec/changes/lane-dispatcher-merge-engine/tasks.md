@@ -10,16 +10,16 @@
 
 ## 3. Lane Execution
 
-- [ ] 3.1 实现 Lane Execution 逻辑（在 `merge-engine.mjs` 中或独立模块）：遍历 LaneMap，对每个 Lane 创建独立的 CandidateBuilder 实例并执行
-- [ ] 3.2 收集各 Lane 的 buildResult（candidates + signalLog + stats）到 LaneResultsMap
+- [x] 3.1 实现 Lane Execution 逻辑（在 `merge-engine.mjs` 中或独立模块）：遍历 LaneMap，对每个 Lane 创建独立的 CandidateBuilder 实例并执行
+- [x] 3.2 收集各 Lane 的 buildResult（candidates + signalLog + stats）到 LaneResultsMap
 
 ## 4. Merge Engine
 
-- [ ] 4.1 创建 `scripts/domain/editorial/merge-engine.mjs`：MergeEngine 类，`merge(laneResults, globalConfig)` 方法
-- [ ] 4.2 实现 Collect phase：收集所有 Lane 的 candidates，标记 LaneId
-- [ ] 4.3 实现 minimum_representation policy：非空 Lane 至少贡献 1 条
-- [ ] 4.4 实现 breaking_override policy：BREAKING Signal 的 Candidate 跨 Lane 优先
-- [ ] 4.5 实现 final rank + truncate：全局排序（finalRank 降序），截断到 maxSize（默认 40）
+- [x] 4.1 创建 `scripts/domain/editorial/merge-engine.mjs`：MergeEngine 类，`merge(laneResults, globalConfig)` 方法
+- [x] 4.2 实现 Collect phase：收集所有 Lane 的 candidates，标记 LaneId
+- [x] 4.3 实现 minimum_representation policy：非空 Lane 至少贡献 1 条
+- [x] 4.4 实现 breaking_override policy：BREAKING Signal 的 Candidate 跨 Lane 优先
+- [x] 4.5 实现 final rank + truncate：全局排序（finalRank 降序），截断到 maxSize（默认 40）
 
 ## 5. 新 Pipeline Tasks
 
