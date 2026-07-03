@@ -19,10 +19,10 @@
 
 ## 4. CandidateBuilder 引擎
 
-- [ ] 4.1 创建 `scripts/domain/editorial/candidate-builder.mjs`：Candidate 类型（event, finalRank, contextHints, signals）、CandidateBuilder 类
-- [ ] 4.2 实现 build(events, context)：Collect（顺序调用 Rule）→ Filter（应用 FILTER signals）→ Rank（finalRank = score + boost, capped +30）→ Annotate（生成 contextHints）→ Truncate（top 40）
-- [ ] 4.3 实现 BuildResult 结构（signalLog, filteredIn, filteredOut, rankedCandidates, finalCandidates）
-- [ ] 4.4 实现 RuleContext 构造：注入 date、memoryStore
+- [x] 4.1 创建 `scripts/domain/editorial/candidate-builder.mjs`：Candidate 类型（event, finalRank, contextHints, signals）、CandidateBuilder 类
+- [x] 4.2 实现 build(events, context)：Collect（顺序调用 Rule）→ Filter（应用 FILTER signals）→ Rank（finalRank = score + boost, capped +30）→ Annotate（生成 contextHints）→ Truncate（top 40）
+- [x] 4.3 实现 BuildResult 结构（signalLog, filteredIn, filteredOut, rankedCandidates, finalCandidates）
+- [x] 4.4 实现 RuleContext 构造：注入 date、memoryStore
 
 ## 5. BuildCandidates Task
 
