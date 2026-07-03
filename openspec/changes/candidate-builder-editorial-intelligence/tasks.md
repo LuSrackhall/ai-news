@@ -6,10 +6,10 @@
 
 ## 2. EditorialMemoryStore
 
-- [ ] 2.1 创建 `scripts/services/editorial-memory-store.mjs`：EditorialMemoryStore 接口定义 + JsonEditorialMemoryStore 实现
-- [ ] 2.2 实现 load(since)：读取 `data/editorial-memory.json`，返回 MemorySnapshot；文件不存在或损坏时降级返回空对象
-- [ ] 2.3 实现 save(date, snapshot)：写入 topEventIds（top 5）、topEntities、topCategories
-- [ ] 2.4 实现 prune(before)：移除 before 日期之前的 DaySnapshot
+- [x] 2.1 创建 `scripts/services/editorial-memory-store.mjs`：EditorialMemoryStore 接口定义 + JsonEditorialMemoryStore 实现
+- [x] 2.2 实现 load(since)：读取 `data/editorial-memory.json`，返回 MemorySnapshot；文件不存在或损坏时降级返回空对象
+- [x] 2.3 实现 save(date, snapshot)：写入 topEventIds（top 5）、topEntities、topCategories
+- [x] 2.4 实现 prune(before)：移除 before 日期之前的 DaySnapshot
 
 ## 3. Editorial Rules
 
