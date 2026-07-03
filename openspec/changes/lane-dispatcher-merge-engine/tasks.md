@@ -1,6 +1,6 @@
 ## 1. Lane 类型定义与默认配置
 
-- [ ] 1.1 创建 `scripts/domain/editorial/lane-types.mjs`：定义 LaneId 类型、LaneConfig 结构、DEFAULT_LANE_CONFIG（research/industry/policy/opensource/fallback 共 5 个 Lane）
+- [x] 1.1 创建 `scripts/domain/editorial/lane-types.mjs`：定义 LaneId 类型、LaneConfig 结构、DEFAULT_LANE_CONFIG（research/industry/policy/opensource/fallback 共 5 个 Lane）
 
 ## 2. Lane Dispatcher
 
