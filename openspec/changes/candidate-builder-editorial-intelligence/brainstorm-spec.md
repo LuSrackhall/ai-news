@@ -46,7 +46,7 @@ EditorialSignal = {
   weight:  number,        // RANK: ±30, FILTER/ANNOTATION: 0
   source:  string,        // Rule 名称，可追溯
   reason:  string,        // 人类可读触发原因
-  metadata: { category?, entity?, recentDays? },
+  metadata: { eventId?, category?, entity?, recentDays? },
 }
 ```
 
@@ -148,6 +148,17 @@ interface EditorialMemoryStore {
 ```
 
 Phase 1 实现：`JsonEditorialMemoryStore`（`data/editorial-memory.json`）。接口预留，未来可替换 SQLite。
+
+## Test Coverage（实施后验证）
+
+实施后验证结果：**82 测试用例，0 失败**
+
+| 测试维度 | 用例数 | 覆盖范围 |
+|---------|-------|---------|
+| 单元测试 | 18 | BreakingRule(5) + DiversityRule(2) + MemoryRule(2) + Builder(4) + MemoryStore(3) + Pipeline(2) |
+| Edge Cases | 39 | 空输入、Rule 异常容错、null字段、HOLD全覆盖、maxSize截断、JSON损坏、大输入(100条)、并发稳定性 |
+| 集成测试 | 25 | 真实 config 权重、真实 SCORING 阈值、全链路编排、混合 category 补入、Task 编排 |
+| 真实数据回放 | 19 | 2026-07-02 真实 curated.json 19 条事件 |
 
 ## Risks / Trade-offs
 

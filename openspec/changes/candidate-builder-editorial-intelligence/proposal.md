@@ -28,7 +28,7 @@
 
 ## Impact
 
-- 新增 `scripts/domain/editorial/` 目录（CandidateBuilder、Rule 实现、Signal 模型）
+- 新增 `scripts/domain/editorial/` 目录（CandidateBuilder、Rule 实现、Signal 模型、测试套件）
 - 新增 `data/editorial-memory.json`（跨天记忆存储）
 - 修改 `scripts/pipelines/editorial.mjs`（插入 BuildCandidates step）
 - 修改 `scripts/tasks-editorial/curate-events.mjs`（消费 ctx._candidates）
