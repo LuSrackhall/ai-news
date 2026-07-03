@@ -45,25 +45,29 @@
 Ingestion Runtime
         │
         ▼
-   Events (with domain hint)
+   Events (with editorialDomain hint)
         │
         ▼
 Editorial Runtime
         │
     ├── Lane Dispatcher
-    │       │     根据 Event 的 editorialDomain 分发
+    │       │     根据 Event.editorialDomain 分发到对应 Lane
+    │       │     Lane 集合由 Publication 的 EditorialStrategy 定义
     │       ▼
-    ├── Research Lane            Industry Lane          Policy Lane
-    │   ├── LaneContext          ├── LaneContext        ├── LaneContext
-    │   ├── Rules (per Lane)     ├── Rules              ├── Rules
-    │   ├── CandidateBuilder     ├── CandidateBuilder   ├── CandidateBuilder
-    │   └── LanePool             └── LanePool           └── LanePool
+    ├── Lane (抽象)
+    │   │
+    │   └── LaneContext + Rules + CandidateBuilder → LanePool
+    │
+    ├── 实际 Lane 由 Publication 配置决定：
+    │     AI Daily:    [research, industry, policy]
+    │     Robot Daily: [research, product, competition, opensource]
     │
     ├── Editorial Merge
     │       │     跨 Lane 合并 → 去重 → 排序 → 截断
+    │       │     Merge 不是固定配额（某 Lane 可空）
     │       ▼
     ├── Publication Assembly
-    │       │     应用 Publication 级别的策略
+    │       │     应用 Publication 级别的 EditorialStrategy
     │       ▼
     └── Candidate Pool (≤ 40)
               │
@@ -75,17 +79,21 @@ Editorial Runtime
 
 将 Event 按 `editorialDomain` 字段分配到对应的 Lane。一个 Event 有且仅有一个主 Lane。
 
-当 editorialDomain 无法确定时，优先使用 fallback Lane（如 Industry），并记录日志供后续校准。
+Runtime 不认识任何具体 Lane 类型（不认识 ResearchLane、IndustryLane）。Lane Dispatcher 根据 Publication 的 EditorialStrategy 中定义的 Lane 集合进行分发。未知 domain 的 Event 进入 fallback Lane（由 Publication 配置）。
 
 ### Lane
 
-Lane 是一级编辑轨道。每个 Lane 有独立的：
+Lane 是一级抽象，不是枚举。Runtime 只认识 `Lane` 接口，不绑定具体实现。
+
+每个 Lane 有独立的：
 
 - **LaneContext**：该 Lane 的配置（maxSize、排序权重、Rule 集合）
 - **Rule Pipeline**：该 Lane 内部使用的 Editorial Rules（可复用已有 Rule）
 - **Candidate Builder**：在 Lane 内构建候选池
 
 Lane 之间不共享状态，不互相调用。
+
+具体有哪些 Lane，由 Publication 的 EditorialStrategy 决定——不在任何核心代码中硬编码。
 
 ### Editorial Merge
 
@@ -102,9 +110,16 @@ Merge 不是固定配额。某天某个 Lane 的候选池可以是空的——Me
 
 Publication 级别的策略应用：
 
-- 选择哪些 Lane 参与（AI 日报 ≠ 机器人日报）
-- 应用 Publication 级别的 Editorial Strategy
+- 选择哪些 Lane 参与（由 EditorialStrategy 定义）
+- 应用 Publication 级别的 EditorialStrategy（如 "学术优先" / "Breaking 优先" / "产品发布优先"）
 - 组装最终 `Candidate[]` 供 LLM 消费
+
+Publication 是配置组合：
+
+```
+Publication = EditorialStrategy + GenerationStrategy + RenderStrategy
+EditorialStrategy = LaneSet + RuleSet + MergePolicy
+```
 
 ## Candidate Builder 定位
 

@@ -10,6 +10,8 @@
 
 引入 **Lane（编辑轨道）** 作为一级抽象。Event 根据 `editorialDomain` 字段归属一个主 Lane；各 Lane 独立构建候选；Editorial Merge 跨 Lane 合并。
 
+Runtime 不认识任何具体 Lane 类型（不认识 ResearchLane、IndustryLane 等）。Lane 是接口级别的抽象——具体有哪些 Lane 由 Publication 的 EditorialStrategy 配置决定，不在 Runtime 核心代码中硬编码。
+
 ### Lane 原则
 
 1. **互斥性**：一个 Event 有且仅有一个主 Lane
