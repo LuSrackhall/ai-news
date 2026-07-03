@@ -1,6 +1,6 @@
 # ADR-000: Why Runtime Layer Exists
 
-**Status:** Accepted · **Date:** 2026-07-04
+**Status:** `ACCEPTED` · **Date:** 2026-07-04
 
 ## Context
 

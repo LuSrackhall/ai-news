@@ -24,6 +24,19 @@ Infrastructure Layer
 - 上层可以依赖下层，下层绝不知晓上层
 - 同一层内的组件可以通过接口协作，不鼓励直接依赖实现
 
+## Domain Boundary
+
+Domain Layer 承载核心业务模型，不依赖任何 Runtime：
+
+| Domain | 职责 | 使用方 |
+|--------|------|--------|
+| Event | 事实模型——不可变的采集结果 | Ingestion 写，Editorial 读 |
+| Candidate | 编辑视图——Event + EditorialSignals | Editorial 产，Generation 消费 |
+| Publication | 配置组合——LaneSet + RuleSet + PromptSet + RenderPolicy | Editorial 消费 |
+| Lane | 编辑轨道——独立候选池构建单元 | Editorial Runtime 编排 |
+
+**核心原则：Rule 属于 Domain，不属于 Runtime。** 这意味着 Rule 可以被不同 Runtime 复用（例如 BreakingRule 既可用于 Industry Lane，也可用于 Research Lane），而不需要修改 Runtime 代码。
+
 ## Runtime Boundary
 
 | Runtime | 职责 | 不负责 |
@@ -50,9 +63,15 @@ LLM 在整个系统中的角色是约束性的：
 ```
 Facts (Ingestion)
     ↓
+Event
+    ↓
 Editorial (组织和筛选)
     ↓
-Generation (表达)
+Candidate
+    ↓
+Narrative (LLM 生成的结构化内容)
+    ↓
+Generation (表达和渲染)
     ↓
 Artifact (最终产出)
 ```
@@ -61,7 +80,9 @@ Artifact (最终产出)
 
 - Ingestion 产出 Event（事实）
 - Editorial 产出 Candidate（编辑视图）
-- Generation 产出 Artifact（文章、播客脚本）
+- Generation 产出 Artifact（文章、播客脚本、newsletter、HTML、RSS Feed……）
+
+Artifact 是面向不同渠道的输出格式。当前支持的 Artifact 类型：article.md、script.md、podcast.mp3。未来可扩展：newsletter、HTML 页面、RSS Feed、Twitter 线程。
 
 ## Publication Composition
 

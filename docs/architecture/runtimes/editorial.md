@@ -134,6 +134,36 @@ Candidate Builder 本身不需要修改——它已经支持 Breaking/Diversity/
 | `BuildCandidates` Task | 升级为 LaneDispatcher + Merge |
 | Editorial Pipeline steps | 扩展为 Lane-aware |
 
+## Future Evolution
+
+### Phase 3: Observability + Rule Registry
+
+- 每条 Rule 的输出携带可追溯的 `source` + `reason`（已有 Signal 模型已支持）
+- 可视化 Candidate 的"入选原因"：哪条 Rule 提升了它？为什么被 HOLD？
+- Rule Registry：Publication 可以通过配置选择启用哪些 Rule
+
+### Phase 3+: AI Editorial Assistant
+
+Editorial Runtime 是确定性层。未来可在其上叠加一个 AI 层，其职责是**建议**而非**决策**：
+
+- 建议调整 Lane 的权重
+- 建议今天应该关注哪些领域
+- 标记异常的入选/落选模式
+
+AI 层的输出是**建议信号**，不是**排序决定**。最终决策仍由确定性规则和 Merge Policy 控制。
+
+### Long-term: Artifact Expansion
+
+当前 Artifact 类型：article.md、script.md、podcast.mp3。未来可扩展：
+
+- Newsletter（邮件格式）
+- HTML 页面（网页日报）
+- RSS Feed（自动分发）
+- Twitter 线程（社交媒体）
+- WeChat 公众号（中文平台）
+
+新增 Artifact 类型 = 新增 RenderPolicy，不需要修改 Editorial Runtime。
+
 ---
 
 *Version 1.0 · 2026-07-04*
