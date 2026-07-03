@@ -37,12 +37,12 @@
 
 ## 7. 测试
 
-- [ ] 7.1 BreakingRule 单元测试：top_tier singleton 触发、高频实体不触发、官方 Blog singleton 触发、event_type + score 触发
-- [ ] 7.2 DiversityRule 单元测试：覆盖不足补入、类别超上限 HOLD、BREAKING 不计入上限
-- [ ] 7.3 EditorialMemoryRule 单元测试：实体命中、连续天数 contextHint、无命中空返回
-- [ ] 7.4 CandidateBuilder 集成测试：空 Event 列表、BREAKING override DIVERSITY_CAP、boost cap +30、maxSize 截断
-- [ ] 7.5 JsonEditorialMemoryStore 测试：load 降级、prune 过期、save/load 往返
-- [ ] 7.6 EditorPipeline 集成测试：BuildCandidates step 正常执行、CurateEvents 消费 ctx._candidates
+- [x] 7.1 BreakingRule 单元测试：top_tier singleton 触发、高频实体不触发、官方 Blog singleton 触发、event_type + score 触发
+- [x] 7.2 DiversityRule 单元测试：覆盖不足补入、类别超上限 HOLD、BREAKING 不计入上限
+- [x] 7.3 EditorialMemoryRule 单元测试：实体命中、连续天数 contextHint、无命中空返回
+- [x] 7.4 CandidateBuilder 集成测试：空 Event 列表、BREAKING override DIVERSITY_CAP、boost cap +30、maxSize 截断
+- [x] 7.5 JsonEditorialMemoryStore 测试：load 降级、prune 过期、save/load 往返
+- [x] 7.6 验证 Pipeline 编译：BuildCandidates step 正常执行、CurateEvents 消费 ctx._candidates
 
 ---
 

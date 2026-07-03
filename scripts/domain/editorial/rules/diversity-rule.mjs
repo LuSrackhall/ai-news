@@ -97,7 +97,7 @@ export class DiversityRule {
     }
 
     // 单 category 上限
-    for (const [, list] of byCategory) {
+    for (const [cat, list] of byCategory) {
       if (list.length <= MAX_PER_CATEGORY) continue
 
       // 按 finalRank 降序排列
@@ -111,8 +111,8 @@ export class DiversityRule {
         if (regularCount > MAX_PER_CATEGORY) {
           signals.push(createFilterSignal(
             'DIVERSITY_CAP', 'DiversityRule',
-            `category "${category}" exceeds cap of ${MAX_PER_CATEGORY}`,
-            { eventId: candidate.event.id, category }
+            `category "${cat}" exceeds cap of ${MAX_PER_CATEGORY}`,
+            { eventId: candidate.event.id, category: cat }
           ))
         }
       }
