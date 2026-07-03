@@ -13,9 +13,9 @@
 
 ## 3. Editorial Rules
 
-- [ ] 3.1 创建 `scripts/domain/editorial/rules/breaking-rule.mjs`：实体优先级判断（top_tier 实体 + 出现次数 ≤ 2）、官方 Blog 来源 + cluster_size = 1、event_type model_release/acquisition + score ≥ 55
-- [ ] 3.2 创建 `scripts/domain/editorial/rules/diversity-rule.mjs`：category 分布统计、< 5 类时从 review tier 补入、单 category 上限 8 条、BREAKING 不计入上限
-- [ ] 3.3 创建 `scripts/domain/editorial/rules/memory-rule.mjs`：查询 MemoryStore、entity/cluster_id 命中标记、连续 2+ 天 contextHint
+- [x] 3.1 创建 `scripts/domain/editorial/rules/breaking-rule.mjs`：实体优先级判断（top_tier 实体 + 出现次数 ≤ 2）、官方 Blog 来源 + cluster_size = 1、event_type model_release/acquisition + score ≥ 55
+- [x] 3.2 创建 `scripts/domain/editorial/rules/diversity-rule.mjs`：category 分布统计、< 5 类时从 review tier 补入、单 category 上限 8 条、BREAKING 不计入上限
+- [x] 3.3 创建 `scripts/domain/editorial/rules/memory-rule.mjs`：查询 MemoryStore、entity/cluster_id 命中标记、连续 2+ 天 contextHint
 
 ## 4. CandidateBuilder 引擎
 
