@@ -1,8 +1,8 @@
 ## 1. Signal 模型与 Resolution Policy
 
-- [ ] 1.1 创建 `scripts/domain/editorial/signal.mjs`：定义 EditorialSignal 类型（phase, subtype, weight, source, reason, metadata）、SignalLog 类型
-- [ ] 1.2 实现 Resolution Policy：FILTER phase 的 BREAKING override + DIVERSITY_CAP HOLD 逻辑、RANK phase 的 +30 boost cap、ANNOTATION phase 的 contextHints 转换
-- [ ] 1.3 实现 SignalLog.merge()：追加式合并，后执行的 Rule 不覆盖已有 Signal
+- [x] 1.1 创建 `scripts/domain/editorial/signal.mjs`：定义 EditorialSignal 类型（phase, subtype, weight, source, reason, metadata）、SignalLog 类型
+- [x] 1.2 实现 Resolution Policy：FILTER phase 的 BREAKING override + DIVERSITY_CAP HOLD 逻辑、RANK phase 的 +30 boost cap、ANNOTATION phase 的 contextHints 转换
+- [x] 1.3 实现 SignalLog.merge()：追加式合并，后执行的 Rule 不覆盖已有 Signal
 
 ## 2. EditorialMemoryStore
 
