@@ -26,8 +26,8 @@
 
 ## 5. BuildCandidates Task
 
-- [ ] 5.1 创建 `scripts/tasks-editorial/build-candidates.mjs`：BuildCandidates Task 类，读取 ctx._events，调用 CandidateBuilder，产出 ctx._candidates + ctx._buildResult
-- [ ] 5.2 注册 BuildCandidates 到 TaskRegistry
+- [x] 5.1 创建 `scripts/tasks-editorial/build-candidates.mjs`：BuildCandidates Task 类，读取 ctx._events，调用 CandidateBuilder，产出 ctx._candidates + ctx._buildResult
+- [x] 5.2 注册 BuildCandidates 到 TaskRegistry
 
 ## 6. Pipeline 集成
 
