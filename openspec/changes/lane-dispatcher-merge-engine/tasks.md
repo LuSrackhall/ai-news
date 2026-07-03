@@ -4,9 +4,9 @@
 
 ## 2. Lane Dispatcher
 
-- [ ] 2.1 创建 `scripts/domain/editorial/lane-dispatcher.mjs`：LaneDispatcher 类，`dispatch(events, laneConfigs)` 方法，按 `event.editorialDomain` 分发
-- [ ] 2.2 实现 fallback Lane：不匹配任何已注册 Lane 的 Event 进入 fallback
-- [ ] 2.3 验证确定性：相同输入必定输出相同 Lanemap
+- [x] 2.1 创建 `scripts/domain/editorial/lane-dispatcher.mjs`：LaneDispatcher 类，`dispatch(events, laneConfigs)` 方法，按 `event.editorialDomain` 分发
+- [x] 2.2 实现 fallback Lane：不匹配任何已注册 Lane 的 Event 进入 fallback
+- [x] 2.3 验证确定性：相同输入必定输出相同 Lanemap
 
 ## 3. Lane Execution
 
