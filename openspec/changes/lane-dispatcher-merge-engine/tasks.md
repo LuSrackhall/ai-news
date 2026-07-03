@@ -23,24 +23,24 @@
 
 ## 5. 新 Pipeline Tasks
 
-- [ ] 5.1 创建 `scripts/tasks-editorial/dispatch-lanes.mjs`：DispatchLanes Task，读取 ctx._events，写入 ctx._laneMap + ctx._laneConfigs
-- [ ] 5.2 创建 `scripts/tasks-editorial/execute-lanes.mjs`：ExecuteLanes Task，读取 ctx._laneMap，写入 ctx._laneResults
-- [ ] 5.3 创建 `scripts/tasks-editorial/merge-candidates.mjs`：MergeCandidates Task，读取 ctx._laneResults，写入 ctx._candidates + ctx._buildResult
-- [ ] 5.4 注册三个新 Task 到 run-editorial.mjs 的 TaskRegistry
+- [x] 5.1 创建 `scripts/tasks-editorial/dispatch-lanes.mjs`：DispatchLanes Task，读取 ctx._events，写入 ctx._laneMap + ctx._laneConfigs
+- [x] 5.2 创建 `scripts/tasks-editorial/execute-lanes.mjs`：ExecuteLanes Task，读取 ctx._laneMap，写入 ctx._laneResults
+- [x] 5.3 创建 `scripts/tasks-editorial/merge-candidates.mjs`：MergeCandidates Task，读取 ctx._laneResults，写入 ctx._candidates + ctx._buildResult
+- [x] 5.4 注册三个新 Task 到 run-editorial.mjs 的 TaskRegistry
 
 ## 6. Pipeline 集成
 
-- [ ] 6.1 修改 `scripts/pipelines/editorial.mjs`：移除 `BuildCandidates` step，插入 `DispatchLanes → ExecuteLanes → MergeCandidates` 三步
-- [ ] 6.2 删除 `scripts/tasks-editorial/build-candidates.mjs`（已被三个新 Task 替代）
-- [ ] 6.3 验证 Editorial Pipeline 编译：steps 顺序正确，CurateEvents 继续消费 ctx._candidates
+- [x] 6.1 修改 `scripts/pipelines/editorial.mjs`：移除 `BuildCandidates` step，插入 `DispatchLanes → ExecuteLanes → MergeCandidates` 三步
+- [x] 6.2 删除 `scripts/tasks-editorial/build-candidates.mjs`（已被三个新 Task 替代）
+- [x] 6.3 验证 Editorial Pipeline 编译：steps 顺序正确，CurateEvents 继续消费 ctx._candidates
 
 ## 7. 测试
 
-- [ ] 7.1 Lane Dispatcher 测试：已知 domain 匹配、未知 domain 降级 fallback、空 events、确定性验证
-- [ ] 7.2 Lane Execution 测试：独立构建验证、CandidateBuilder 接口保持
-- [ ] 7.3 Merge Engine 测试：基础合并、minimum_representation、breaking_override、空 Lane、所有 Lane 为空
-- [ ] 7.4 Pipeline 集成测试：steps 编译正确、ctx 数据流完整
-- [ ] 7.5 真实数据回放：用 2026-07-02 的 553 条 Events 运行完整管线，验证 research/industry 分布改善
+- [x] 7.1 Lane Dispatcher 测试：已知 domain 匹配、未知 domain 降级 fallback、空 events、确定性验证
+- [x] 7.2 Lane Execution 测试：独立构建验证、CandidateBuilder 接口保持
+- [x] 7.3 Merge Engine 测试：基础合并、minimum_representation、breaking_override、空 Lane、所有 Lane 为空
+- [x] 7.4 Pipeline 集成测试：steps 编译正确、ctx 数据流完整
+- [x] 7.5 真实数据回放：用 2026-07-02 的 553 条 Events 运行完整管线，验证 research/industry 分布改善
 
 ---
 

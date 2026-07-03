@@ -56,6 +56,7 @@ export class MergeEngine {
   constructor(mergeConfig = DEFAULT_MERGE_CONFIG) {
     this._maxSize = mergeConfig.maxSize || 40
     this._policies = mergeConfig.policies || {}
+    this._protectedIds = new Set()
   }
 
   /**
@@ -92,22 +93,44 @@ export class MergeEngine {
     // Phase 2: Merge Policy
     let pool = [...allItems]
 
-    if (this._policies.minimum_representation) {
-      pool = this._applyMinRepresentation(pool, laneResults)
-    }
-
+    // breaking_override first: BREAKING candidates get priority sorting
     if (this._policies.breaking_override) {
       pool = this._applyBreakingOverride(pool)
     }
 
-    // Phase 3: 全局排序
-    pool.sort((a, b) => b.finalRank - a.finalRank)
+    // minimum_representation after: ensure each non-empty lane has a representative
+    // works by marking top-1 from each lane as protected, not by reordering
+    if (this._policies.minimum_representation) {
+      this._protectedIds.clear()
+      pool = this._applyMinRepresentation(pool, laneResults)
+    }
 
-    // Phase 4: 截断
-    const finalPool = pool.slice(0, this._maxSize)
+    // Phase 3: 全局排序
+    // 如果 breaking_override 启用，按 BREAKING + finalRank 排序：BREAKING 在前，其余 normal 在后
+    if (this._policies.breaking_override) {
+      pool.sort((a, b) => {
+        const aBreaking = a._breaking || false
+        const bBreaking = b._breaking || false
+        if (aBreaking !== bBreaking) return aBreaking ? -1 : 1
+        return b.finalRank - a.finalRank
+      })
+    } else {
+      pool.sort((a, b) => b.finalRank - a.finalRank)
+    }
+
+    // Phase 4: 截断（保留 protected 项）
+    const protectedItems = pool.filter((item) => item._protected)
+    const unprotected = pool.filter((item) => !item._protected)
+
+    // 先保留所有 protected，再从未 protected 中按序填充到 maxSize
+    const finalPool = [...protectedItems]
+    for (const item of unprotected) {
+      if (finalPool.length >= this._maxSize) break
+      finalPool.push(item)
+    }
 
     return {
-      candidates: finalPool.map(({ _laneId, _laneCandidates, ...rest }) => rest),
+      candidates: finalPool.map(({ _laneCandidates, _protected, _breaking, ...rest }) => rest),
       stats: {
         lanes: laneResults.size,
         total: allItems.length,
@@ -120,14 +143,10 @@ export class MergeEngine {
   }
 
   /**
-   * minimum_representation: 非空 Lane 至少贡献 1 条
+   * minimum_representation: 非空 Lane 至少保留 1 条 candidate
+   * 通过标记 _protected 字段实现，不改变排序
    */
   _applyMinRepresentation(pool, laneResults) {
-    const selected = []
-    const remaining = []
-    const representedLanes = new Set()
-
-    // 按 Lane 分组，取每条 Lane 的 top candidate
     const byLane = new Map()
     for (const item of pool) {
       if (!byLane.has(item._laneId)) byLane.set(item._laneId, [])
@@ -136,43 +155,29 @@ export class MergeEngine {
 
     for (const [laneId, items] of byLane) {
       const laneResult = laneResults.get(laneId)
-      if (!laneResult || !laneResult.candidates || laneResult.candidates.length === 0) {
-        // 空 Lane 不贡献
-        for (const item of items) remaining.push(item)
-        continue
-      }
+      if (!laneResult || !laneResult.candidates || laneResult.candidates.length === 0) continue
 
-      // 取该 Lane top 1
+      // 标记该 Lane top-1 为 protected
       items.sort((a, b) => b.finalRank - a.finalRank)
-      selected.push(items[0])
-      representedLanes.add(laneId)
-      // 其余放入剩余池
-      for (let i = 1; i < items.length; i++) remaining.push(items[i])
+      items[0]._protected = true
+      this._protectedIds.add(items[0].event?.id || items[0].event?.eventId)
     }
 
-    return [...selected, ...remaining]
+    return pool
   }
 
   /**
-   * breaking_override: BREAKING Signal 的 Candidate 跨 Lane 优先
+   * breaking_override: 标记 BREAKING Signal 的 Candidate
+   * 排序在 Phase 3 中由 breaking_override-aware sort 处理
    */
   _applyBreakingOverride(pool) {
-    const breaking = []
-    const normal = []
-
     for (const item of pool) {
       const hasBreaking = item.signals && item.signals.some(
         (s) => s.subtype === 'BREAKING' && s.phase === 'FILTER'
       )
-      if (hasBreaking) breaking.push(item)
-      else normal.push(item)
+      if (hasBreaking) item._breaking = true
     }
-
-    // BREAKING 在前，其他按 finalRank
-    breaking.sort((a, b) => b.finalRank - a.finalRank)
-    normal.sort((a, b) => b.finalRank - a.finalRank)
-
-    return [...breaking, ...normal]
+    return pool
   }
 
   _countByLane(candidates) {
