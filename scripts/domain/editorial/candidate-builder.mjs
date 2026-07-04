@@ -43,7 +43,7 @@ export class CandidateBuilder {
    */
   constructor(rules, opts = {}) {
     this._rules = rules
-    this._maxSize = opts.maxSize || DEFAULT_MAX_SIZE
+    this._maxSize = opts.maxSize ?? DEFAULT_MAX_SIZE
   }
 
   /**

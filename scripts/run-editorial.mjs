@@ -17,7 +17,9 @@ import { compile } from './runtime/compiler.mjs'
 import { editorialPipeline } from './pipelines/editorial.mjs'
 
 import { SelectEditorialWindow } from './tasks-editorial/select-editorial-window.mjs'
-import { BuildCandidates } from './tasks-editorial/build-candidates.mjs'
+import { DispatchLanes } from './tasks-editorial/dispatch-lanes.mjs'
+import { ExecuteLanes } from './tasks-editorial/execute-lanes.mjs'
+import { MergeCandidates } from './tasks-editorial/merge-candidates.mjs'
 import { CurateEvents } from './tasks-editorial/curate-events.mjs'
 import { GenerateArticle } from './tasks-editorial/generate-article.mjs'
 import { GenerateScript } from './tasks-editorial/generate-script.mjs'
@@ -62,7 +64,7 @@ const ctx = {
 // 注册 Task
 const registry = new TaskRegistry()
 registry.registerAll({
-  SelectEditorialWindow, BuildCandidates, CurateEvents, GenerateArticle, GenerateScript,
+  SelectEditorialWindow, DispatchLanes, ExecuteLanes, MergeCandidates, CurateEvents, GenerateArticle, GenerateScript,
   RenderArtifacts, ValidateOutput, ArchiveOutput,
 })
 
