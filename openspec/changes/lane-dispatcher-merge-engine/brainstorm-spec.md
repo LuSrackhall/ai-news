@@ -105,3 +105,22 @@ CandidateBuilder 的接口完全不改变，只是调用方的输入从 "全部 
 | Lane Execution 增加 Pipeline 延迟 | 各 Lane 顺序执行，Phase 2.1 可并行执行 |
 | Merge Policy 配置膨胀 | Phase 2 只实现 3 种 policy，后续可扩展 |
 | 已有 BreakingRule 的 BREAKING override 跨 Lane 含义不同 | MergePolicy.breaking_override 按全局 finalRank 处理，不跨 Lane 互相影响 |
+
+## Test Coverage
+
+| 测试维度 | 用例数 | 覆盖范围 |
+|---------|-------|---------|
+| 单元测试 - Lane System | 17 | LaneDispatcher(4) + LaneExecution(2) + MergeEngine(8) + Pipeline(1) + 真实回放(2) |
+| Edge Cases - Lane System | 30(18场景) | 空/边界/冲突/自定义配置/字段收敛性 |
+| Candidate Builder(存量) | 18 | Breaking/Diversity/Memory/Pipeline |
+| Edge Cases(存量) | 39 | 空输入/Rule异常/null字段/超大量数据 |
+| Runtime(存量) | 13 | ExecutionGraph/Pipeline/Repository |
+| Integration(存量) | 25 | 真实配置/全链路编排/混合category |
+| **总计** | **157** | **0 失败** |
+
+### 真实数据验证
+
+| 日期 | 旧架构行业新闻 | 新架构行业新闻 | 改善 |
+|------|--------------|--------------|------|
+| 2026-07-02 (553 events) | 4/40 (10%) | **18/38 (47%)** | ✅ +37% |
+| 2026-07-01 (527 events) | 8/40 (20%) | **20/40 (50%)** | ✅ +30% |
