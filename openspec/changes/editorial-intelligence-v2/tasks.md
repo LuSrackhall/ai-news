@@ -21,12 +21,12 @@
 
 ## 3. Signal 整合与连线
 
-- [ ] 3.1 将现有 BreakingRule 整合为 Judgment.Qualification 的 BreakingSignal：移除评分门槛，所有 model_release/acquisition 事件无条件产出 BREAKING signal
-- [ ] 3.2 将现有 DiversityRule 保留为 Prioritization 的 TopicSaturationSignal（不变）
-- [ ] 3.3 从现有 RankingPolicy 解耦 authority / timeliness / verifiability / content_quality 规则，注册为 Qualification 的子信号
-- [ ] 3.4 新增 SourceDiversitySignal：来源分布约束（从现有 source_caps 升级，不在硬编码阈值）
-- [ ] 3.5 新增 EntityHeatSignal：从现有 ENTITY_WEIGHTS 简化为 Prioritization 信号
-- [ ] 3.6 新增 FreshnessSignal：从现有 timeliness 简化为 Prioritization 信号
+- [x] 3.1 将现有 BreakingRule 整合为 Judgment.Qualification 的 BreakingSignal：移除评分门槛，所有 model_release/acquisition 事件无条件产出 BREAKING signal
+- [x] 3.2 将现有 DiversityRule 保留为 Prioritization 的 TopicSaturationSignal（不变）
+- [x] 3.3 从现有 RankingPolicy 解耦 authority / timeliness / verifiability / content_quality 规则，注册为 Qualification 的子信号
+- [x] 3.4 新增 SourceDiversitySignal：来源分布约束（从现有 source_caps 升级，不在硬编码阈值）
+- [x] 3.5 新增 EntityHeatSignal：从现有 ENTITY_WEIGHTS 简化为 Prioritization 信号
+- [x] 3.6 新增 FreshnessSignal：从现有 timeliness 简化为 Prioritization 信号
 
 ## 4. Pipeline 集成
 
