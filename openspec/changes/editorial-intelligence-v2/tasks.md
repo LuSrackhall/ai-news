@@ -11,13 +11,13 @@
 
 ## 2. Judgment Engine — 核心模块
 
-- [ ] 2.1 新增 `scripts/domain/editorial/judgment-engine.mjs`，实现 JudgmentEngine 类
-- [ ] 2.2 实现 Qualification 阶段：接收 Events + Memory query，输出 QualifiedEvents + RejectedEvents
-- [ ] 2.3 实现 Prioritization 阶段：接收 QualifiedEvents + Budget，输出 PrioritizedCandidates
-- [ ] 2.4 实现 ContentRelevanceSignal：判断事件内容是否属于 AI / 科技编辑领域
-- [ ] 2.5 实现 Evaluation Mode：收集指标（来源分布、拒绝分布、入选率），不强制执行约束
-- [ ] 2.6 实现 Production Mode：指标作为硬约束强制执行
-- [ ] 2.7 JudgmentEngine 单元测试（Qualification / Prioritization / RejectedEvents / Evaluation Mode / 冷启动）
+- [x] 2.1 新增 `scripts/domain/editorial/judgment-engine.mjs`，实现 JudgmentEngine 类
+- [x] 2.2 实现 Qualification 阶段：接收 Events + Memory query，输出 QualifiedEvents + RejectedEvents
+- [x] 2.3 实现 Prioritization 阶段：接收 QualifiedEvents + Budget，输出 PrioritizedCandidates
+- [x] 2.4 实现 ContentRelevanceSignal：判断事件内容是否属于 AI / 科技编辑领域
+- [x] 2.5 实现 Evaluation Mode：收集指标（来源分布、拒绝分布、入选率），不强制执行约束
+- [x] 2.6 实现 Production Mode：指标作为硬约束强制执行
+- [x] 2.7 JudgmentEngine 单元测试（Qualification / Prioritization / RejectedEvents / Evaluation Mode / 冷启动）
 
 ## 3. Signal 整合与连线
 
