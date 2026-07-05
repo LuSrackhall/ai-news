@@ -30,13 +30,13 @@
 
 ## 4. Pipeline 集成
 
-- [ ] 4.1 Editorial Pipeline 中引入 JudgmentEngine 实例化管理
-- [ ] 4.2 DispatchLanes task 输出直接接入 JudgmentEngine.Qualification（替代候选构建前的评分检查）
-- [ ] 4.3 ExecuteLanes task 中 JudgmentEngine.Prioritization（替代 CandidateBuilder 的 top-N 截断）
-- [ ] 4.4 MergeCandidates task 剥离排序职责，只做 Lane 合并 + Merge Policy（minimum_representation / breaking_override）
-- [ ] 4.5 CurateEvents task 的输入源切换到 PrioritizedCandidates（而非 CandidateBuilder 输出）
-- [ ] 4.6 废弃 DedupPolicy：从 Editorial Pipeline 中移除 dedup 引用，代码保留但不执行
-- [ ] 4.7 废弃 RankingPolicy 的独立评分路径：Pipeline 不再调用 RankingPolicy，其规则注册为子信号
+- [x] 4.1 Editorial Pipeline 中引入 JudgmentEngine 实例化管理
+- [x] 4.2 DispatchLanes task 输出直接接入 JudgmentEngine.Qualification（替代候选构建前的评分检查）
+- [x] 4.3 ExecuteLanes task 中 JudgmentEngine.Prioritization（替代 CandidateBuilder 的 top-N 截断）
+- [x] 4.4 MergeCandidates task 剥离排序职责，只做 Lane 合并 + Merge Policy（minimum_representation / breaking_override）
+- [x] 4.5 CurateEvents task 的输入源切换到 PrioritizedCandidates（而非 CandidateBuilder 输出）
+- [x] 4.6 废弃 DedupPolicy：从 Editorial Pipeline 中移除 dedup 引用，代码保留但不执行（DedupPolicy 仅用于 ingestion pipeline，editorial 侧无需改动）
+- [x] 4.7 废弃 RankingPolicy 的独立评分路径：Pipeline 不再调用 RankingPolicy，其规则注册为子信号（RankingPolicy 仅用于 ingestion pipeline 的 score-events task）
 
 ## 5. 集成测试与验证
 
