@@ -40,11 +40,11 @@
 
 ## 5. 集成测试与验证
 
-- [ ] 5.1 Judgment Engine + MemoryStore 集成测试（完整 Qualification → Prioritization 链路）
-- [ ] 5.2 Evaluation Mode replay 测试：用历史数据跑新路径，对比输出差异
-- [ ] 5.3 验收指标验证：非 AI 内容 < 5%；单源占比 < 35%；模型发布零漏报
-- [ ] 5.4 确认所有现有单元测试继续通过（CandidateBuilder、MergeEngine、BreakingRule 等未删除代码的测试）
-- [ ] 5.5 编写 JudgmentEngine 和 MemoryStore 的文档/README 注释
+- [x] 5.1 Judgment Engine + MemoryStore 集成测试（完整 Qualification → Prioritization 链路）
+- [x] 5.2 Evaluation Mode replay 测试：用历史数据跑新路径，对比输出差异
+- [x] 5.3 验收指标验证：非 AI 内容 < 5%；单源占比 < 35%；模型发布零漏报
+- [x] 5.4 确认所有现有单元测试继续通过（CandidateBuilder、MergeEngine、BreakingRule 等未删除代码的测试）
+- [x] 5.5 编写 JudgmentEngine 和 MemoryStore 的文档/README 注释
 
 ## Post-Implementation Workflow
 
