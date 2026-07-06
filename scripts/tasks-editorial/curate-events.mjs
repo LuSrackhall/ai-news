@@ -1,5 +1,10 @@
 /**
  * CurateEvents Task — LLM 选题
+ *
+ * Architecture Editorial Intelligence v2 升级：
+ * - 优先消费 ctx._prioritizedCandidates（JudgmentEngine 的输出）
+ * - 回退到 ctx._candidates（MergeEngine 的原始输出）
+ * - 再回退到原始 ctx._events
  */
 
 import { ExecutionResult } from '../runtime/result.mjs'
@@ -8,12 +13,19 @@ export class CurateEvents {
   constructor(ctx) { this.ctx = ctx }
 
   async execute(ctx) {
-    // 优先消费 Candidate Pool，回退到原始 Event 列表
+    // 优先消费 PrioritizedCandidates，再回退到 Candidate pool，最后回退到原始 Event 列表
+    const prioritized = ctx._prioritizedCandidates || []
     const candidates = ctx._candidates || []
     let inputList, inputJson
 
-    if (candidates.length > 0) {
-      // 构建包含 contextHints 的输入 JSON
+    if (prioritized.length > 0) {
+      inputList = prioritized.map((c) => ({
+        ...c.event,
+        _contextHints: c.signals || [],
+        _finalRank: c.finalRank,
+      }))
+      inputJson = JSON.stringify(inputList, null, 2)
+    } else if (candidates.length > 0) {
       inputList = candidates.map((c) => ({
         ...c.event,
         _contextHints: c.contextHints || [],
@@ -21,7 +33,6 @@ export class CurateEvents {
       }))
       inputJson = JSON.stringify(inputList, null, 2)
     } else {
-      // 回退：无 Candidate Pool 时直接使用 events
       const events = ctx._events || []
       inputList = events
       inputJson = JSON.stringify(events, null, 2)
@@ -41,7 +52,7 @@ export class CurateEvents {
       selectedMap.set(item.id, { importance: item.importance, note: item.curation_note || null })
     }
 
-    // 从原始 event 列表中筛选（inputList 可能含 _contextHints 等临时字段）
+    // 从原始 event 列表中筛选
     const events = ctx._events || []
     const curatedEvents = events
       .filter(e => selectedMap.has(e.id))

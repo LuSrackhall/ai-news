@@ -99,7 +99,7 @@ const breakingRule = new BreakingRule()
   assert(modelSig?.subtype === 'BREAKING', 'model_release + score 60 → BREAKING')
 }
 
-// Test 5: acquisition + score < 55 → NO BREAKING
+// Test 5: acquisition + low score → STILL BREAKING (score threshold removed per v2 architecture)
 {
   const events = [
     makeEvent({
@@ -110,7 +110,8 @@ const breakingRule = new BreakingRule()
     }),
   ]
   const result = breakingRule.evaluate(events)
-  assert(result.signals.length === 0, 'acquisition + score < 55 → NO BREAKING')
+  assert(result.signals.length === 1, 'acquisition + low score → BREAKING (unconditional)')
+  assert(result.signals[0].subtype === 'BREAKING', 'acquisition → BREAKING subtype')
 }
 
 // ---- 7.2 DiversityRule Tests ----

@@ -4,13 +4,16 @@
  * 触发条件（满足任一）：
  * 1. top_tier 实体 + 该实体当天出现 ≤ 2 次
  * 2. 官方 Blog 来源 + cluster_size = 1
- * 3. event_type ∈ {model_release, acquisition} + score ≥ 55
+ * 3. event_type ∈ {model_release, acquisition}（无条件，不限评分）
+ *
+ * Architecture Editorial Intelligence v2 升级：
+ * 条件 3 移除评分门槛，确保模型发布/收购类重大新闻无条件进入。
  *
  * 纯计算，不调 LLM。
  */
 
 import { createFilterSignal } from '../signal.mjs'
-import { ENTITY_WEIGHTS, SCORING } from '../../../config.mjs'
+import { ENTITY_WEIGHTS } from '../../../config.mjs'
 
 const OFFICIAL_BLOG_SOURCES = new Set([
   'openai.com', 'anthropic.com', 'ai.meta.com', 'blogs.nvidia.com',
@@ -81,14 +84,12 @@ export class BreakingRule {
         continue
       }
 
-      // 条件 3: 重要事件类型 + 足够评分
-      const reviewMin = SCORING?.thresholds?.review_min || 55
+      // 条件 3: 重要事件类型（无条件产 BREAKING signal，不受评分限制）
       const eventType = event.eventType || event.event_type || event.metadata?.eventType || ''
-      const score = event.rank?.totalScore ?? event.rank_total ?? 0
-      if ((eventType === 'model_release' || eventType === 'acquisition') && score >= reviewMin) {
+      if (eventType === 'model_release' || eventType === 'acquisition') {
         signals.push(createFilterSignal(
           'BREAKING', 'BreakingRule',
-          `event_type "${eventType}" with score ${score} >= review threshold ${reviewMin}`,
+          `event_type "${eventType}" triggered unconditional BREAKING signal`,
           { eventId }
         ))
       }
