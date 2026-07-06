@@ -274,6 +274,10 @@ Phase 1 运行在双模式下：
 
 评估模式先运行，确认指标达到验收标准后切换生产模式。
 
+### 8.3 实测发现：来源白名单
+
+测试中发现 ContentRelevanceRule 误判 HuggingFace Blog 的 "🤗 Kernels: Major Updates"（标题过短+含 emoji，命中无 AI 关键词）。需在 ContentRelevanceRule 中添加 SOURCE_WHITELIST，让官方技术源（HuggingFace、OpenAI Blog、Anthropic 等）自动通过 Qualification，不受标题关键词匹配限制。
+
 ---
 
 ## 9. Current Code Mapping

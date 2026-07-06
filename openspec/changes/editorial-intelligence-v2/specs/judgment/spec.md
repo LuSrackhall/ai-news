@@ -80,3 +80,12 @@ Judgment Engine MUST 能在 Memory 不可用时正常工作。
 - **THEN** Judgment Engine MUST 以降级模式运行
 - **AND** 所有事件按 Qualification 独立判断（不查询历史）
 - **AND** MUST 不抛出异常
+
+### Requirement: Source Whitelist
+
+官方技术来源（HuggingFace Blog、OpenAI Blog、Anthropic 等）MUST 自动通过 ContentRelevanceRule 的 Qualification，不受标题关键词匹配结果影响。
+
+#### Scenario: Official source bypasses keyword check
+- **WHEN** 事件来自 HuggingFace Blog，标题过短或含 emoji 导致未命中 AI_TECH_KEYWORDS
+- **THEN** ContentRelevanceRule MUST 仍将该事件标记为通过（因来源白名单）
+- **AND** 白名单外的来源继续按关键词匹配判断

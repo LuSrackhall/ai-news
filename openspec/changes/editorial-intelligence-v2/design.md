@@ -74,7 +74,14 @@ Phase 1 将 CandidateBuilder 拆解为 Judgment Engine（Qualification + Priorit
 - Prioritization 在 MergeEngine 输出之上做全局排序 + budget 截断
 - 现有 Merge Policy（minimum_representation / breaking_override）保留在 MergeEngine 中
 
-### D6: RankingPolicy 降级为子信号
+### D7: 来源白名单机制（ContentRelevanceRule 补充）
+
+**选择**：在 ContentRelevanceRule 中添加 SOURCE_WHITELIST，HuggingFace Blog、OpenAI Blog、Anthropic 等官方技术源的标题即使因过短/含 emoji 未命中 AI_TECH_KEYWORDS，也自动通过 Qualification。
+
+**原因**：
+- 测试发现 HuggingFace 官方博客的 "🤗 Kernels: Major Updates" 因标题过短且含 emoji 被误判为非 AI 内容
+- 官方技术源的内容相关性有编辑先验保证，无需依赖标题匹配
+- 白名单覆盖 Tier 1 官方源和核心科技媒体，易于维护扩展
 
 **选择**：RankingPolicy 不再作为独立评分入口，其规则（authority / timeliness / verifiability / content_quality）整合为 Judgment 的 Qualification Signals。
 
@@ -92,6 +99,7 @@ Phase 1 将 CandidateBuilder 拆解为 Judgment Engine（Qualification + Priorit
 | [Budget 泄露] 优先化时 Budget 约束绕过（如 protected 项溢出） | Budget 在 Prioritization 入口强制校验，不允许超限 |
 | [迁移期间] 现有测试依赖 RankingPolicy 的评分行为 | Judgment Engine 在 Evaluation Mode 下并行输出新旧结果对比 |
 | [生命周期状态] Story Lifecycle 状态机边界模糊 | 状态机在 Memory 实施文档中定义，允许后续调整 |
+| [来源白名单] WHITELIST 漏加新源时可能导致误拒绝 | ContentRelevanceRule 的 evaluate 在不命中白名单时仍走关键词检查，双重保障 |
 
 ## Migration Plan
 

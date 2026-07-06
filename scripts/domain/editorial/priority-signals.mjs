@@ -5,7 +5,7 @@
  * 每个信号仅输出 RANK-phase signal（带 weight）。
  */
 
-import { createRankSignal } from '../signal.mjs'
+import { createRankSignal } from './signal.mjs'
 import { SCORING, ENTITY_WEIGHTS } from '../../config.mjs'
 
 /**

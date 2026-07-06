@@ -32,5 +32,5 @@
 - **代码改动范围**：Judgment Engine 是新代码；Memory Store 是新代码 + 替代 EditorialMemoryRule + 废弃 DedupPolicy
 - **保留不动**：Ingestion pipeline、LLM prompt、Article Generation、RSS source 配置
 - **Breaking 变化**：DedupPolicy 废弃（被 Memory 取代）；RankingPolicy 从核心评分降级为 Judgment 的一个子信号
-- **非 Breaking 变化**：CandidateBuilder 保留但归入 Judgment.Qualification；BreakingRule 保留但扩展信号类型；DiversityRule 保留；MergeEngine 保留但排序职责归 Prioritization
+- **非 Breaking 变化**：CandidateBuilder 保留但归入 Judgment.Qualification；BreakingRule 保留但扩展信号类型；DiversityRule 保留；MergeEngine 保留但排序职责归 Prioritization；ContentRelevanceRule 补充来源白名单机制（HuggingFace/OpenAI Blog 等官方源绕过标题关键词检查）
 - **新增依赖**：Memory 需要持久化存储（可复用现有 editorial-memory.json 方案升级）

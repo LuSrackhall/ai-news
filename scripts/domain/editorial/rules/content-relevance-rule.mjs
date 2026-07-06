@@ -12,6 +12,17 @@
 
 import { createFilterSignal } from '../signal.mjs'
 
+// 官方技术来源白名单 — 来自这些源的内容自动通过 AI 相关性检测
+//（即使标题因过短/含 emoji 等原因未命中 AI_TECH_KEYWORDS）
+const SOURCE_WHITELIST = [
+  'openai.com', 'anthropic.com', 'ai.meta.com', 'blogs.nvidia.com',
+  'blog.google', 'deepmind.google', 'mistral.ai',
+  'huggingface.co', 'huggingface', // HuggingFace Blog & Hub
+  'openai', 'anthropic', 'meta', 'google deepmind', 'google ai',
+  'techcrunch', 'theverge', 'wired',
+  'arxiv.org', 'export.arxiv.org',
+]
+
 // 不可接受的类别关键词列表
 const HARD_REJECTION_KEYWORDS = [
   // 纯商业/金融（无科技元素的）
@@ -74,15 +85,23 @@ export class ContentRelevanceRule {
       // 注意：category 不参与 AI 相关性检测（它是 RSS 源类别如 media/official/academic，非 AI 主题标记）
       const combinedText = `${title} ${summary} ${eventType}`
 
+      // 来源白名单检测：官方技术源（HuggingFace、OpenAI Blog 等）自动通过
+      const sourceName = (event.source?.name || event.source_name || '').toLowerCase()
+      const isWhitelisted = SOURCE_WHITELIST.some(wl => sourceName.includes(wl.toLowerCase()))
+      if (isWhitelisted) {
+        continue
+      }
+
       // 检查 Hard Rejection 关键词
       let isHardReject = false
       let rejectReason = ''
 
       // 先看是否是 AI/科技相关内容 — 宽松通过
-      // "ai" 作为独立词匹配（避免子串匹配到 "available"、"main" 等）
+      // "ai" 等短英文词使用正则 \b 做词边界匹配，中文/日文始终使用 includes
+      //（\b 在 CJK 字符上不生效）
       const hasAiTechSignal = AI_TECH_KEYWORDS.some(kw => {
-        if (kw.length <= 2) {
-          // 短关键词（如 "ai"）使用正则 \b 做词边界匹配
+        const hasCJK = /[一-鿿　-〿]/.test(kw)
+        if (kw.length <= 2 && !hasCJK) {
           return new RegExp(`\\b${kw}\\b`, 'i').test(combinedText)
         }
         return combinedText.includes(kw)
