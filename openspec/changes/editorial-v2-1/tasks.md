@@ -26,10 +26,10 @@
 
 ## 5. 测试
 
-- [ ] 5.1 MemoryDedupRule 单元测试（Memory 有/无历史、cluster_id 匹配、entity 降级、STALE 拒绝、BREAKING 覆盖）
-- [ ] 5.2 Backfill 单元测试（低于/高于阈值、补入空数据、重复事件去重、score 门槛过滤）
-- [ ] 5.3 集成测试（完整链路：Qualification + Dedup + Backfill + Prioritization）
-- [ ] 5.4 确认所有现有测试继续通过
+- [x] 5.1 MemoryDedupRule 单元测试（Memory 有/无历史、cluster_id 匹配、entity 降级、STALE 拒绝、BREAKING 覆盖）
+- [x] 5.2 Backfill 单元测试（低于/高于阈值、补入空数据、重复事件去重、score 门槛过滤）
+- [x] 5.3 集成测试（完整链路：Qualification + Dedup + Backfill + Prioritization）
+- [x] 5.4 确认所有现有测试继续通过
 
 ## Post-Implementation Workflow
 

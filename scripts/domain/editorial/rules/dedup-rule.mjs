@@ -17,7 +17,7 @@
  */
 
 import { createRankSignal, createFilterSignal } from '../signal.mjs'
-import { SIGNAL_WEIGHTS } from '../../config.mjs'
+import { SIGNAL_WEIGHTS } from '../../../config.mjs'
 
 const DEFAULT_FOLLOW_UP_WEIGHT = -10
 

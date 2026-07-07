@@ -283,13 +283,17 @@ export class JudgmentEngine {
 
     if (!fillEvents || fillEvents.length === 0) return qualifiedEvents
 
+    let added = 0
     for (const event of fillEvents) {
+      if (existingIds.has(event.id)) continue
+      if (added >= maxItems) break
       event._backfill = true
       qualifiedEvents.push({
         event,
         signals: [],
-        priorityWeight: -999, // 极低优先级，排在所有正常事件之后
+        priorityWeight: -999,
       })
+      added++
     }
 
     return qualifiedEvents
