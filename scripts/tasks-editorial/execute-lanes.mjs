@@ -20,6 +20,7 @@ import { JudgmentEngine } from '../domain/editorial/judgment-engine.mjs'
 import {
   AuthoritySignal, FreshnessSignal, EntityHeatSignal, SourceDiversitySignal,
 } from '../domain/editorial/priority-signals.mjs'
+import { BACKFILL } from '../config.mjs'
 
 export class ExecuteLanes {
   constructor(ctx) { this.ctx = ctx }
@@ -65,8 +66,36 @@ export class ExecuteLanes {
     const { qualified, rejected } = judgmentEngine.qualify(allEvents, { date, memoryStore })
     ctx._rejectedEvents = rejected
 
+    // 低密度日自动补入（当合格事件不足阈值时，从 events.db 查询补入源）
+    const backfillCfg = BACKFILL
+    const backfillQueryFn = backfillCfg.enabled ? (count, skipIds) => {
+      try {
+        const db = ctx.scope?.events?.repository?._db || null
+        if (!db) return []
+        const placeholders = backfillCfg.sources.map(() => '?').join(',')
+        const rows = db.prepare(`
+          SELECT * FROM events
+          WHERE source_name IN (${placeholders})
+            AND rank_total >= ?
+            AND id NOT IN (${[...skipIds].map(() => '?').join(',') || "'__none__'"})
+          ORDER BY rank_total DESC
+          LIMIT ?
+        `).all(...backfillCfg.sources, backfillCfg.minScore, ...[...skipIds].slice(0, 50), count)
+        return rows.map(r => ({
+          id: r.id, title: r.title, summary: r.summary || '', url: r.url,
+          source: { name: r.source_name, tier: r.source_tier },
+          source_name: r.source_name, rank: { totalScore: r.rank_total },
+          _backfill: true,
+        }))
+      } catch { return [] }
+    } : null
+
+    const backfilled = backfillCfg.enabled
+      ? judgmentEngine.backfill(qualified, backfillCfg.threshold, { queryFn: backfillQueryFn, maxItems: backfillCfg.maxItems })
+      : qualified
+
     // 按 Lane 过滤非 Qualified 事件（替换原始 events）
-    const qualifiedEventIds = new Set(qualified.map(q => q.event.id))
+    const qualifiedEventIds = new Set(backfilled.map(q => q.event.id))
     const filteredLaneMap = new Map()
     for (const [laneId, events] of laneMap) {
       filteredLaneMap.set(laneId, events.filter(e => qualifiedEventIds.has(e.id)))

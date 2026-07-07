@@ -13,11 +13,11 @@
 
 ## 3. 低密度日 Backfill
 
-- [ ] 3.1 在 `config.mjs` 中新增 `BACKFILL` 配置节：`{ enabled: true, threshold: 20, maxItems: 10, minScore: 40, sources: ['huggingface-blog', 'openai', 'anthropic', 'google-ai-blog', 'deepmind'] }`
-- [ ] 3.2 在 `judgment-engine.mjs` 的 `qualify()` 方法之后、`prioritize()` 之前新增 backfill 步骤
-- [ ] 3.3 backfill 步骤从 events.db 查询符合条件的补入源事件（`source_name IN (...) AND rank_total >= minScore`），按 rank_total 降序，取 maxItems 条
-- [ ] 3.4 补入的事件标记 `_backfill: true`，在 Prioritization 中获得极低 finalRank（确保排在所有正常事件之后）
-- [ ] 3.5 补入事件不重复：已在 qualifiedEvents 中的 event（按 id）不重复补入
+- [x] 3.1 在 `config.mjs` 中新增 `BACKFILL` 配置节：`{ enabled: true, threshold: 20, maxItems: 10, minScore: 40, sources: ['huggingface-blog', 'openai', 'anthropic', 'google-ai-blog', 'deepmind'] }`
+- [x] 3.2 在 `judgment-engine.mjs` 的 `qualify()` 方法之后、`prioritize()` 之前新增 backfill 步骤
+- [x] 3.3 backfill 步骤从 events.db 查询符合条件的补入源事件（`source_name IN (...) AND rank_total >= minScore`），按 rank_total 降序，取 maxItems 条
+- [x] 3.4 补入的事件标记 `_backfill: true`，在 Prioritization 中获得极低 finalRank（确保排在所有正常事件之后）
+- [x] 3.5 补入事件不重复：已在 qualifiedEvents 中的 event（按 id）不重复补入
 
 ## 4. 配置项
 
