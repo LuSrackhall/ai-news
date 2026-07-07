@@ -301,6 +301,25 @@ export class SqliteMemoryStore {
   // ───────── Editorial History ─────────
 
   /**
+   * load — 兼容 JsonEditorialMemoryStore 接口
+   * 查询指定日期之后的 DaySnapshot，以 { days: { [date]: snapshot } } 格式返回
+   * @param {string} since — ISO 日期
+   * @returns {{ days: Object }}
+   */
+  load(since) {
+    const snapshots = this.loadDaySnapshots(since)
+    const days = {}
+    for (const s of snapshots) {
+      days[s.date] = {
+        topEventIds: JSON.parse(s.top_event_ids || '[]'),
+        topEntities: JSON.parse(s.top_entities || '[]'),
+        topCategories: JSON.parse(s.top_categories || '[]'),
+      }
+    }
+    return { days }
+  }
+
+  /**
    * 保存单日快照
    * @param {string} date — ISO 日期
    * @param {Object} snapshot

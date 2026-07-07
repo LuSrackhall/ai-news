@@ -196,10 +196,17 @@ export class JudgmentEngine {
       }
     }
 
-    // BREAKING signal → 无条件通过 Qualification
+    // BREAKING signal → 无条件通过 Qualification（覆盖 STALE）
     for (const sig of signals) {
       if (sig.subtype === 'BREAKING') {
         return { isRejected: false }
+      }
+    }
+
+    // STALE signal → contextual rejection（可被 BREAKING 覆盖）
+    for (const sig of signals) {
+      if (sig.subtype === 'STALE') {
+        return { isRejected: true, rejectType: REJECTION_TYPE.CONTEXTUAL, rejectReason: sig.reason }
       }
     }
 
@@ -251,6 +258,45 @@ export class JudgmentEngine {
     }
 
     return { ...this._metrics }
+  }
+
+  // ───────── Low-Density Backfill ─────────
+
+  /**
+   * backfill — 低密度日自动补入
+   * 当 qualified events 数量低于阈值时，从外部源补入高质量事件
+   *
+   * @param {Object[]} qualifiedEvents — Qualification 输出
+   * @param {number} threshold — 触发阈值（默认 20）
+   * @param {Object} opts
+   * @param {Function} [opts.queryFn] — 外部查询函数，接收 (count, minScore) 返回事件数组
+   * @param {number} [opts.maxItems=10] — 最多补入条数
+   * @returns {Object[]} — 补入后的事件列表（补入事件标记 _backfill: true）
+   */
+  backfill(qualifiedEvents, threshold = 20, opts = {}) {
+    if (!opts.queryFn) return qualifiedEvents
+    if (qualifiedEvents.length >= threshold) return qualifiedEvents
+
+    const maxItems = opts.maxItems || 10
+    const existingIds = new Set(qualifiedEvents.map(q => q.event.id))
+    const fillEvents = opts.queryFn(maxItems, existingIds)
+
+    if (!fillEvents || fillEvents.length === 0) return qualifiedEvents
+
+    let added = 0
+    for (const event of fillEvents) {
+      if (existingIds.has(event.id)) continue
+      if (added >= maxItems) break
+      event._backfill = true
+      qualifiedEvents.push({
+        event,
+        signals: [],
+        priorityWeight: -999,
+      })
+      added++
+    }
+
+    return qualifiedEvents
   }
 
   // ───────── Prioritization ─────────

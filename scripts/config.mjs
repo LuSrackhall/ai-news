@@ -998,6 +998,30 @@ export const SCORING = {
 }
 
 // ============================================================
+// Editorial Intelligence v2.1 — Signal 权重（可配置）
+// ============================================================
+export const SIGNAL_WEIGHTS = {
+  follow_up: -10, // 跨天重复跟进的 RANK 负权重
+}
+
+// ============================================================
+// Editorial Intelligence v2.1 — 低密度日自动补入配置
+// ============================================================
+export const BACKFILL = {
+  enabled: true,
+  threshold: 20,  // QualifiedEvents 低于此值触发补入
+  maxItems: 10,   // 最多补入条数
+  minScore: 40,   // 最低 rank_total 阈值
+  sources: [      // 补入来源（source_name 匹配）
+    'huggingface-blog',
+    'openai',
+    'anthropic',
+    'google-ai-blog',
+    'deepmind',
+  ],
+}
+
+// ============================================================
 // WebSearch 补充查询（覆盖无 RSS 的官方源）
 // ============================================================
 export const WEBSEARCH_QUERIES = [
