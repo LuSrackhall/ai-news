@@ -94,6 +94,23 @@ export class ExecuteLanes {
       ? judgmentEngine.backfill(qualified, backfillCfg.threshold, { queryFn: backfillQueryFn, maxItems: backfillCfg.maxItems })
       : qualified
 
+    // 将 qualified 事件记录到 Memory Story Tracking（供跨天去重使用）
+    for (const qe of backfilled) {
+      const event = qe.event
+      const entities = event.entities || []
+      const primaryEntity = entities.length > 0 ? entities[0] : null
+      const storyKey = event.cluster_id || event.clusterId || primaryEntity || event.id
+      if (storyKey && event.id && date) {
+        memoryStore.trackStory({
+          storyKey,
+          entity: primaryEntity || undefined,
+          title: event.title,
+          eventId: event.id,
+          date,
+        })
+      }
+    }
+
     // 按 Lane 过滤非 Qualified 事件（替换原始 events）
     const qualifiedEventIds = new Set(backfilled.map(q => q.event.id))
     const filteredLaneMap = new Map()
