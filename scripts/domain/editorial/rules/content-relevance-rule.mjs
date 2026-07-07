@@ -21,6 +21,9 @@ const SOURCE_WHITELIST = [
   'openai', 'anthropic', 'meta', 'google deepmind', 'google ai',
   'techcrunch', 'theverge', 'wired',
   'arxiv.org', 'export.arxiv.org',
+  'apple', // Apple ML Research
+  'lesswrong', // LessWrong AI safety community
+  'qbitai', // 量子位 AI media
 ]
 
 // 不可接受的类别关键词列表
@@ -52,6 +55,8 @@ const AI_TECH_KEYWORDS = [
   'transformer', 'neural network', 'agi',
   'diffusion model', 'generative ai', 'foundation model',
   'fine-tuning', 'rag', 'agent', 'multimodal',
+  'attention', 'mixture-of-experts', 'forecasting', 'recommender', 'diffusion',
+  'rlhf', 'dpo', 'reinforcement learning',
   'llama', 'mistral', 'gemma', 'copilot', 'chatgpt',
   '人工智能', '大模型', '深度学习', '机器学习',
   '大语言模型', '智能体', '向量数据库',
