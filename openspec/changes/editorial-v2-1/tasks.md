@@ -5,11 +5,11 @@
 
 ## 2. Cross-Day Dedup Rule
 
-- [ ] 2.1 新增 `scripts/domain/editorial/rules/dedup-rule.mjs`，实现 `MemoryDedupRule` 类
-- [ ] 2.2 DedupRule 在 evaluate() 中查询 Memory（通过 RuleContext）的 queryStory/getCoverageCount，匹配 cluster_id 或 entity
-- [ ] 2.3 匹配到 3 天内已覆盖时产出 FOLLOW_UP signal（RANK phase, weight 从 config 读取，默认 -10）
-- [ ] 2.4 匹配到 STALE story 时产出 contextual rejection（可被 BREAKING 覆盖）
-- [ ] 2.5 DedupRule 作为 `qualificationRules` 注册到 JudgmentEngine（在 execute-lanes.mjs 中），仅当 memory 可用时注册
+- [x] 2.1 新增 `scripts/domain/editorial/rules/dedup-rule.mjs`，实现 `MemoryDedupRule` 类
+- [x] 2.2 DedupRule 在 evaluate() 中查询 Memory（通过 RuleContext）的 queryStory/getCoverageCount，匹配 cluster_id 或 entity
+- [x] 2.3 匹配到 3 天内已覆盖时产出 FOLLOW_UP signal（RANK phase, weight 从 config 读取，默认 -10）
+- [x] 2.4 匹配到 STALE story 时产出 contextual rejection（可被 BREAKING 覆盖）
+- [x] 2.5 DedupRule 作为 `qualificationRules` 注册到 JudgmentEngine（在 execute-lanes.mjs 中），仅当 memory 可用时注册
 
 ## 3. 低密度日 Backfill
 
@@ -21,8 +21,8 @@
 
 ## 4. 配置项
 
-- [ ] 4.1 在 `config.mjs` 中新增 `SIGNAL_WEIGHTS` 配置节：`{ follow_up: -10 }`
-- [ ] 4.2 DedupRule 从 config 读取 FOLLOW_UP weight，而非 hardcode
+- [x] 4.1 在 `config.mjs` 中新增 `SIGNAL_WEIGHTS` 配置节：`{ follow_up: -10 }`
+- [x] 4.2 DedupRule 从 config 读取 FOLLOW_UP weight，而非 hardcode
 
 ## 5. 测试
 

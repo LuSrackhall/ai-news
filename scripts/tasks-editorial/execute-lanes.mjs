@@ -12,6 +12,7 @@ import { BreakingRule } from '../domain/editorial/rules/breaking-rule.mjs'
 import { DiversityRule } from '../domain/editorial/rules/diversity-rule.mjs'
 import { EditorialMemoryRule } from '../domain/editorial/rules/memory-rule.mjs'
 import { ContentRelevanceRule } from '../domain/editorial/rules/content-relevance-rule.mjs'
+import { MemoryDedupRule } from '../domain/editorial/rules/dedup-rule.mjs'
 import { createRuleContext } from '../domain/editorial/rule-context.mjs'
 import { executeLanes } from '../domain/editorial/merge-engine.mjs'
 import { SqliteMemoryStore } from '../domain/editorial/memory-store.mjs'
@@ -43,6 +44,7 @@ export class ExecuteLanes {
       qualificationRules: [
         new ContentRelevanceRule(),
         new BreakingRule(),
+        new MemoryDedupRule(),
       ],
       prioritizationSignals: [
         new AuthoritySignal(),

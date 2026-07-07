@@ -196,10 +196,17 @@ export class JudgmentEngine {
       }
     }
 
-    // BREAKING signal → 无条件通过 Qualification
+    // BREAKING signal → 无条件通过 Qualification（覆盖 STALE）
     for (const sig of signals) {
       if (sig.subtype === 'BREAKING') {
         return { isRejected: false }
+      }
+    }
+
+    // STALE signal → contextual rejection（可被 BREAKING 覆盖）
+    for (const sig of signals) {
+      if (sig.subtype === 'STALE') {
+        return { isRejected: true, rejectType: REJECTION_TYPE.CONTEXTUAL, rejectReason: sig.reason }
       }
     }
 
