@@ -86,7 +86,7 @@ export async function evaluate(date) {
       pass: false,
       reason: '硬性否决条件未通过',
       checks: hardChecks,
-      sources: `${sourceCount}个来源, 36氪+虎嗅占比: ${Math.round(krRatio * 100)}%`,
+      sources: `${sourceCount}个来源`,
       chars: md.length,
       deep_count: deeps.length,
     }
@@ -97,7 +97,7 @@ export async function evaluate(date) {
     date,
     pass: true,
     checks: hardChecks,
-    sources: `${sourceCount}个来源, 36氪+虎嗅占比: ${Math.round(krRatio * 100)}%`,
+    sources: `${sourceCount}个来源`,
     chars: md.length,
     deep_count: deeps.length,
   }

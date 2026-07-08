@@ -225,6 +225,12 @@ if (process.argv[2] === 'compare') {
   const current = dates.filter(d => existsSync(`${OUTPUT_DIR}/${d}/article.json`)).map(extractStats)
   const curAvg = {}
   for (const key of Object.keys(baseline.avg)) {
+    // 跳过 review_avg_score 的空值对比（部分日期可能没有 review.json）
+    if (key === 'review_avg_score') {
+      const scores = current.map(r => r[key]).filter(v => v !== null)
+      curAvg[key] = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length * 10) / 10 : null
+      continue
+    }
     curAvg[key] = Math.round(current.map(r => r[key]).reduce((a, b) => a + b, 0) / current.length * 10) / 10
   }
 
