@@ -18,7 +18,7 @@ export class ArchiveWeekly {
     const startDate = weekRange.from?.slice(0, 10) || new Date().toISOString().slice(0, 10)
     const endDate = weekRange.to?.slice(0, 10) || startDate
 
-    const weekDir = join('.', 'output', 'weekly', `${startDate}_${endDate}`)
+    const weekDir = join('.', 'output/production/ai', 'weekly', `${startDate}_${endDate}`)
     mkdirSync(weekDir, { recursive: true })
 
     // 写入 article.md

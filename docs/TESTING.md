@@ -34,7 +34,7 @@ node scripts/test-rsshub-pool.mjs
 
 ## 人工审核检查点
 
-日报生成后检查 `output/<date>/`：
+日报生成后检查 `output/production/ai/<date>/`：
 
 | 检查项 | 期望值 |
 |--------|--------|
@@ -58,6 +58,6 @@ sqlite3 data/events.db "SELECT COUNT(*) FROM events"
 # 3. 生成日报（/daily）
 
 # 4. 检查产出
-cat output/<date>/article.md
-cat output/<date>/script.md
+cat output/production/ai/<date>/article.md
+cat output/production/ai/<date>/script.md
 ```

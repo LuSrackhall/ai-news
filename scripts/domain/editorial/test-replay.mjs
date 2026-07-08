@@ -28,6 +28,7 @@ const WORKTREE_ROOT = resolve(__dirname, '..', '..', '..')
 
 // 父项目 output 目录的三种可能位置
 const CANDIDATE_OUTPUTS = [
+    join(WORKTREE_ROOT, '..', '..', '..', 'output', 'production', 'ai'),
   join(WORKTREE_ROOT, '..', '..', '..', 'output'),  // Ai-ribao/output/
   join(WORKTREE_ROOT, '..', '..', '..', 'data', 'output'), // Ai-ribao/data/output/
 ]
