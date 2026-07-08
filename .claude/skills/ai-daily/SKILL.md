@@ -85,7 +85,7 @@ db.close()
 - [ ] 来源多样性 >= 3
 - [ ] 每条 selected item 的 url 与 Step 1 查询结果中的 url 完全一致
 
-将选题结果写入 `output/<date>/curated.json`。
+将选题结果写入 `output/production/ai/<date>/curated.json`。
 
 ### Step 3: 生成文章（Agent 执行）
 
@@ -105,7 +105,7 @@ db.close()
 - [ ] 每条 brief_item 含 `sources: [{ name, url }]`
 - [ ] 所有 URL 与 `curated.json` 完全一致
 
-将文章 JSON 写入 `output/<date>/article.json`。
+将文章 JSON 写入 `output/production/ai/<date>/article.json`。
 
 ### Step 4: 生成播客脚本（询问用户）
 
@@ -125,7 +125,7 @@ db.close()
 - 总时长 180-300 秒
 - 口语化、短句为主、TTS 友好（无括号注释、无表情符号、无舞台指示）
 
-将播客脚本 JSON 写入 `output/<date>/script.json`。
+将播客脚本 JSON 写入 `output/production/ai/<date>/script.json`。
 
 **检查点：**
 - [ ] 脚本总时长 180-300s
@@ -201,13 +201,13 @@ console.log(JSON.stringify(r))
 
 ```bash
 # edge-tts（免费）
-bash scripts/tts/synthesize.sh output/{{date}}/script.json
+bash scripts/tts/synthesize.sh output/production/ai/{{date}}/script.json
 
 # OpenAI TTS
-TTS_PROVIDER=openai OPENAI_API_KEY=sk-... bash scripts/tts/synthesize.sh output/{{date}}/script.json
+TTS_PROVIDER=openai OPENAI_API_KEY=sk-... bash scripts/tts/synthesize.sh output/production/ai/{{date}}/script.json
 
 # MiniMax TTS
-TTS_PROVIDER=minimax MINIMAX_API_KEY=... bash scripts/tts/synthesize.sh output/{{date}}/script.json
+TTS_PROVIDER=minimax MINIMAX_API_KEY=... bash scripts/tts/synthesize.sh output/production/ai/{{date}}/script.json
 ```
 
 **检查点：**
