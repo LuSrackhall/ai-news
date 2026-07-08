@@ -24,7 +24,7 @@ Ingestion（纯代码，cron / 手动）
 
 Editorial（Agent 驱动，/daily）
   Agent 读取 SQLite → 选题 → 写文章 → 写播客脚本 → 调代码渲染/校验/归档
-  输出 → output/<date>/
+  输出 → output/production/ai/<date>/
 ```
 
 **Ingestion 是纯 Node.js，不需要 LLM。Editorial 是 Skill，Agent 自己就是 LLM。**
