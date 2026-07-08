@@ -83,19 +83,20 @@ export function renderArticle(article, { sources, curatedCount } = {}) {
 
 // CLI
 const date = process.argv[2]
+  const baseDir = process.argv[3] || process.env.OUTPUT_DIR || "output/production/ai"
 if (date) {
   try {
-    const article = JSON.parse(readFileSync('output/' + date + '/article.json', 'utf-8'))
+    const article = JSON.parse(readFileSync(baseDir + '/' + date + '/article.json', 'utf-8'))
     let sources = []
     try {
-      const curated = JSON.parse(readFileSync('output/' + date + '/curated.json', 'utf-8'))
+      const curated = JSON.parse(readFileSync(baseDir + '/' + date + '/curated.json', 'utf-8'))
       sources = [...new Set((curated.selected_items || []).map(i => i.source?.name || i.source_name).filter(Boolean))]
     } catch {}
     const md = renderArticle(article, { sources, curatedCount: (article.summary_items?.length || 0) + (article.deep_items?.length || 0) })
-    writeFileSync('output/' + date + '/article.md', md)
+    writeFileSync(baseDir + '/' + date + '/article.md', md)
     console.log(date + ': rendered ' + md.length + ' chars')
   } catch (e) {
-    console.error(date + ': ' + e.message)
+    console.error(date + ' (' + baseDir + '): ' + e.message)
     process.exit(1)
   }
 }

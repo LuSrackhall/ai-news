@@ -11,7 +11,7 @@
 
 import { readFileSync, readdirSync, existsSync, writeFileSync, mkdirSync } from 'node:fs'
 
-const OUTPUT_DIR = 'output'
+const OUTPUT_DIR = process.env.OUTPUT_DIR || 'output/production/ai'
 
 // ───────── 检查规则 ─────────
 
@@ -148,7 +148,7 @@ if (arg === 'baseline' || arg === 'compare') {
 
 import { join } from 'node:path'
 
-const BASELINE_PATH = join('.', 'data', 'output-baseline.json')
+const BASELINE_PATH = join('.', 'output', 'baseline', 'ai', 'baseline.json')
 
 function extractStats(date) {
   const a = JSON.parse(readFileSync(`${OUTPUT_DIR}/${date}/article.json`, 'utf-8'))

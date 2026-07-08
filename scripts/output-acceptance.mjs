@@ -22,7 +22,7 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 
-const OUTPUT_DIR = 'output'
+const OUTPUT_DIR = process.env.OUTPUT_DIR || 'output/production/ai'
 const CONSTITUTION_PATH = 'docs/architecture/output-constitution.md'
 
 // 宪法核心条款（供 Agent 评估时引用）
