@@ -6,7 +6,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 
-export function createJsonFileStorage(date, workspace = '.', outputDir = 'output') {
+export function createJsonFileStorage(date, workspace = '.', outputDir = 'output/production/ai') {
   const baseDir = join(workspace, outputDir, date)
 
   return {

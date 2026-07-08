@@ -52,13 +52,13 @@ const CHECKS = {
     return { pass: !!a.hook, detail: a.hook ? a.hook.slice(0, 40) + '...' : '缺失' }
   },
   'article.md 存在且非空': (_a, date) => {
-    const path = `output/${date}/article.md`
+    const path = `${OUTPUT_DIR}/${date}/article.md`
     if (!existsSync(path)) return { pass: false, detail: '文件不存在' }
     const content = readFileSync(path, 'utf-8')
     return { pass: content.length > 2000, detail: `${content.length} chars` }
   },
   'article.md 无速览来源链接': (_a, date) => {
-    const content = readFileSync(`output/${date}/article.md`, 'utf-8')
+    const content = readFileSync(`${OUTPUT_DIR}/${date}/article.md`, 'utf-8')
     const lines = content.split('\n')
     let inSummary = false
     let violations = 0
@@ -70,7 +70,7 @@ const CHECKS = {
     return { pass: violations === 0, detail: violations > 0 ? `${violations} 处来源链接` : '合规' }
   },
   'article.md 有编辑观察/证据/判断': (_a, date) => {
-    const content = readFileSync(`output/${date}/article.md`, 'utf-8')
+    const content = readFileSync(`${OUTPUT_DIR}/${date}/article.md`, 'utf-8')
     const hasObs = content.includes('**编辑观察：**')
     const hasEvd = content.includes('**证据：**')
     const hasJdg = content.includes('**判断：**')
@@ -148,7 +148,7 @@ if (arg === 'baseline' || arg === 'compare') {
 
 import { join } from 'node:path'
 
-const BASELINE_PATH = join('.', 'output', 'baseline', 'ai', 'baseline.json')
+const BASELINE_PATH = join(OUTPUT_DIR, '..', 'baseline', 'ai', 'baseline.json')
 
 function extractStats(date) {
   const a = JSON.parse(readFileSync(`${OUTPUT_DIR}/${date}/article.json`, 'utf-8'))

@@ -12,7 +12,7 @@ export class ScoreEvents {
 
   async execute(ctx) {
     // 读取 raw 数据（从 collect 阶段的输出）
-    const rawPath = join('.', 'output', ctx.resources.date, 'raw')
+    const rawPath = join('.', 'output/production/ai', ctx.resources.date, 'raw')
     let rawItems
     try {
       rawItems = JSON.parse(readFileSync(join(rawPath, 'valid-raw.json'), 'utf-8'))

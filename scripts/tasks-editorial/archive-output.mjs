@@ -11,7 +11,7 @@ export class ArchiveOutput {
 
   async execute(ctx) {
     const date = ctx.resources.date
-    const outputDir = join('.', 'output', date)
+    const outputDir = join('.', 'output/production/ai', date)
     mkdirSync(outputDir, { recursive: true })
 
     const curatedEvents = ctx._curatedEvents || []
@@ -28,7 +28,7 @@ export class ArchiveOutput {
     }, null, 2))
 
     // 更新 index.json
-    const indexPath = join('.', 'output', 'index.json')
+    const indexPath = join('.', 'output/production/ai', 'index.json')
     let index = { version: 1, entries: [] }
     try { index = JSON.parse(readFileSync(indexPath, 'utf-8')) } catch {}
     index.entries = index.entries.filter(e => e.date !== date)
