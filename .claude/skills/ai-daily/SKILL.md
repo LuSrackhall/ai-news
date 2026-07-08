@@ -141,7 +141,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { createRenderDomain } from './scripts/policies/render-policy.mjs'
 const date = process.argv[1] || new Date().toISOString().slice(0, 10)
-const od = join('.', 'output', date)
+const od = join('.', 'output/production/ai', date)
 mkdirSync(od, { recursive: true })
 const article = JSON.parse(readFileSync(join(od, 'article.json'), 'utf-8'))
 const script = JSON.parse(readFileSync(join(od, 'script.json'), 'utf-8'))
@@ -167,7 +167,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { createValidationPolicy } from './scripts/policies/validation-policy.mjs'
 const date = process.argv[1] || new Date().toISOString().slice(0, 10)
-const od = join('.', 'output', date)
+const od = join('.', 'output/production/ai', date)
 const curated = JSON.parse(readFileSync(join(od, 'curated.json'), 'utf-8'))
 const am = readFileSync(join(od, 'article.md'), 'utf-8')
 const sm = readFileSync(join(od, 'script.md'), 'utf-8')
@@ -220,9 +220,9 @@ node -e "
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 const date = process.argv[1] || new Date().toISOString().slice(0, 10)
-const od = join('.', 'output', date)
+const od = join('.', 'output/production/ai', date)
 writeFileSync(join(od, 'execution.json'), JSON.stringify({ id: 'edit-' + date, date, pipelineVersion: 'v4.2', status: 'success' }, null, 2))
-const ip = join('.', 'output', 'index.json')
+const ip = join('.', 'output/production/ai', 'index.json')
 let idx = { version: 1, entries: [] }
 try { idx = JSON.parse(readFileSync(ip, 'utf-8')) } catch {}
 const cur = JSON.parse(readFileSync(join(od, 'curated.json'), 'utf-8'))
