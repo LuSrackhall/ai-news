@@ -279,9 +279,9 @@ output/weekly/2026-06-20_2026-06-26/
 |------|--------|------|
 | 1. 读取事件 | count > 0 | 读 SQLite |
 | 2. 选题 | selected 15-20, >= 1 deep, >= 3 sources, 含 category 标签 | 检查 curated.json |
-| 3. 文章 | content 非空, hook 存在, editorial 三段各 >= 30 字 | 检查 article.json |
+| 3. 文章 | content 非空, hook 存在, editorial 三段各 >= 30 字, summary_items 3~6 条且无 source 字段, deep_items 有 sources 数组, important_items 有 source 对象 | 检查 article.json |
 | 4. 播客脚本 | 总时长 180-300s, 对话数组格式 | 检查 script.json |
-| 5. 渲染 | article_chars > 2000 | 检查输出 |
+| 5. 渲染 | article_chars > 2000, 用 `node scripts/render-article.mjs <date>` 渲染标准化格式 | 检查输出 |
 | 6. 校验 | validation_passed = true | 检查输出 |
 | 7. 音频合成 | podcast.mp3 存在（如果选择了合成） | 检查 audio/ |
 | 8. 归档 | execution.json 写入成功 | 检查输出 |
@@ -294,6 +294,7 @@ output/weekly/2026-06-20_2026-06-26/
 | `references/QUALITY.md` | 质量标准和反模式 | Step 6 校验时 |
 | `references/INGESTION.md` | Ingestion 运维文档 | 运行 Ingestion 时 |
 | `scripts/config.mjs` | 信源/评分/权重配置 | 调整配置时 |
+| `docs/guides/article-format.md` | 文章格式规范 | 生成 article.json 时 |
 
 ## 信源管理
 
