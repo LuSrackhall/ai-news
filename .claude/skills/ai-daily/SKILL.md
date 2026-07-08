@@ -180,6 +180,50 @@ console.log(JSON.stringify(r))
 **检查点：**
 - [ ] validation_passed = true
 
+### Step 6b: Agent 语义评审（Agent 执行）
+
+以评审者身份通读 `article.md`、`article.json`、`curated.json`，从以下维度给出评分。每个维度输出 score（1-5）和 evidence（引用原文）。
+
+**评审维度：**
+1. 头条准确度 — 头条是否抓住了当天最重要的 AI 新闻。对比当日 curated 中其他候选事件评判
+2. 深度质量 — deep_items 是否有分析（因果/对比/趋势）而非仅仅摘要。引用 Constitution Invariant 6
+3. 编辑判断 — editorial.judgment 是否有独立观点而非复述新闻。引用 Constitution Invariant 2
+4. 叙事连贯性 — hook、速览、深度、编辑观点之间是否有清晰主线
+5. 来源集中度预警 — 当天的来源是否过度集中于少数信源（标记但不否决）
+
+**评分标准：**
+- 5 分：显著超出预期
+- 4 分：符合预期且有亮点
+- 3 分：达到最低标准
+- 2 分：低于预期，有改进空间
+- 1 分：明显不足
+
+**评审结果写入 `output/production/ai/<date>/review.json`：**
+
+```json
+{
+  "date": "<date>",
+  "generated_at": "<ISO 时间戳>",
+  "dimensions": [
+    { "name": "头条准确度", "score": 4, "evidence": "..." },
+    { "name": "深度质量", "score": 3, "evidence": "..." },
+    { "name": "编辑判断", "score": 4, "evidence": "..." },
+    { "name": "叙事连贯性", "score": 3, "evidence": "..." },
+    { "name": "来源集中度预警", "score": 4, "evidence": "..." }
+  ],
+  "highlights": ["头条选得好", "editorial 有洞察"],
+  "improvements": ["deep_item 分析不足", "叙事结构略散"],
+  "reviewedBy": "agent",
+  "reviewedAt": "<ISO 时间戳>"
+}
+```
+
+**检查点：**
+- [ ] review.json 存在且格式完整
+- [ ] 每个维度有 score 和 evidence
+- [ ] improvements 至少有 1 条
+- [ ] 评分遵循 temperature=0 原则，确保可复现性
+
 ### Step 7: 音频合成（询问用户）
 
 校验通过后，询问用户是否合成播客音频：
@@ -285,6 +329,7 @@ output/weekly/2026-06-20_2026-06-26/
 | 4. 播客脚本 | 总时长 180-300s, 对话数组格式 | 检查 script.json |
 | 5. 渲染 | article_chars > 2000, 用 `node scripts/render-article.mjs <date>` 渲染标准化格式 | 检查输出 |
 | 6. 校验 | validation_passed = true | 检查输出 |
+| 6b. 语义评审 | review.json 存在, 格式完整, improvements >= 1 | 检查 review.json |
 | 7. 音频合成 | podcast.mp3 存在（如果选择了合成） | 检查 audio/ |
 | 8. 归档 | execution.json 写入成功 | 检查输出 |
 

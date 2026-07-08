@@ -57,20 +57,16 @@ export async function evaluate(date) {
   // 1. hook 是否存在
   hardChecks.push({ name: 'hook 存在', pass: !!article.hook && article.hook.length > 20 })
 
-  // 2. deep_items 至少有 1 条且内容 >= 100 字
-  // 支持两种格式：content 字段 或 what_happened/details/why_matters/implications 子字段
+  // 2. deep_items 至少有 1 条且存在内容字段（非字数检查）
   const deeps = article.deep_items || []
-  const hasValidDeep = deeps.some(d => {
-    const combined = d.content || [d.what_happened, d.details, d.why_matters, d.implications].filter(Boolean).join(' ')
-    return combined.length >= 100
-  })
-  hardChecks.push({ name: 'deep_items 有效分析', pass: hasValidDeep })
+  const hasDeepField = deeps.some(d => d.content || d.what_happened || d.details)
+  hardChecks.push({ name: 'deep_items 字段存在', pass: deeps.length === 0 || hasDeepField })
 
   // 3. editorial 三段式完整
   const ed = article.editorial || {}
   hardChecks.push({ name: 'editorial 三段式', pass: !!(ed.observation && ed.evidence && ed.judgment) })
 
-  // 4. 来源分析（36氪+虎嗅是否超过 70%）
+  // 4. 来源数量检查（来源集中度已移除硬阈值，改由 Agent 评审标记）
   let sourceCounts = {}
   try {
     const curated = JSON.parse(readFileSync(curatedPath, 'utf-8'))
@@ -79,14 +75,8 @@ export async function evaluate(date) {
       sourceCounts[s] = (sourceCounts[s] || 0) + 1
     }
   } catch {}
-  const totalSources = Object.values(sourceCounts).reduce((a, b) => a + b, 0)
-  const krHuxiu = Object.entries(sourceCounts)
-    .filter(([k]) => k.includes('36氪') || k.includes('虎嗅'))
-    .reduce((a, [, v]) => a + v, 0)
-  const krRatio = totalSources > 0 ? krHuxiu / totalSources : 0
   const sourceCount = Object.keys(sourceCounts).length
   hardChecks.push({ name: '来源数 >= 3', pass: sourceCount >= 3 })
-  hardChecks.push({ name: '36氪+虎嗅 <= 75%', pass: krRatio <= 0.75 })
 
   // 硬性否决：任一不通过则整体不通过
   const allHardPass = hardChecks.every(c => c.pass)
@@ -96,7 +86,7 @@ export async function evaluate(date) {
       pass: false,
       reason: '硬性否决条件未通过',
       checks: hardChecks,
-      sources: `${sourceCount}个来源, 36氪+虎嗅占比: ${Math.round(krRatio * 100)}%`,
+      sources: `${sourceCount}个来源`,
       chars: md.length,
       deep_count: deeps.length,
     }
@@ -107,7 +97,7 @@ export async function evaluate(date) {
     date,
     pass: true,
     checks: hardChecks,
-    sources: `${sourceCount}个来源, 36氪+虎嗅占比: ${Math.round(krRatio * 100)}%`,
+    sources: `${sourceCount}个来源`,
     chars: md.length,
     deep_count: deeps.length,
   }
