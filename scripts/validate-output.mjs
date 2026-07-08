@@ -148,7 +148,7 @@ if (arg === 'baseline' || arg === 'compare') {
 
 import { join } from 'node:path'
 
-const BASELINE_PATH = join(OUTPUT_DIR, '..', 'baseline', 'ai', 'baseline.json')
+const BASELINE_PATH = join('.', 'output', 'baseline', 'ai', 'baseline.json')
 
 function extractStats(date) {
   const a = JSON.parse(readFileSync(`${OUTPUT_DIR}/${date}/article.json`, 'utf-8'))

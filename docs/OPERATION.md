@@ -176,7 +176,7 @@ node scripts/run-weekly.mjs --week 2026-06-26
 
 ```bash
 # 日报产出
-ls output/2026-06-26/
+ls output/production/ai/2026-06-26/
 # article.md    — 日报文章
 # script.md     — 播客脚本
 # curated.json  — 选题结果
@@ -185,11 +185,11 @@ ls output/2026-06-26/
 #   podcast.mp3  — 完整播客
 
 # 播客音频合成（可选）
-bash scripts/tts/synthesize.sh output/2026-06-26/script.json
+bash scripts/tts/synthesize.sh output/production/ai/2026-06-26/script.json
 # 默认使用 edge-tts（免费，pip install edge-tts）
 # 换 provider:
-TTS_PROVIDER=openai OPENAI_API_KEY=sk-... bash scripts/tts/synthesize.sh output/2026-06-26/script.json
-TTS_PROVIDER=minimax MINIMAX_API_KEY=... bash scripts/tts/synthesize.sh output/2026-06-26/script.json
+TTS_PROVIDER=openai OPENAI_API_KEY=sk-... bash scripts/tts/synthesize.sh output/production/ai/2026-06-26/script.json
+TTS_PROVIDER=minimax MINIMAX_API_KEY=... bash scripts/tts/synthesize.sh output/production/ai/2026-06-26/script.json
 
 # 周报产出
 ls output/weekly/2026-06-20_2026-06-26/
@@ -308,7 +308,7 @@ for (const [url, s] of Object.entries(h)) {
 | 采集条目为空 | 检查 `data/source-health.json` 的 failStreak |
 | RSSHub 源全部失败 | 检查 `data/rsshub-health.json` 的实例状态 |
 | SQLite 为空 | 先运行 `node scripts/run-ingestion.mjs` |
-| 日报质量差 | 检查 `output/<date>/curated.json` 的选题 |
+| 日报质量差 | 检查 `output/production/ai/<date>/curated.json` 的选题 |
 | 周报为空 | 确认最近 7 天有入库事件 |
 
 ## 测试

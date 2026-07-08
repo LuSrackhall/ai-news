@@ -95,7 +95,7 @@ PODCAST_MIMO_TTS_MALE_VOICE_DESC=一个30岁的男性，声音温润磁性
 export $(cat .env | grep -v '^#' | grep -v '^$' | xargs)
 
 # 运行合成
-TTS_PROVIDER=mimo bash scripts/tts/synthesize.sh --force output/2026-06-29/script.json
+TTS_PROVIDER=mimo bash scripts/tts/synthesize.sh --force output/production/ai/2026-06-29/script.json
 ```
 
 ## 📖 音色设计指南
