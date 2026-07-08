@@ -64,7 +64,9 @@ db.close()
 "
 ```
 
-**检查点：** 如果 count = 0，先运行 Ingestion（`node scripts/run-ingestion.mjs`）。
+**检查点：**
+- [ ] 产出符合 Output Quality Constitution 8 条不变量
+- [ ] 来源分布满足 36氪+虎嗅合计不超过 70% 如果 count = 0，先运行 Ingestion（`node scripts/run-ingestion.mjs`）。
 
 ### Step 2: 选题（Agent 执行）
 
@@ -295,6 +297,7 @@ output/weekly/2026-06-20_2026-06-26/
 | `references/INGESTION.md` | Ingestion 运维文档 | 运行 Ingestion 时 |
 | `scripts/config.mjs` | 信源/评分/权重配置 | 调整配置时 |
 | `docs/guides/article-format.md` | 文章格式规范 | 生成 article.json 时 |
+| `docs/architecture/output-constitution.md` | 产出质量宪法（8 条不变量） | 每次生成日报后对照检查 |
 
 ## 信源管理
 
