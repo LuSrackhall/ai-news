@@ -24,7 +24,7 @@ Ingestion（纯代码，cron / 手动）
 
 Editorial（Agent 驱动，/daily）
   Agent 读取 SQLite → 选题 → 写文章 → 写播客脚本 → 调代码渲染/校验/归档
-  输出 → output/<date>/
+  输出 → output/production/ai/<date>/
 ```
 
 **Ingestion 是纯 Node.js，不需要 LLM。Editorial 是 Skill，Agent 自己就是 LLM。**
@@ -64,7 +64,9 @@ db.close()
 "
 ```
 
-**检查点：** 如果 count = 0，先运行 Ingestion（`node scripts/run-ingestion.mjs`）。
+**检查点：**
+- [ ] 产出符合 Output Quality Constitution 8 条不变量
+- [ ] 来源分布满足 36氪+虎嗅合计不超过 70% 如果 count = 0，先运行 Ingestion（`node scripts/run-ingestion.mjs`）。
 
 ### Step 2: 选题（Agent 执行）
 
@@ -83,7 +85,7 @@ db.close()
 - [ ] 来源多样性 >= 3
 - [ ] 每条 selected item 的 url 与 Step 1 查询结果中的 url 完全一致
 
-将选题结果写入 `output/<date>/curated.json`。
+将选题结果写入 `output/production/ai/<date>/curated.json`。
 
 ### Step 3: 生成文章（Agent 执行）
 
@@ -103,7 +105,7 @@ db.close()
 - [ ] 每条 brief_item 含 `sources: [{ name, url }]`
 - [ ] 所有 URL 与 `curated.json` 完全一致
 
-将文章 JSON 写入 `output/<date>/article.json`。
+将文章 JSON 写入 `output/production/ai/<date>/article.json`。
 
 ### Step 4: 生成播客脚本（询问用户）
 
@@ -123,7 +125,7 @@ db.close()
 - 总时长 180-300 秒
 - 口语化、短句为主、TTS 友好（无括号注释、无表情符号、无舞台指示）
 
-将播客脚本 JSON 写入 `output/<date>/script.json`。
+将播客脚本 JSON 写入 `output/production/ai/<date>/script.json`。
 
 **检查点：**
 - [ ] 脚本总时长 180-300s
@@ -139,7 +141,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { createRenderDomain } from './scripts/policies/render-policy.mjs'
 const date = process.argv[1] || new Date().toISOString().slice(0, 10)
-const od = join('.', 'output', date)
+const od = join('.', 'output/production/ai', date)
 mkdirSync(od, { recursive: true })
 const article = JSON.parse(readFileSync(join(od, 'article.json'), 'utf-8'))
 const script = JSON.parse(readFileSync(join(od, 'script.json'), 'utf-8'))
@@ -165,7 +167,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { createValidationPolicy } from './scripts/policies/validation-policy.mjs'
 const date = process.argv[1] || new Date().toISOString().slice(0, 10)
-const od = join('.', 'output', date)
+const od = join('.', 'output/production/ai', date)
 const curated = JSON.parse(readFileSync(join(od, 'curated.json'), 'utf-8'))
 const am = readFileSync(join(od, 'article.md'), 'utf-8')
 const sm = readFileSync(join(od, 'script.md'), 'utf-8')
@@ -177,6 +179,50 @@ console.log(JSON.stringify(r))
 
 **检查点：**
 - [ ] validation_passed = true
+
+### Step 6b: Agent 语义评审（Agent 执行）
+
+以评审者身份通读 `article.md`、`article.json`、`curated.json`，从以下维度给出评分。每个维度输出 score（1-5）和 evidence（引用原文）。
+
+**评审维度：**
+1. 头条准确度 — 头条是否抓住了当天最重要的 AI 新闻。对比当日 curated 中其他候选事件评判
+2. 深度质量 — deep_items 是否有分析（因果/对比/趋势）而非仅仅摘要。引用 Constitution Invariant 6
+3. 编辑判断 — editorial.judgment 是否有独立观点而非复述新闻。引用 Constitution Invariant 2
+4. 叙事连贯性 — hook、速览、深度、编辑观点之间是否有清晰主线
+5. 来源集中度预警 — 当天的来源是否过度集中于少数信源（标记但不否决）
+
+**评分标准：**
+- 5 分：显著超出预期
+- 4 分：符合预期且有亮点
+- 3 分：达到最低标准
+- 2 分：低于预期，有改进空间
+- 1 分：明显不足
+
+**评审结果写入 `output/production/ai/<date>/review.json`：**
+
+```json
+{
+  "date": "<date>",
+  "generated_at": "<ISO 时间戳>",
+  "dimensions": [
+    { "name": "头条准确度", "score": 4, "evidence": "..." },
+    { "name": "深度质量", "score": 3, "evidence": "..." },
+    { "name": "编辑判断", "score": 4, "evidence": "..." },
+    { "name": "叙事连贯性", "score": 3, "evidence": "..." },
+    { "name": "来源集中度预警", "score": 4, "evidence": "..." }
+  ],
+  "highlights": ["头条选得好", "editorial 有洞察"],
+  "improvements": ["deep_item 分析不足", "叙事结构略散"],
+  "reviewedBy": "agent",
+  "reviewedAt": "<ISO 时间戳>"
+}
+```
+
+**检查点：**
+- [ ] review.json 存在且格式完整
+- [ ] 每个维度有 score 和 evidence
+- [ ] improvements 至少有 1 条
+- [ ] 评分遵循 temperature=0 原则，确保可复现性
 
 ### Step 7: 音频合成（询问用户）
 
@@ -199,13 +245,13 @@ console.log(JSON.stringify(r))
 
 ```bash
 # edge-tts（免费）
-bash scripts/tts/synthesize.sh output/{{date}}/script.json
+bash scripts/tts/synthesize.sh output/production/ai/{{date}}/script.json
 
 # OpenAI TTS
-TTS_PROVIDER=openai OPENAI_API_KEY=sk-... bash scripts/tts/synthesize.sh output/{{date}}/script.json
+TTS_PROVIDER=openai OPENAI_API_KEY=sk-... bash scripts/tts/synthesize.sh output/production/ai/{{date}}/script.json
 
 # MiniMax TTS
-TTS_PROVIDER=minimax MINIMAX_API_KEY=... bash scripts/tts/synthesize.sh output/{{date}}/script.json
+TTS_PROVIDER=minimax MINIMAX_API_KEY=... bash scripts/tts/synthesize.sh output/production/ai/{{date}}/script.json
 ```
 
 **检查点：**
@@ -218,9 +264,9 @@ node -e "
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 const date = process.argv[1] || new Date().toISOString().slice(0, 10)
-const od = join('.', 'output', date)
+const od = join('.', 'output/production/ai', date)
 writeFileSync(join(od, 'execution.json'), JSON.stringify({ id: 'edit-' + date, date, pipelineVersion: 'v4.2', status: 'success' }, null, 2))
-const ip = join('.', 'output', 'index.json')
+const ip = join('.', 'output/production/ai', 'index.json')
 let idx = { version: 1, entries: [] }
 try { idx = JSON.parse(readFileSync(ip, 'utf-8')) } catch {}
 const cur = JSON.parse(readFileSync(join(od, 'curated.json'), 'utf-8'))
@@ -279,10 +325,11 @@ output/weekly/2026-06-20_2026-06-26/
 |------|--------|------|
 | 1. 读取事件 | count > 0 | 读 SQLite |
 | 2. 选题 | selected 15-20, >= 1 deep, >= 3 sources, 含 category 标签 | 检查 curated.json |
-| 3. 文章 | content 非空, hook 存在, editorial 三段各 >= 30 字 | 检查 article.json |
+| 3. 文章 | content 非空, hook 存在, editorial 三段各 >= 30 字, summary_items 3~6 条且无 source 字段, deep_items 有 sources 数组, important_items 有 source 对象 | 检查 article.json |
 | 4. 播客脚本 | 总时长 180-300s, 对话数组格式 | 检查 script.json |
-| 5. 渲染 | article_chars > 2000 | 检查输出 |
+| 5. 渲染 | article_chars > 2000, 用 `node scripts/render-article.mjs <date>` 渲染标准化格式 | 检查输出 |
 | 6. 校验 | validation_passed = true | 检查输出 |
+| 6b. 语义评审 | review.json 存在, 格式完整, improvements >= 1 | 检查 review.json |
 | 7. 音频合成 | podcast.mp3 存在（如果选择了合成） | 检查 audio/ |
 | 8. 归档 | execution.json 写入成功 | 检查输出 |
 
@@ -294,6 +341,8 @@ output/weekly/2026-06-20_2026-06-26/
 | `references/QUALITY.md` | 质量标准和反模式 | Step 6 校验时 |
 | `references/INGESTION.md` | Ingestion 运维文档 | 运行 Ingestion 时 |
 | `scripts/config.mjs` | 信源/评分/权重配置 | 调整配置时 |
+| `docs/guides/article-format.md` | 文章格式规范 | 生成 article.json 时 |
+| `docs/architecture/output-constitution.md` | 产出质量宪法（8 条不变量） | 每次生成日报后对照检查 |
 
 ## 信源管理
 
