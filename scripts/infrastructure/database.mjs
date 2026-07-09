@@ -106,6 +106,41 @@ export function createSqliteDatabase(dbPath = null) {
     CREATE INDEX IF NOT EXISTS idx_prov_edges_from ON provenance_edges(from_id);
     CREATE INDEX IF NOT EXISTS idx_prov_edges_to ON provenance_edges(to_id);
 
+    -- Provenance P1: Publisher 别名归一化
+    CREATE TABLE IF NOT EXISTS provenance_aliases (
+      alias TEXT PRIMARY KEY,
+      canonical TEXT NOT NULL,
+      publisher_type TEXT DEFAULT 'media',
+      trust_score INTEGER DEFAULT 3
+    );
+
+    -- 预置已知别名映射
+    INSERT OR IGNORE INTO provenance_aliases (alias, canonical, publisher_type, trust_score) VALUES
+      ('techcrunch', 'TechCrunch', 'media', 4),
+      ('theverge', 'The Verge', 'media', 4),
+      ('wired', 'Wired', 'media', 4),
+      ('arstechnica', 'Ars Technica', 'media', 4),
+      ('semafor', 'Semafor', 'media', 3),
+      ('axios', 'Axios', 'media', 4),
+      ('mit-technology-review', 'MIT Technology Review', 'media', 4),
+      ('simon-willison', 'Simon Willison Blog', 'personal', 3),
+      ('lesswrong', 'LessWrong', 'community', 3),
+      ('hacker-news', 'Hacker News', 'community', 2),
+      ('arxiv-cs-ai', 'arXiv CS.AI', 'academic', 5),
+      ('arxiv-cs-cl', 'arXiv CS.CL', 'academic', 5),
+      ('openai', 'OpenAI', 'official', 5),
+      ('anthropic', 'Anthropic', 'official', 5),
+      ('google-ai', 'Google AI', 'official', 5),
+      ('meta-ai', 'Meta AI', 'official', 5),
+      ('nvidia', 'NVIDIA', 'official', 5),
+      ('huggingface', 'HuggingFace', 'official', 5),
+      ('aws-ml', 'AWS ML', 'official', 5),
+      ('deepmind', 'DeepMind', 'official', 5),
+      ('36kr', '36氪', 'media', 3),
+      ('huxiu', '虎嗅', 'media', 3),
+      ('qbitai', '量子位', 'media', 3);
+    CREATE INDEX IF NOT EXISTS idx_prov_edges_to ON provenance_edges(to_id);
+
 
     -- v4.4: 事件聚类表
     CREATE TABLE IF NOT EXISTS event_clusters (
