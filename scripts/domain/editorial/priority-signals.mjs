@@ -101,7 +101,6 @@ export class EntityHeatSignal {
 /**
  * SourceDiversitySignal — 来源多样性约束
  * 从 SCORING.source_caps 升级为信号形式
- *
  * 注意：该信号需要事件集合上下文，因此 evaluate 检查 events 数组
  * 的输出是否符合来源多样性要求。对于超出 cap 的 source，
  * 产出负向 RANK signal。
@@ -137,6 +136,57 @@ export class SourceDiversitySignal {
       }
     }
 
+    return { signals }
+  }
+}
+
+/**
+ * OriginTierSignal — Provenance 发布方类型信任分信号
+ *
+ * 通过 ProvenanceService 查询 publisher_type 和 trust_score，
+ * 为官方源/academic 源加分，为社区源降权。
+ *
+ * 需要 provenanceService 实例，在 execute-lanes.mjs 中注册：
+ *   new OriginTierSignal(provenanceService)
+ */
+export class OriginTierSignal {
+  constructor(provenanceService) {
+    this._service = provenanceService
+  }
+
+  evaluate(events) {
+    const signals = []
+    if (!this._service) return { signals }
+
+    for (const event of events) {
+      const eventId = event.id
+      if (!eventId) continue
+
+      const sourceId = event.sourceId || ''
+      const result = this._service.resolvePublisher(sourceId)
+      if (!result) continue
+
+      // publisher_type → weight 映射
+      const typeWeights = {
+        official: 15,     // OpenAI Blog, Anthropic, arXiv
+        academic: 12,     // arXiv, Nature
+        media: 5,         // TechCrunch, 36氪
+        personal: 3,      // Simon Willison
+        community: 0,     // LessWrong, Hacker News
+      }
+      const typeWeight = typeWeights[result.publisherType] || 0
+
+      // trust_score → 额外加成（1-5 映射到 -5 到 +10）
+      const trustBonus = Math.max(-5, Math.min(10, (result.trustScore - 3) * 5))
+
+      if (typeWeight > 0 || trustBonus !== 0) {
+        signals.push(createRankSignal(
+          'ORIGIN_TIER', typeWeight + trustBonus, 'OriginTierSignal',
+          `publisher: ${result.canonical} (${result.publisherType}, trust:${result.trustScore}) → +${typeWeight + trustBonus}`,
+          { eventId, sourceId, publisherType: result.publisherType, trustScore: result.trustScore }
+        ))
+      }
+    }
     return { signals }
   }
 }

@@ -18,8 +18,9 @@ import { executeLanes } from '../domain/editorial/merge-engine.mjs'
 import { SqliteMemoryStore } from '../domain/editorial/memory-store.mjs'
 import { JudgmentEngine } from '../domain/editorial/judgment-engine.mjs'
 import {
-  AuthoritySignal, FreshnessSignal, EntityHeatSignal, SourceDiversitySignal,
+  AuthoritySignal, FreshnessSignal, EntityHeatSignal, SourceDiversitySignal, OriginTierSignal,
 } from '../domain/editorial/priority-signals.mjs'
+import { createProvenanceService } from '../services/provenance-service.mjs'
 import { BACKFILL } from '../config.mjs'
 
 export class ExecuteLanes {
@@ -40,6 +41,10 @@ export class ExecuteLanes {
     // 初始化 Memory Store（降级：失败时不影响 pipeline）
     const memoryStore = new SqliteMemoryStore()
 
+    // 初始化 ProvenanceService
+    const provDb = ctx.scope?.events?.repository?._db || null
+    const provenanceService = createProvenanceService(provDb)
+
     // 初始化 Judgment Engine
     const judgmentEngine = new JudgmentEngine({
       qualificationRules: [
@@ -52,6 +57,7 @@ export class ExecuteLanes {
         new FreshnessSignal(),
         new EntityHeatSignal(),
         new SourceDiversitySignal(),
+        new OriginTierSignal(provenanceService),
       ],
       memory: memoryStore,
       mode: 'evaluation', // Phase 1 先跑 Evaluation Mode
