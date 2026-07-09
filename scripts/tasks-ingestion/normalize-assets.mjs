@@ -40,6 +40,13 @@ export class NormalizeAssets {
 
         category: asset.category || null,
         language: asset.language || 'en',
+        // Provenance: 从 RSS 元数据提取的证据信号
+        provenance: {
+          author: asset.author || '',
+          categories: asset.categories || '',
+          sourceTag: asset.sourceTag || '',
+          attributionType: asset.attributionType || 'raw_content',
+        },
         metadata: {
           impactScore: asset.impactScore || asset.metadata?.impactScore || 0,
           urlVerified: false,
