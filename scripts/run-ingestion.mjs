@@ -18,6 +18,7 @@ import { ingestionPipeline } from './pipelines/ingestion.mjs'
 
 import { CollectAssets } from './tasks-ingestion/collect-assets.mjs'
 import { NormalizeAssets } from './tasks-ingestion/normalize-assets.mjs'
+import { BuildProvenanceEdges } from './tasks-ingestion/build-provenance-edges.mjs'
 import { FilterGitHubNoise } from './tasks-ingestion/filter-github-noise.mjs'
 import { VerifyAssets } from './tasks-ingestion/verify-assets.mjs'
 import { ExtractEntities } from './tasks-ingestion/extract-entities.mjs'
