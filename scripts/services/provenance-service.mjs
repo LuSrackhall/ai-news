@@ -6,6 +6,7 @@
  */
 
 export function createProvenanceService(db) {
+  let _db = db
   if (!db) return null
 
   /**
@@ -38,5 +39,19 @@ export function createProvenanceService(db) {
     return map
   }
 
-  return { resolvePublisher, resolvePublishers }
+
+  /**
+   * 查询某个 asset 的 duplicate_of 边数量（表示多渠道覆盖）
+   * @param {string} assetId
+   * @returns {Array}
+   */
+  function getDuplicateEdges(assetId) {
+    if (!assetId || !_db) return []
+    try {
+      return _db.prepare(
+        "SELECT from_id, to_id FROM provenance_edges WHERE (from_id = ? OR to_id = ?) AND relation = 'duplicate_of'"
+      ).all(assetId, assetId)
+    } catch { return [] }
+  }
+  return { resolvePublisher, resolvePublishers, getDuplicateEdges }
 }

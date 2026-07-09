@@ -51,6 +51,7 @@ export class ExecuteLanes {
         new ContentRelevanceRule(),
         new BreakingRule(),
         new MemoryDedupRule(),
+        new ProvenanceVerificationRule(provenanceService),
       ],
       prioritizationSignals: [
         new AuthoritySignal(),
@@ -58,6 +59,7 @@ export class ExecuteLanes {
         new EntityHeatSignal(),
         new SourceDiversitySignal(),
         new OriginTierSignal(provenanceService),
+        new EvidenceCountSignal(provenanceService),
       ],
       memory: memoryStore,
       mode: 'evaluation', // Phase 1 先跑 Evaluation Mode
