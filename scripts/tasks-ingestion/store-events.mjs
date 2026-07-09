@@ -35,6 +35,29 @@ export class StoreEvents {
 
     const inserted = repo.storeBatch(events)
 
+    // 写入 provenance 数据到 provenance_assets 表
+    const db = repo._db
+    if (db) {
+      const provInsert = db.prepare(`
+        INSERT OR IGNORE INTO provenance_assets (id, content_hash, url, publisher, publisher_tier, title, published_at, collected_at, author, categories, source_tag, attribution_type, metadata)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `)
+      const insertProv = db.transaction((assets) => {
+        for (const asset of assets) {
+          const prov = asset.provenance || {}
+          provInsert.run(
+            asset.id, asset.contentHash, asset.url || '',
+            asset.source?.name || '', asset.source?.tier || null,
+            asset.title || '', asset.publishedAt || null, asset.collectedAt || null,
+            prov.author || '', prov.categories || '', prov.sourceTag || '',
+            prov.attributionType || 'raw_content',
+            JSON.stringify(asset.metadata || {})
+          )
+        }
+      })
+      insertProv(assets)
+    }
+
     // 写入聚类数据
     const clusters = ctx._clusters || []
     const clusterRepo = ctx.scope?.events?.clusterRepository

@@ -77,6 +77,35 @@ export function createSqliteDatabase(dbPath = null) {
     CREATE INDEX IF NOT EXISTS idx_events_source ON events(source_name);
     CREATE INDEX IF NOT EXISTS idx_events_source_id ON events(source_id);
     CREATE INDEX IF NOT EXISTS idx_events_cluster ON events(cluster_id);
+    -- Provenance Layer v1: 证据血缘层
+    CREATE TABLE IF NOT EXISTS provenance_assets (
+      id TEXT PRIMARY KEY,
+      content_hash TEXT NOT NULL,
+      url TEXT NOT NULL,
+      publisher TEXT NOT NULL,
+      publisher_tier INTEGER,
+      title TEXT,
+      published_at TEXT,
+      collected_at TEXT,
+      author TEXT DEFAULT '',
+      categories TEXT DEFAULT '',
+      source_tag TEXT DEFAULT '',
+      attribution_type TEXT DEFAULT 'raw_content',
+      metadata TEXT DEFAULT '{}'
+    );
+
+    CREATE TABLE IF NOT EXISTS provenance_edges (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      from_id TEXT NOT NULL REFERENCES provenance_assets(id),
+      to_id TEXT NOT NULL REFERENCES provenance_assets(id),
+      relation TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(from_id, to_id, relation)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_prov_edges_from ON provenance_edges(from_id);
+    CREATE INDEX IF NOT EXISTS idx_prov_edges_to ON provenance_edges(to_id);
+
 
     -- v4.4: 事件聚类表
     CREATE TABLE IF NOT EXISTS event_clusters (

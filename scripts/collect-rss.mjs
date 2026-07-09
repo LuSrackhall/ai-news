@@ -118,6 +118,17 @@ function parseItem(xml) {
     description: get('description') || get('summary') || get('content'),
     pubDate,
     guid: get('guid') || get('link') || '',
+    // Provenance: 从 RSS 元数据提取的证据信号
+    author: get('dc:creator') || get('author') || '',
+    categories: get('category') || '',
+    sourceTag: get('source') || '',
+    attributionType: (() => {
+      const a = get('dc:creator') || get('author')
+      const c = get('category')
+      const s = get('source')
+      if (a || c || s) return 'rss_metadata'
+      return 'raw_content'
+    })(),
   }
 }
 
@@ -297,6 +308,11 @@ async function fetchFeed(source) {
           publishedAt,
           collectedAt: new Date().toISOString(),
           pipeline_version: PIPELINE_VERSION,
+          // Provenance 字段
+          author: item.author || "",
+          categories: item.categories || "",
+          sourceTag: item.sourceTag || "",
+          attributionType: item.attributionType || "raw_content",
         }
       })
       .filter((item) => {
