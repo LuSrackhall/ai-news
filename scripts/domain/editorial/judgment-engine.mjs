@@ -203,6 +203,13 @@ export class JudgmentEngine {
       }
     }
 
+    // VERIFICATION signal → 多源验证通过，跳过 contextual rejection
+    for (const sig of signals) {
+      if (sig.subtype === 'VERIFICATION') {
+        return { isRejected: false }
+      }
+    }
+
     // STALE signal → contextual rejection（可被 BREAKING 覆盖）
     for (const sig of signals) {
       if (sig.subtype === 'STALE') {

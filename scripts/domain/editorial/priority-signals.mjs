@@ -190,3 +190,41 @@ export class OriginTierSignal {
     return { signals }
   }
 }
+
+/**
+ * EvidenceCountSignal — 证据数 RANK 信号
+ *
+ * 通过 provenance_service 查询事件的证据边数，
+ * 边数越多 RANK 权重越高。
+ * 1 → +0, 2 → +5, 3 → +10, 4+ → +15
+ */
+export class EvidenceCountSignal {
+  constructor(provenanceService) {
+    this._service = provenanceService
+  }
+
+  evaluate(events) {
+    const signals = []
+    if (!this._service) return { signals }
+
+    for (const event of events) {
+      const eventId = event.id
+      if (!eventId) continue
+      if (!event.sourceId) continue
+
+      const edges = this._service.getDuplicateEdges(eventId)
+      if (!edges || edges.length === 0) continue
+
+      const count = edges.length
+      const weights = { 0: 0, 1: 0, 2: 5, 3: 10 }
+      const weight = weights[count] || (count >= 4 ? 15 : 0)
+
+      signals.push(createRankSignal(
+        'EVIDENCE_COUNT', weight, 'EvidenceCountSignal',
+        `${count} evidence edges → +${weight}`,
+        { eventId, sourceId: event.sourceId, evidenceCount: count }
+      ))
+    }
+    return { signals }
+  }
+}
