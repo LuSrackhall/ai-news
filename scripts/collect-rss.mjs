@@ -118,6 +118,8 @@ function parseItem(xml) {
     description: get('description') || get('summary') || get('content'),
     pubDate,
     guid: get('guid') || get('link') || '',
+    // Evidence Image: 从 RSS 元数据提取佐证图片
+    image: extractImage(xml),
     // Provenance: 从 RSS 元数据提取的证据信号
     author: get('dc:creator') || get('author') || '',
     categories: get('category') || '',
@@ -140,6 +142,29 @@ function parseDate(dateStr) {
   } catch {
     return null
   }
+}
+
+/**
+ * 从 RSS/Atom XML 中提取佐证图片 URL
+ * 优先级: enclosure > media:content > media:thumbnail > description 中的第一张 img
+ */
+function extractImage(xml) {
+  // enclosure (RSS 2.0，通常用于附件)
+  const encMatch = xml.match(/<enclosure[^>]+url=["']([^"']+)["'][^>]*>/i)
+  if (encMatch) return encMatch[1]
+  // media:content (Media RSS，需含 medium="image" 或 image type)
+  const mcMatch = xml.match(/<media:content[^>]+url=["']([^"']+)["'][^>]*>/i)
+  if (mcMatch) {
+    const tag = mcMatch[0]
+    if (/medium=["']image["']/i.test(tag) || /type=["']image\//i.test(tag)) return mcMatch[1]
+  }
+  // media:thumbnail
+  const mtMatch = xml.match(/<media:thumbnail[^>]+url=["']([^"']+)["'][^>]*>/i)
+  if (mtMatch) return mtMatch[1]
+  // description 中的第一张图片
+  const imgMatch = xml.match(/<img[^>]+src=["']([^"']+)["'][^>]*>/i)
+  if (imgMatch) return imgMatch[1]
+  return null
 }
 
 function hashId(str) {
@@ -308,6 +333,8 @@ async function fetchFeed(source) {
           publishedAt,
           collectedAt: new Date().toISOString(),
           pipeline_version: PIPELINE_VERSION,
+          // Evidence Image
+          image: item.image || null,
           // Provenance 字段
           author: item.author || "",
           categories: item.categories || "",
