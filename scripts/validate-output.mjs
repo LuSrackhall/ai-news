@@ -178,6 +178,7 @@ function extractStats(date) {
     article_chars: md.length,
     deep_has_content: (a.deep_items || []).filter(i => i.content && i.content.length >= 100).length,
     deep_total: (a.deep_items || []).length,
+    deep_with_image: (a.deep_items || []).filter(i => i.image).length,
     editorial_complete: [a.editorial?.observation, a.editorial?.evidence, a.editorial?.judgment].filter(Boolean).length >= 3 ? 1 : 0,
     hook_exists: a.hook ? 1 : 0,
     review_avg_score: (() => {

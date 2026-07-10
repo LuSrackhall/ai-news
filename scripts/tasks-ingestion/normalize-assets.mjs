@@ -49,6 +49,7 @@ export class NormalizeAssets {
         },
         metadata: {
           impactScore: asset.impactScore || asset.metadata?.impactScore || 0,
+          image_url: asset.image || null,
           urlVerified: false,
           deadLink: false,
         },
