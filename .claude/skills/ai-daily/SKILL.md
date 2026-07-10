@@ -343,6 +343,8 @@ output/weekly/2026-06-20_2026-06-26/
 | `scripts/config.mjs` | 信源/评分/权重配置 | 调整配置时 |
 | `docs/guides/article-format.md` | 文章格式规范 | 生成 article.json 时 |
 | `docs/architecture/output-constitution.md` | 产出质量宪法（8 条不变量） | 每次生成日报后对照检查 |
+| `scripts/domain/editorial/provenance-renderer.mjs` | 分层来源链渲染 | 渲染数据来源脚注时 |
+| `docs/architecture/output-constitution.md` | 产出质量宪法（8 条不变量） | 每次生成日报后对照检查 |
 
 ## 信源管理
 
