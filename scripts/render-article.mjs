@@ -31,6 +31,10 @@ export function renderArticle(article, { sources, curatedCount } = {}) {
     lines.push('## 深度'); lines.push('')
     for (const item of deep) {
       lines.push('### ' + item.title); lines.push('')
+      if (item.image) {
+        lines.push('![' + (item.image_caption || item.title) + '](' + item.image + ')'); lines.push('')
+        if (item.image_caption) { lines.push('*' + item.image_caption + '*'); lines.push('') }
+      }
       if (item.content) { lines.push(item.content); lines.push('') }
       const ss = item.sources || []
       if (ss.length > 0) {
@@ -45,6 +49,9 @@ export function renderArticle(article, { sources, curatedCount } = {}) {
     lines.push('## 重要动态'); lines.push('')
     for (const item of imp) {
       lines.push('### ' + item.title); lines.push('')
+      if (item.image) {
+        lines.push('![' + item.title + '](' + item.image + ')'); lines.push('')
+      }
       if (item.summary) lines.push(item.summary)
       lines.push('')
       if (item.source) {
