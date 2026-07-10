@@ -137,7 +137,7 @@ const ctx = {
 // 注册 Task
 const registry = new TaskRegistry()
 registry.registerAll({
-  CollectAssets, NormalizeAssets, FilterGitHubNoise, VerifyAssets, ExtractEntities,
+  CollectAssets, NormalizeAssets, BuildProvenanceEdges, FilterGitHubNoise, VerifyAssets, ExtractEntities,
   ClusterEvents, ScoreEvents, DedupEvents, StoreEvents,
 })
 
