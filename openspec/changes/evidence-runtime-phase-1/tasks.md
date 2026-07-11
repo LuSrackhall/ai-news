@@ -5,8 +5,8 @@
 
 ## 2. Evidence 词干模块
 
-- [ ] 2.1 创建 `scripts/evidence/` 目录和 `scripts/evidence/model.mjs` — Evidence 数据模型（evidence.json 的 schema 定义、序列化/反序列化）
-- [ ] 2.2 实现 `scripts/evidence/keywords.mjs` — 从事件 title/summary/entities 生成关键词列表，支持中英文分词和实体提取
+- [x] 2.1 创建 `scripts/evidence/` 目录和 `scripts/evidence/model.mjs` — Evidence 数据模型（evidence.json 的 schema 定义、序列化/反序列化）
+- [x] 2.2 实现 `scripts/evidence/keywords.mjs` — 从事件 title/summary/entities 生成关键词列表，支持中英文分词和实体提取
 
 ## 3. EvidenceCollector
 
