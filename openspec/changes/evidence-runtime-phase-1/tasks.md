@@ -19,10 +19,10 @@
 
 ## 4. EvidenceScorer
 
-- [ ] 4.1 实现 `scripts/evidence/scorer.mjs` — KeywordMatchScore 计算（关键词命中密度）
-- [ ] 4.2 实现 SourceAuthorityScore — 通过 ProvenanceService 查询 publisher trust_score
-- [ ] 4.3 实现 ProvenanceCrosscheckScore — 通过 ProvenanceService 查询事件的 duplicate_of 边数
-- [ ] 4.4 集成三因子等权平均 → overall score
+- [x] 4.1 实现 `scripts/evidence/scorer.mjs` — KeywordMatchScore 计算（关键词命中密度）
+- [x] 4.2 实现 SourceAuthorityScore — 通过 ProvenanceService 查询 publisher trust_score
+- [x] 4.3 实现 ProvenanceCrosscheckScore — 通过 ProvenanceService 查询事件的 duplicate_of 边数
+- [x] 4.4 集成三因子等权平均 → overall score
 
 ## 5. BuildEvidenceAssets Task
 

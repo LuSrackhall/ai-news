@@ -10,6 +10,7 @@ import { join } from 'node:path'
 import { mkdirSync } from 'node:fs'
 import { createEvidence, writeEvidence } from './model.mjs'
 import { extractKeywords } from './keywords.mjs'
+import { scoreEvidence } from './scorer.mjs'
 
 const LOAD_TIMEOUT = 30_000
 
@@ -229,6 +230,11 @@ export async function collectEventEvidence(event, opts = {}) {
     const eventDir = join(outputBase, evidenceDate, 'evidence', event.id)
     const filename = 'screenshot.png'
 
+    // 初始评分（仅 keywordMatch 在采集阶段可算）
+    const kwMatch = keywords.length > 0 && bestParagraph
+      ? Math.min(bestParagraph.score / (keywords.length * 2), 1.0)
+      : 0
+
     const evidence = createEvidence({
       eventId: event.id,
       source: {
@@ -257,14 +263,19 @@ export async function collectEventEvidence(event, opts = {}) {
         height,
       },
       scoring: {
-        keywordMatch: keywords.length > 0 && bestParagraph
-          ? Math.min(bestParagraph.score / (keywords.length * 2), 1.0)
-          : 0,
+        keywordMatch: kwMatch,
         sourceAuthority: 0,
         provenanceCrosscheck: 0,
         overall: 0,
       },
     })
+
+    // 使用评分器完整评分（需外部传入 trustScore / duplicateCount）
+    const fullScoring = scoreEvidence(evidence, {
+      trustScore: event.source?.tier || 3,
+      duplicateCount: 0, // 后续由 BuildEvidenceAssets 通过 ProvenanceService 补全
+    })
+    evidence.scoring = fullScoring
 
     // 保存
     const evidenceDir = join(outputBase, evidenceDate, 'evidence', event.id)
