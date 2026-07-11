@@ -21,6 +21,7 @@ import { DispatchLanes } from './tasks-editorial/dispatch-lanes.mjs'
 import { ExecuteLanes } from './tasks-editorial/execute-lanes.mjs'
 import { MergeCandidates } from './tasks-editorial/merge-candidates.mjs'
 import { CurateEvents } from './tasks-editorial/curate-events.mjs'
+import { BuildEvidenceAssets } from './tasks-evidence/build-evidence-assets.mjs'
 import { GenerateArticle } from './tasks-editorial/generate-article.mjs'
 import { GenerateScript } from './tasks-editorial/generate-script.mjs'
 import { RenderArtifacts } from './tasks-editorial/render-artifacts.mjs'
@@ -64,7 +65,7 @@ const ctx = {
 // 注册 Task
 const registry = new TaskRegistry()
 registry.registerAll({
-  SelectEditorialWindow, DispatchLanes, ExecuteLanes, MergeCandidates, CurateEvents, GenerateArticle, GenerateScript,
+  SelectEditorialWindow, DispatchLanes, ExecuteLanes, MergeCandidates, CurateEvents, BuildEvidenceAssets, GenerateArticle, GenerateScript,
   RenderArtifacts, ValidateOutput, ArchiveOutput,
 })
 

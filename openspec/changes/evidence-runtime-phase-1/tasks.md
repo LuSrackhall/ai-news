@@ -26,21 +26,21 @@
 
 ## 5. BuildEvidenceAssets Task
 
-- [ ] 5.1 创建 `scripts/tasks-evidence/build-evidence-assets.mjs` — 遍历 ctx._curatedEvents，对每个有 url 的事件执行 EvidenceCollector
-- [ ] 5.2 容错：单个事件失败不中断 pipeline，跳过继续
-- [ ] 5.3 输出：ctx._evidenceAssets 传入后续 Task
+- [x] 5.1 创建 `scripts/tasks-evidence/build-evidence-assets.mjs` — 遍历 ctx._curatedEvents，对每个有 url 的事件执行 EvidenceCollector
+- [x] 5.2 容错：单个事件失败不中断 pipeline，跳过继续
+- [x] 5.3 输出：ctx._evidenceAssets 传入后续 Task
 
 ## 6. Pipeline 集成
 
-- [ ] 6.1 在 `scripts/pipelines/editorial.mjs` 的选题(Step3)和文章生成(Step4)之间插入 BuildEvidenceAssets
-- [ ] 6.2 在 `scripts/run-editorial.mjs` 的 registerAll 中注册 BuildEvidenceAssets
-- [ ] 6.3 在 `scripts/tasks-editorial/render-artifacts.mjs` 中读取 ctx._evidenceAssets 传入 renderer
-- [ ] 6.4 注册新 task 文件路径到 `scripts/pipelines/editorial.mjs` 和 `scripts/run-editorial.mjs`
+- [x] 6.1 在 `scripts/pipelines/editorial.mjs` 的选题(Step3)和文章生成(Step4)之间插入 BuildEvidenceAssets
+- [x] 6.2 在 `scripts/run-editorial.mjs` 的 registerAll 中注册 BuildEvidenceAssets
+- [x] 6.3 在 `scripts/tasks-editorial/render-artifacts.mjs` 中读取 ctx._evidenceAssets 传入 renderer
+- [x] 6.4 注册新 task 文件路径到 `scripts/pipelines/editorial.mjs` 和 `scripts/run-editorial.mjs`
 
 ## 7. Renderer 消费证据
 
-- [ ] 7.1 修改 `scripts/render-article.mjs` — deep_item.evidence[] 渲染 `![caption](path)` 在标题后内容前；important_item.evidence[] 渲染 `![title](path)` 在标题后摘要前
-- [ ] 7.2 修改 `scripts/policies/render-policy.mjs` — 同上，管道渲染器
+- [x] 7.1 修改 `scripts/render-article.mjs` — deep_item.evidence[] 渲染 `![caption](path)` 在标题后内容前；important_item.evidence[] 渲染 `![title](path)` 在标题后摘要前
+- [x] 7.2 修改 `scripts/policies/render-policy.mjs` — 同上，管道渲染器
 
 ## 8. 集成测试
 

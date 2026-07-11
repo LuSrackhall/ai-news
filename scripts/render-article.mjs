@@ -35,6 +35,12 @@ export function renderArticle(article, { sources, curatedCount } = {}) {
         lines.push('![' + (item.image_caption || item.title) + '](' + item.image + ')'); lines.push('')
         if (item.image_caption) { lines.push('*' + item.image_caption + '*'); lines.push('') }
       }
+      // 证据截图
+      if (item.evidence) {
+        for (const ev of item.evidence) {
+          if (ev.path) { lines.push('![' + (ev.caption || item.title) + '](' + ev.path + ')'); lines.push('') }
+        }
+      }
       if (item.content) { lines.push(item.content); lines.push('') }
       const ss = item.sources || []
       if (ss.length > 0) {
@@ -51,6 +57,9 @@ export function renderArticle(article, { sources, curatedCount } = {}) {
       lines.push('### ' + item.title); lines.push('')
       if (item.image) {
         lines.push('![' + item.title + '](' + item.image + ')'); lines.push('')
+      }
+      if (item.evidence) {
+        for (const ev of item.evidence) { if (ev.path) { lines.push('![' + (ev.caption || item.title) + '](' + ev.path + ')'); lines.push('') } }
       }
       if (item.summary) lines.push(item.summary)
       lines.push('')

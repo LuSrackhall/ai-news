@@ -36,6 +36,11 @@ export class RenderPolicy {
           sections.push(`![${item.image_caption || item.title}](${item.image})\n`)
           if (item.image_caption) sections.push(`*${item.image_caption}*\n`)
         }
+        if (item.evidence) {
+          for (const ev of item.evidence) {
+            if (ev.path) sections.push(`![${ev.caption || item.title}](${ev.path})\n`)
+          }
+        }
         if (item.whatHappened || item.what_happened) sections.push(`**发生了什么**：${this.fmt(item.whatHappened || item.what_happened)}\n`)
         if (item.details) sections.push(`**技术/商业细节**：${this.fmt(item.details)}\n`)
         if (item.whyMatters || item.why_matters) sections.push(`**为什么重要**：${this.fmt(item.whyMatters || item.why_matters)}\n`)
@@ -54,6 +59,11 @@ export class RenderPolicy {
         sections.push(`### ${tag}${this.fmt(item.title)}\n`)
         if (item.image) {
           sections.push(`![${item.title}](${item.image})\n`)
+        }
+        if (item.evidence) {
+          for (const ev of item.evidence) {
+            if (ev.path) sections.push(`![${ev.caption || item.title}](${ev.path})\n`)
+          }
         }
         if (item.keyPoint || item.key_point) sections.push(`**要点**：${this.fmt(item.keyPoint || item.key_point)}\n`)
         if (item.analysis) sections.push(`${this.fmt(item.analysis)}\n`)
