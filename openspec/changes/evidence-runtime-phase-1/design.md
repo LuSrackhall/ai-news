@@ -42,9 +42,14 @@
      screenshot.png
    ```
 
-5. **article.json 引用路径为相对路径**
+5. **evidence 注入由 RenderArtifacts 处理**
+   Phase 1 中 evidence 不由 LLM 在文章生成环节引用，而是由 RenderArtifacts Task
+   在渲染阶段从磁盘加载 evidence.json，按 event-id 匹配到 article deep/important item，
+   再注入 evidence[] 字段。这样 LLM 无需感知 evidence，降低耦合和 prompt 复杂度。
+
+6. **article.json 引用路径为相对路径**
    `"evidence": [{"path": "evidence/<event-id>/screenshot.png", ...}]`
-   Renderer 在 article.md 中转为 `output/production/ai/<date>/` 下的绝对引用。
+   Renderer 在 article.md 中转为 `output/production/ai/<date>/` 下的相对引用。
 
 ## Risks / Trade-offs
 

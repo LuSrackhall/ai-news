@@ -63,6 +63,17 @@
 - **WHEN** 单个事件的证据采集失败
 - **THEN** 系统 SHALL 跳过该事件继续处理下一个，不中断整个 pipeline
 
+#### Scenario: 评分后写入证据
+- **WHEN** EvidenceCollector 采集到证据截图
+- **THEN** BuildEvidenceAssets SHALL 通过 ProvenanceService 补全 source_authority 和 provenance_crosscheck 评分，并更新 evidence.json
+
+### Requirement: RenderArtifacts 磁盘注入
+系统 SHALL 在渲染阶段从磁盘加载 evidence 并注入到 article items。
+
+#### Scenario: 证据注入
+- **WHEN** RenderArtifacts 运行时 output/production/ai/<date>/evidence/<event-id>/evidence.json 存在
+- **THEN** 系统 SHALL 读取该文件的 scoring 和 claim 字段，注入到对应 event_id 的 article item 的 evidence[] 字段
+
 ### Requirement: Renderer 消费 evidence[]
 系统 SHALL 在 article.md 渲染时嵌入 evidence 图片。
 

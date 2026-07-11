@@ -44,7 +44,12 @@
    包含 method（如何采集的）、claim（证明了什么 claim）、asset（存储路径）、scoring（评分）。
    与 ProvenanceEdge 互补而非替代。
 
-5. **存储与文章分离**
+5. **证据由 RenderArtifacts 注入而非 LLM 引用**
+   Phase 1 实现中，evidence 不通过 LLM 文章生成环节引用，
+   而是由 RenderArtifacts Task 在渲染阶段从磁盘加载并注入到 article items 的 evidence[] 字段。
+   这样 LLM 不感知证据存在，降低耦合。
+
+6. **存储与文章分离**
    evidence/ 目录存放截图和元数据，article.json 通过 evidence[] 字段引用。
    Renderer 读取后渲染 markdown 图片。
 

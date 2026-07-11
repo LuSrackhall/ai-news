@@ -7,6 +7,7 @@
 - 新增 `scripts/evidence/collector.mjs` — Playwright 驱动的证据采集器
 - 新增 `scripts/evidence/scorer.mjs` — 纯代码评分器（关键词匹配 + 信源权威 + 多源交叉）
 - 新增 `scripts/evidence/model.mjs` — Evidence 数据模型
+- 新增 `scripts/evidence/keywords.mjs` — 事件关键词提取
 - 新增 `scripts/tasks-evidence/build-evidence-assets.mjs` — editorial pipeline Task
 - 修改 `scripts/tasks-editorial/render-artifacts.mjs` — 传递 evidence 上下文
 - 修改 `scripts/render-article.mjs` 和 `scripts/policies/render-policy.mjs` — 消费 evidence[] 渲染图片
