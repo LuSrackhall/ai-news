@@ -10,12 +10,12 @@
 
 ## 3. EvidenceCollector
 
-- [ ] 3.1 实现 `scripts/evidence/collector.mjs` — Playwright 加载页面核心逻辑：launch browser、加载 URL、waitForSelector、networkidle、超时处理
-- [ ] 3.2 实现 DOM 清理脚本：注入 JS 移除广告（.ad, .advertisement, ins.adsbygoogle）、弹窗（cookie consent、newsletter popup、login modal）、干扰元素（nav, footer, sticky headers）
-- [ ] 3.3 实现内容区定位逻辑：优先 `<article>` → `[role="main"]` → `.post-content` → `body`
-- [ ] 3.4 实现关键词评分段落定位：遍历内容区 `<p>`，对每个段落按关键词匹配评分，选最高分段
-- [ ] 3.5 实现 Element Screenshot + 降级策略：有匹配段落 → element.screenshot()；无匹配 → 内容区全截图；付费墙 → skip + confidence:0
-- [ ] 3.6 实现证据保存：写入 output/production/ai/<date>/evidence/<event-id>/evidence.json + screenshot.png
+- [x] 3.1 实现 `scripts/evidence/collector.mjs` — Playwright 加载页面核心逻辑：launch browser、加载 URL、waitForSelector、networkidle、超时处理
+- [x] 3.2 实现 DOM 清理脚本：注入 JS 移除广告（.ad, .advertisement, ins.adsbygoogle）、弹窗（cookie consent、newsletter popup、login modal）、干扰元素（nav, footer, sticky headers）
+- [x] 3.3 实现内容区定位逻辑：优先 `<article>` → `[role="main"]` → `.post-content` → `body`
+- [x] 3.4 实现关键词评分段落定位：遍历内容区 `<p>`，对每个段落按关键词匹配评分，选最高分段
+- [x] 3.5 实现 Element Screenshot + 降级策略：有匹配段落 → element.screenshot()；无匹配 → 内容区全截图；付费墙 → skip + confidence:0
+- [x] 3.6 实现证据保存：写入 output/production/ai/<date>/evidence/<event-id>/evidence.json + screenshot.png
 
 ## 4. EvidenceScorer
 
