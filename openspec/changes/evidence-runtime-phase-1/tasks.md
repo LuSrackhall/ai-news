@@ -44,10 +44,10 @@
 
 ## 8. 集成测试
 
-- [ ] 8.1 对 2026-07-11 的已选题事件（Apple诉OpenAI、Meta深伪造）运行 collector，验证截图产出
-- [ ] 8.2 验证评分器输出符合预期
-- [ ] 8.3 验证 renderer 输出正确包含图片
-- [ ] 8.4 运行完整 editorial pipeline 验证端到端
+- [x] 8.1 对 2026-07-11 的已选题事件（Apple诉OpenAI、Meta深伪造）运行 collector，验证截图产出
+- [x] 8.2 验证评分器输出符合预期
+- [x] 8.3 验证 renderer 输出正确包含图片
+- [x] 8.4 运行完整 editorial pipeline 验证端到端
 
 ---
 
