@@ -8,7 +8,7 @@
  * 格式规范见 docs/guides/article-format.md
  */
 
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs'
 
 export function renderArticle(article, { sources, curatedCount } = {}) {
   const lines = []
@@ -103,6 +103,34 @@ const date = process.argv[2]
 if (date) {
   try {
     const article = JSON.parse(readFileSync(baseDir + '/' + date + '/article.json', 'utf-8'))
+
+    // 从 evidence/ 目录注入证据截图到 article items
+    const evBase = baseDir + '/' + date + '/evidence'
+    if (existsSync(evBase)) {
+      const evDirs = readdirSync(evBase).filter(d =>
+        existsSync(evBase + '/' + d + '/evidence.json')
+      )
+      const injectEvidence = (items) => {
+        if (!items) return
+        for (const item of items) {
+          const evDir = evBase + '/' + (item.id || '') + '/evidence.json'
+          if (!existsSync(evDir)) continue
+          try {
+            const meta = JSON.parse(readFileSync(evDir, 'utf-8'))
+            item.evidence = [{
+              type: 'screenshot',
+              path: 'evidence/' + item.id + '/screenshot.png',
+              caption: (meta.claim?.text || '').slice(0, 100) || item.title,
+              confidence: meta.scoring?.overall || 0,
+            }]
+          } catch {}
+        }
+      }
+      injectEvidence(article.deep_items)
+      injectEvidence(article.important_items)
+      injectEvidence(article.brief_items)
+    }
+
     let sources = []
     try {
       const curated = JSON.parse(readFileSync(baseDir + '/' + date + '/curated.json', 'utf-8'))

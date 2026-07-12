@@ -87,6 +87,24 @@ db.close()
 
 将选题结果写入 `output/production/ai/<date>/curated.json`。
 
+### Step 2.5: 采集证据（调用代码）
+
+对已选题的每条事件（curated.json），执行 URL 截图作为证据资产。
+
+```bash
+node -e "
+import { collectBatchEvidence } from './scripts/evidence/collector.mjs'
+const curated = JSON.parse(require('fs').readFileSync('output/production/ai/$DATE/curated.json', 'utf-8'))
+const events = curated.selected_items.map(i => ({ id: i.id, title: i.title, url: i.url, source: i.source, entities: [] }))
+const results = await collectBatchEvidence(events, { outputBase: 'output/production/ai', onProgress: console.log })
+console.log(JSON.stringify({ collected: results.length, total: events.length }))
+"
+```
+
+**检查点：**
+- [ ] evidence/ 目录出现在 `output/production/ai/<date>/evidence/<event-id>/` 下
+- [ ] 每个证据目录包含 screenshot.png + evidence.json
+
 ### Step 3: 生成文章（Agent 执行）
 
 按 `references/EDITORIAL.md` 的文章结构，为选中的新闻生成日报文章。
@@ -136,24 +154,8 @@ db.close()
 ### Step 5: 渲染（调用代码）
 
 ```bash
-node -e "
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
-import { join } from 'node:path'
-import { createRenderDomain } from './scripts/policies/render-policy.mjs'
-const date = process.argv[1] || new Date().toISOString().slice(0, 10)
-const od = join('.', 'output/production/ai', date)
-mkdirSync(od, { recursive: true })
-const article = JSON.parse(readFileSync(join(od, 'article.json'), 'utf-8'))
-const script = JSON.parse(readFileSync(join(od, 'script.json'), 'utf-8'))
-const curated = JSON.parse(readFileSync(join(od, 'curated.json'), 'utf-8'))
-const src = [...new Set((curated.selected_items || []).map(i => i.source?.name || i.source_name).filter(Boolean))]
-const dom = createRenderDomain({ environment: { date } })
-const am = dom.article(article, { sources: src, stats: { selected: curated.selected_items?.length } })
-const sm = dom.script(script)
-writeFileSync(join(od, 'article.md'), am)
-writeFileSync(join(od, 'script.md'), sm)
-console.log(JSON.stringify({ article_chars: am.length, script_chars: sm.length }))
-"
+node scripts/render-article.mjs <date>
+# 例: node scripts/render-article.mjs 2026-07-11
 ```
 
 **检查点：**
