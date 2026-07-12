@@ -110,16 +110,37 @@ if (date) {
       const evDirs = readdirSync(evBase).filter(d =>
         existsSync(evBase + '/' + d + '/evidence.json')
       )
+      // 构建 URL → evidence 目录的映射（用于后续匹配）
+      const urlToEvDir = {}
+      const idToEvDir = {}
+      for (const d of evDirs) {
+        idToEvDir[d] = d
+        try {
+          const meta = JSON.parse(readFileSync(evBase + '/' + d + '/evidence.json', 'utf-8'))
+          if (meta?.source?.url) urlToEvDir[meta.source.url] = d
+        } catch {}
+      }
+
       const injectEvidence = (items) => {
         if (!items) return
         for (const item of items) {
-          const evDir = evBase + '/' + (item.id || '') + '/evidence.json'
-          if (!existsSync(evDir)) continue
+          // 先按 item.id 匹配
+          let evId = idToEvDir[item.id || ''] ? item.id : null
+          // 未命中则按 URL 匹配（取 item 的第一个 source URL）
+          if (!evId) {
+            const urls = [item.url, item.source?.url, ...(item.sources || []).map(s => s.url)].filter(Boolean)
+            for (const u of urls) {
+              if (urlToEvDir[u]) { evId = urlToEvDir[u]; break }
+            }
+          }
+          if (!evId) continue
+          const evDirPath = evBase + '/' + evId + '/evidence.json'
+          if (!existsSync(evDirPath)) continue
           try {
-            const meta = JSON.parse(readFileSync(evDir, 'utf-8'))
+            const meta = JSON.parse(readFileSync(evDirPath, 'utf-8'))
             item.evidence = [{
               type: 'screenshot',
-              path: 'evidence/' + item.id + '/screenshot.png',
+              path: 'evidence/' + evId + '/screenshot.png',
               caption: (meta.claim?.text || '').slice(0, 100) || item.title,
               confidence: meta.scoring?.overall || 0,
             }]

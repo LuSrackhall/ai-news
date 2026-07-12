@@ -93,11 +93,13 @@ db.close()
 
 ```bash
 node -e "
+import { readFileSync } from 'node:fs'
 import { collectBatchEvidence } from './scripts/evidence/collector.mjs'
-const curated = JSON.parse(require('fs').readFileSync('output/production/ai/$DATE/curated.json', 'utf-8'))
+const date = new Date().toISOString().slice(0, 10)
+const curated = JSON.parse(readFileSync('output/production/ai/' + date + '/curated.json', 'utf-8'))
 const events = curated.selected_items.map(i => ({ id: i.id, title: i.title, url: i.url, source: i.source, entities: [] }))
 const results = await collectBatchEvidence(events, { outputBase: 'output/production/ai', onProgress: console.log })
-console.log(JSON.stringify({ collected: results.length, total: events.length }))
+console.log(JSON.stringify({ collected: results.filter(Boolean).length, total: events.length }))
 "
 ```
 
