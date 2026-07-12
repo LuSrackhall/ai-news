@@ -199,34 +199,29 @@ TechCrunch 报道 Apple 诉讼
 
 ## Pipeline 集成
 
-新增独立 Task（在 editorial pipeline 中）：
-
-```javascript
-// scripts/tasks-evidence/build-evidence-assets.mjs
-class BuildEvidenceAssets {
-  async execute(ctx) {
-    const events = ctx._curatedEvents || ctx._events || []
-    const collector = new EvidenceCollector()
-
-    for (const event of events) {
-      if (!event.url) continue
-      const evidence = await collector.collect(event)
-      ctx._evidenceAssets = ctx._evidenceAssets || []
-      ctx._evidenceAssets.push(evidence)
-    }
-
-    return ExecutionResult.ok({ evidence_count: ctx._evidenceAssets.length })
-  }
-}
-```
-
-Editorial pipeline 插入位置：
+证据采集由 `/ai-daily` 技能（SKILL.md）调度，非独立 pipeline：
 
 ```
-Step 3:  选题 → curated.json
-Step 3.5: BuildEvidenceAssets → 对选中事件采集证据
-Step 4:  文章生成 → article.json（引用 evidence[]）
-Step 5:  渲染 → article.md（嵌入截图）
+/ai-daily（唯一入口）
+        │
+Step 1:  Agent 查 SQLite
+Step 2:  Agent 选题 → curated.json（15-20条）
+Step 2.5: 调用 collector.mjs 截图（纯代码）
+Step 3:  Agent 写文章 → article.json
+Step 5:  node scripts/render-article.mjs 渲染（自动从 evidence/ 注入截图）
+```
+
+Agent 只负责调用，不参与截图逻辑。collector.mjs 是纯 Playwright 代码，不需要 LLM。
+
+证据采集脚本：
+
+```bash
+node -e "
+import { collectBatchEvidence } from './scripts/evidence/collector.mjs'
+const curated = JSON.parse(require('fs').readFileSync('output/production/ai/\$DATE/curated.json', 'utf-8'))
+const events = curated.selected_items.map(i => ({ id: i.id, title: i.title, url: i.url, ... }))
+const results = await collectBatchEvidence(events, { outputBase: 'output/production/ai' })
+"
 ```
 
 ## 存储
