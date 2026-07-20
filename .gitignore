@@ -1,8 +1,6 @@
 .DS_Store
 node_modules/
 output/
-/tmp/
-.worktrees/
 
 # SQLite
 *.db
@@ -13,9 +11,11 @@ output/
 data/
 
 # 本地配置（含代理地址等敏感信息）
-config.local.mjs.claude/worktrees/
+config.local.mjs
+
+# Claude Code 工作树（隔离实施）
+.claude/worktrees/
+.worktrees/
 
 # API keys
 .env
-.claude/worktrees/
-.worktrees/
