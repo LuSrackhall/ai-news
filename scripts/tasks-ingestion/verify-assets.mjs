@@ -15,7 +15,7 @@ export class VerifyAssets {
     const date = ctx.resources.date
 
     try {
-      execSync(`node scripts/verify-urls.mjs --date ${date}`, {
+      execSync(`node scripts/verify-urls.mjs --date ${date} --no-write`, {
         encoding: 'utf-8',
         timeout: 1_200_000,  // 20 分钟
         cwd: ctx.resources.workspace || '.',

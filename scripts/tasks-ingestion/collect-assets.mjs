@@ -15,7 +15,7 @@ export class CollectAssets {
     const date = ctx.resources.date
 
     // 直接执行采集脚本
-    const output = execSync(`node scripts/collect-rss.mjs --date ${date}`, {
+    const output = execSync(`node scripts/collect-rss.mjs --date ${date} --no-write`, {
       encoding: 'utf-8',
       timeout: 120_000,
       cwd: ctx.resources.workspace || '.',
