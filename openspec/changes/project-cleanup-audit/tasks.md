@@ -14,16 +14,16 @@
 ## 3. 删除死代码
 
 - [x] 3.1 使用子 Agent 二次确认后，删除 `scripts/tasks/` 目录下全部 10 个文件
-- [ ] 3.2 运行 `node scripts/run-ingestion.mjs --date 2026-07-22` 确认管道正常运行（可以 timeout，只要不报 import 错误）
+- [x] 3.2 运行 `node scripts/run-ingestion.mjs --date 2026-07-22` 确认管道正常运行（可以 timeout，只要不报 import 错误）
 
 ## 4. 清理 output/ 残留
 
-- [ ] 4.1 删除 `output/production/ai/` 下 `*-v2`、`*-v3` 后缀目录
-- [ ] 4.2 删除所有 `output/<date>/raw/` 下的 JSON 中间文件（保留目录结构）
+- [x] 4.1 删除 `output/production/ai/` 下 `*-v2`、`*-v3` 后缀目录
+- [x] 4.2 删除所有 `output/<date>/raw/` 下的 JSON 中间文件（保留目录结构）
 
 ## 5. 最终验证与归档
 
-- [ ] 5.1 再次 `git status` 确认没有意外文件被删除
+- [x] 5.1 再次 `git status` 确认没有意外文件被删除
 - [ ] 5.2 使用子 Agent 进行最终审计复核，对比 spec 逐项确认完成
 - [ ] 5.3 更新项目文档（如果架构文档引用了已删除的文件路径）
 
