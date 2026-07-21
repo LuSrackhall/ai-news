@@ -15,7 +15,7 @@ export class CollectAssets {
     const date = ctx.resources.date
 
     // 直接执行采集脚本
-    const output = execSync(`node scripts/collect-rss.mjs --date ${date} --no-write`, {
+    const output = execSync(`node scripts/collect-rss.mjs --date ${date}`, {
       encoding: 'utf-8',
       timeout: 120_000,
       cwd: ctx.resources.workspace || '.',
@@ -32,7 +32,7 @@ export class CollectAssets {
     const sourcesOk = summary.sources?.ok || 0
 
     // 读取采集结果
-    const rawPath = join(ctx.resources.workspace || '.', 'output', date, 'raw', 'all-raw.json')
+    const rawPath = join(ctx.resources.workspace || '.', 'data', 'runs', date, 'ingestion', 'all-raw.json')
     let assets = []
     try {
       assets = JSON.parse(readFileSync(rawPath, 'utf-8'))

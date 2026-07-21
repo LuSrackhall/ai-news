@@ -15,7 +15,7 @@ export class VerifyAssets {
     const date = ctx.resources.date
 
     try {
-      execSync(`node scripts/verify-urls.mjs --date ${date} --no-write`, {
+      execSync(`node scripts/verify-urls.mjs --date ${date}`, {
         encoding: 'utf-8',
         timeout: 1_200_000,  // 20 分钟
         cwd: ctx.resources.workspace || '.',
@@ -25,8 +25,8 @@ export class VerifyAssets {
       ctx.host?.log?.(`⚠️ URL 验证超时或失败: ${err.message}，继续使用未验证数据`)
     }
 
-    const validPath = join(ctx.resources.workspace || '.', 'output', date, 'raw', 'valid-raw.json')
-    const allRawPath = join(ctx.resources.workspace || '.', 'output', date, 'raw', 'all-raw.json')
+    const validPath = join(ctx.resources.workspace || '.', 'data', 'runs', date, 'ingestion', 'valid-raw.json')
+    const allRawPath = join(ctx.resources.workspace || '.', 'data', 'runs', date, 'ingestion', 'all-raw.json')
     let validCount = 0
     try {
       const valid = JSON.parse(readFileSync(validPath, 'utf-8'))

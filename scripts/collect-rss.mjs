@@ -3,10 +3,9 @@
  * AI 日报 - RSS 采集脚本 (Pipeline v3)
  * 零 LLM 成本，纯代码执行
  *
- * 用法: node scripts/collect-rss.mjs [--date 2026-06-22] [--no-write]
+ * 用法: node scripts/collect-rss.mjs [--date 2026-06-22]
 
- * 输出: output/<date>/raw/all-raw.json
- * --no-write: 跳过写入 failures.json（管道模式使用）
+ * 输出: data/runs/<date>/ingestion/all-raw.json
  */
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
@@ -67,12 +66,10 @@ async function proxyFetch(url, opts = {}, useProxy = false) {
 const { values: args } = parseArgs({
   options: {
     date: { type: 'string', default: new Date().toISOString().slice(0, 10) },
-    'no-write': { type: 'boolean', default: false },
   },
 })
 const DATE = args.date
-const NO_WRITE = args['no-write']
-const OUTPUT_DIR = join(WORKFLOW_CONFIG.outputDir, DATE, 'raw')
+const OUTPUT_DIR = join('.', 'data', 'runs', DATE, 'ingestion')
 
 // ============================================================
 // RSS 解析（轻量级，不依赖第三方库）
@@ -609,7 +606,7 @@ async function main() {
   const allRawPath = join(OUTPUT_DIR, 'all-raw.json')
   writeFileSync(allRawPath, JSON.stringify(dateVerified, null, 2), 'utf-8')
 
-  if (failures.length > 0 && !NO_WRITE) {
+  if (failures.length > 0) {
     const failuresPath = join(OUTPUT_DIR, 'failures.json')
     writeFileSync(failuresPath, JSON.stringify(failures, null, 2), 'utf-8')
   }

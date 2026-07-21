@@ -3,11 +3,10 @@
  * AI 日报 - URL 验证模块 (Phase 2)
  * 对每条采集结果的 URL 发 HEAD 请求，移除死链
  *
- * 用法: node scripts/verify-urls.mjs --date 2026-06-22 [--no-write]
+ * 用法: node scripts/verify-urls.mjs --date 2026-06-22
  *
- * 输入: output/<date>/raw/all-raw.json
- * 输出: output/<date>/raw/valid-raw.json, failures.json
- * --no-write: 跳过写文件（管道模式使用）
+ * 输入: data/runs/<date>/ingestion/all-raw.json
+ * 输出: data/runs/<date>/ingestion/valid-raw.json, url-removed.json
  */
 
 import { readFileSync, writeFileSync } from 'node:fs'
@@ -35,12 +34,10 @@ for (const s of RSS_SOURCES) {
 const { values: args } = parseArgs({
   options: {
     date: { type: 'string', default: new Date().toISOString().slice(0, 10) },
-    'no-write': { type: 'boolean', default: false },
   },
 })
 const DATE = args.date
-const NO_WRITE = args['no-write']
-const RAW_DIR = join(WORKFLOW_CONFIG.outputDir, DATE, 'raw')
+const RAW_DIR = join('.', 'data', 'runs', DATE, 'ingestion')
 
 /**
  * 验证单个 URL 是否可访问
@@ -156,15 +153,13 @@ async function main() {
     }
   }
 
-  if (!NO_WRITE) {
-    // 写入有效条目
-    const validPath = join(RAW_DIR, 'valid-raw.json')
-    writeFileSync(validPath, JSON.stringify(validItems, null, 2), 'utf-8')
+  // 写入有效条目
+  const validPath = join(RAW_DIR, 'valid-raw.json')
+  writeFileSync(validPath, JSON.stringify(validItems, null, 2), 'utf-8')
 
-    // 写入移除记录
-    const removedPath = join(RAW_DIR, 'url-removed.json')
-    writeFileSync(removedPath, JSON.stringify(removedItems, null, 2), 'utf-8')
-  }
+  // 写入移除记录
+  const removedPath = join(RAW_DIR, 'url-removed.json')
+  writeFileSync(removedPath, JSON.stringify(removedItems, null, 2), 'utf-8')
 
   console.log(`   ✅ 有效: ${validItems.length}`)
   console.log(`   ❌ 移除: ${removedItems.length}`)
