@@ -8,8 +8,8 @@
 
 ## 2. 验证
 
-- [ ] 2.1 确认 `node --check scripts/run-ingestion.mjs` 通过
-- [ ] 2.2 确认 `data/cron.log` 仍可正常写入和读取
+- [x] 2.1 确认 `node --check scripts/run-ingestion.mjs` 通过
+- [x] 2.2 确认 `data/cron.log` 仍可正常写入和读取
 
 ---
 
