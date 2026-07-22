@@ -49,10 +49,39 @@ function extractJsonObjects(text) {
   return objects
 }
 
-function updateRunsMd(currentResult) {
+async function updateRunsMd(currentResult) {
   try {
     const logPath = join('.', 'data', 'cron.log')
     const runsPath = join('.', 'data', 'runs.md')
+
+    // 日志轮转：按日归档，保留 7 天
+    try {
+      const { stat: statFile, rename: renameFile, readdir: readDir, unlink: unlinkFile } = await import('node:fs/promises')
+      const s = await statFile(logPath).catch(() => null)
+      if (s) {
+        const mtimeDate = new Date(s.mtime).toISOString().slice(0, 10)
+        const today = new Date().toISOString().slice(0, 10)
+        if (mtimeDate < today) {
+          const archivePath = logPath + '.' + mtimeDate
+          await renameFile(logPath, archivePath)
+          writeFileSync(logPath, '', 'utf-8')  // 重新创建空文件
+          // 清理超过 7 天的归档
+          const cutoff = new Date()
+          cutoff.setDate(cutoff.getDate() - 7)
+          const prefix = 'cron.log.'
+          const dir = join('.', 'data')
+          const files = await readDir(dir)
+          for (const f of files) {
+            if (!f.startsWith(prefix)) continue
+            const fdate = f.slice(prefix.length)
+            const ft = new Date(fdate)
+            if (!isNaN(ft.getTime()) && ft < cutoff) {
+              await unlinkFile(join(dir, f))
+            }
+          }
+        }
+      }
+    } catch {}
 
     // 解析历史记录
     let rawLog = ''
@@ -152,6 +181,6 @@ console.log(`Steps: ${result.stepResults.length}`)
 console.log(JSON.stringify(result, null, 2))
 
 // 更新运行状态表格
-updateRunsMd(result)
+await updateRunsMd(result)
 
 db.close()
