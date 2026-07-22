@@ -54,7 +54,12 @@ async function updateRunsMd(currentResult) {
     const logPath = join('.', 'data', 'cron.log')
     const runsPath = join('.', 'data', 'runs.md')
 
-    // 日志轮转：按日归档，保留 7 天
+    // 解析历史记录（先读取，再轮转，保证 runs.md 不丢历史）
+    let rawLog = ''
+    try { rawLog = readFileSync(logPath, 'utf-8') } catch {}
+    const runs = extractJsonObjects(rawLog)
+
+    // 日志轮转：按日归档，保留 7 天（在读取旧内容之后执行）
     try {
       const { stat: statFile, rename: renameFile, readdir: readDir, unlink: unlinkFile } = await import('node:fs/promises')
       const s = await statFile(logPath).catch(() => null)
@@ -82,11 +87,6 @@ async function updateRunsMd(currentResult) {
         }
       }
     } catch {}
-
-    // 解析历史记录
-    let rawLog = ''
-    try { rawLog = readFileSync(logPath, 'utf-8') } catch {}
-    const runs = extractJsonObjects(rawLog)
 
     // 追加本次运行（cron.log 此时还未写入当前 JSON）
     runs.push(currentResult)
