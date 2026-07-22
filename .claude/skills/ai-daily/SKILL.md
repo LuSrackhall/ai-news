@@ -50,7 +50,7 @@ node scripts/run-ingestion.mjs
 ### Step 1: 从 SQLite 读取今日事件
 
 ```bash
-node -e "
+node --input-type=module -e "
 import { createSqliteDatabase } from './scripts/infrastructure/database.mjs'
 import { createSqliteEventReadModel } from './scripts/read-models/sqlite/event-read-model.mjs'
 const db = createSqliteDatabase()
@@ -92,7 +92,7 @@ db.close()
 对已选题的每条事件（curated.json），执行 URL 截图作为证据资产。
 
 ```bash
-node -e "
+node --input-type=module -e "
 import { readFileSync } from 'node:fs'
 import { collectBatchEvidence } from './scripts/evidence/collector.mjs'
 const date = new Date().toISOString().slice(0, 10)
@@ -166,7 +166,7 @@ node scripts/render-article.mjs <date>
 ### Step 6: 校验（调用代码）
 
 ```bash
-node -e "
+node --input-type=module -e "
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { createValidationPolicy } from './scripts/policies/validation-policy.mjs'
@@ -264,7 +264,7 @@ TTS_PROVIDER=minimax MINIMAX_API_KEY=... bash scripts/tts/synthesize.sh output/p
 ### Step 8: 归档（调用代码）
 
 ```bash
-node -e "
+node --input-type=module -e "
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 const date = process.argv[1] || new Date().toISOString().slice(0, 10)

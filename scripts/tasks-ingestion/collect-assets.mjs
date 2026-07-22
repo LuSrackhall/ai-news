@@ -32,7 +32,7 @@ export class CollectAssets {
     const sourcesOk = summary.sources?.ok || 0
 
     // 读取采集结果
-    const rawPath = join(ctx.resources.workspace || '.', 'output', date, 'raw', 'all-raw.json')
+    const rawPath = join(ctx.resources.workspace || '.', 'data', 'runs', date, 'ingestion', 'all-raw.json')
     let assets = []
     try {
       assets = JSON.parse(readFileSync(rawPath, 'utf-8'))

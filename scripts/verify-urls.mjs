@@ -5,8 +5,8 @@
  *
  * 用法: node scripts/verify-urls.mjs --date 2026-06-22
  *
- * 输入: output/<date>/raw/all-raw.json
- * 输出: output/<date>/raw/valid-raw.json, failures.json
+ * 输入: data/runs/<date>/ingestion/all-raw.json
+ * 输出: data/runs/<date>/ingestion/valid-raw.json, url-removed.json
  */
 
 import { readFileSync, writeFileSync } from 'node:fs'
@@ -37,7 +37,7 @@ const { values: args } = parseArgs({
   },
 })
 const DATE = args.date
-const RAW_DIR = join(WORKFLOW_CONFIG.outputDir, DATE, 'raw')
+const RAW_DIR = join('.', 'data', 'runs', DATE, 'ingestion')
 
 /**
  * 验证单个 URL 是否可访问

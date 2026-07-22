@@ -4,8 +4,8 @@
  * 零 LLM 成本，纯代码执行
  *
  * 用法: node scripts/collect-rss.mjs [--date 2026-06-22]
- *
- * 输出: output/<date>/raw/all-raw.json
+
+ * 输出: data/runs/<date>/ingestion/all-raw.json
  */
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
@@ -69,7 +69,7 @@ const { values: args } = parseArgs({
   },
 })
 const DATE = args.date
-const OUTPUT_DIR = join(WORKFLOW_CONFIG.outputDir, DATE, 'raw')
+const OUTPUT_DIR = join('.', 'data', 'runs', DATE, 'ingestion')
 
 // ============================================================
 // RSS 解析（轻量级，不依赖第三方库）
